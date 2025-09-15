@@ -1,8 +1,14 @@
+import { BrowserRouter as Router } from 'react-router-dom';
+import RoutesComponent from './RoutesComponent';
+import Footer from './Components/Footer';
+import Header from './Components/Header';
 function App() {
     return (
-        <div>
-            <h1 class="text-3xl font-bold underline">Qiuz-Arena frontend</h1>
-        </div>
+        <Router>
+            <Header />
+            <RoutesComponent />
+            <Footer />
+        </Router>
     );
 }
 
