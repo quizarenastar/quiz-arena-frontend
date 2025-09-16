@@ -14,7 +14,7 @@ const quizzes = [
         questionsCount: 20,
         participants: 1234,
         difficulty: 'Easy',
-        image: 'https://source.unsplash.com/random/400x300?javascript',
+        image: 'https://source.unsplash.com/random/400x300?programming',
     },
     {
         id: 2,
@@ -26,7 +26,7 @@ const quizzes = [
         questionsCount: 15,
         participants: 856,
         difficulty: 'Intermediate',
-        image: 'https://source.unsplash.com/random/400x300?geography',
+        image: 'https://source.unsplash.com/random/400x300?geograph',
     },
     {
         id: 2,
