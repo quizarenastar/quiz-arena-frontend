@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import QuizArenaLogo from '../assets/namelogo.png';
 
 function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -10,11 +11,8 @@ function Header() {
     return (
         <header className='bg-blue-100 dark:bg-gray-900 text-gray-900 dark:text-white shadow-md transition-colors duration-200'>
             <div className='max-w-7xl mx-auto flex items-center justify-between px-4 py-3'>
-                <Link
-                    to='/'
-                    className='text-2xl font-bold tracking-wide hover:text-blue-400 transition-colors'
-                >
-                    Quiz Arena
+                <Link to='/' className='flex items-center h-12 w-20'>
+                    <img src={QuizArenaLogo} alt='Quiz Arena' />
                 </Link>
                 {/* Hamburger for mobile */}
                 <button
