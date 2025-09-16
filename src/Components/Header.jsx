@@ -97,28 +97,28 @@ function Header() {
                     </Link>
                     <Link
                         to='/create-quiz'
-                        className='hover:text-blue-400 transition-colors font-medium'
+                        className='hover:text-blue-800 transition-colors font-medium'
                         onClick={() => setMenuOpen(false)}
                     >
                         Create Quiz
                     </Link>
                     <Link
                         to='/ai-quiz'
-                        className='hover:text-blue-400 transition-colors font-medium'
+                        className='hover:text-blue-800 transition-colors font-medium'
                         onClick={() => setMenuOpen(false)}
                     >
                         AI Quiz
                     </Link>
                     <Link
                         to='/leaderboard'
-                        className='hover:text-blue-400 transition-colors font-medium'
+                        className='hover:text-blue-800 transition-colors font-medium'
                         onClick={() => setMenuOpen(false)}
                     >
                         Leaderboard
                     </Link>
                     <Link
                         to='/signup'
-                        className='px-4 py-1 rounded bg-blue-400 text-[#282c34] font-semibold hover:bg-blue-300 transition-colors'
+                        className='px-4 py-1 rounded bg-blue-400 text-[#282c34] font-semibold hover:bg-blue-400 transition-colors'
                         onClick={() => setMenuOpen(false)}
                     >
                         Sign Up
