@@ -31,19 +31,13 @@ export default function Login() {
     return (
         <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-all duration-300'>
             {/* Background decoration */}
-            <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-                <div className='absolute -top-40 -right-40 w-80 h-80 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-70 animate-pulse'></div>
-                <div className='absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-70 animate-pulse delay-1000'></div>
-            </div>
+            <div className='absolute inset-0 overflow-hidden pointer-events-none'></div>
 
             <div className='max-w-md w-full space-y-8 relative z-10'>
                 {/* Theme toggle button */}
 
                 {/* Header */}
                 <div className='text-center'>
-                    <div className='mx-auto h-16 w-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg'>
-                        <Lock className='w-8 h-8 text-white' />
-                    </div>
                     <h2 className='text-3xl font-bold text-gray-900 dark:text-white mb-2'>
                         Welcome back
                     </h2>
@@ -57,9 +51,9 @@ export default function Login() {
                     <div className='space-y-6'>
                         {/* Email field */}
                         <div className='space-y-2'>
-                            <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                            {/* <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                                 Email address
-                            </label>
+                            </label> */}
                             <div className='relative group'>
                                 <Mail
                                     className='absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors duration-200'
@@ -79,9 +73,9 @@ export default function Login() {
 
                         {/* Password field */}
                         <div className='space-y-2'>
-                            <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                            {/* <label className='text-sm font-medium text-gray-700 dark:text-gray-300'>
                                 Password
-                            </label>
+                            </label> */}
                             <div className='relative group'>
                                 <Lock
                                     className='absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors duration-200'
@@ -112,30 +106,11 @@ export default function Login() {
                             </div>
                         </div>
 
-                        {/* Forgot password */}
-                        <div className='flex items-center justify-between'>
-                            <label className='flex items-center'>
-                                <input
-                                    type='checkbox'
-                                    className='w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400'
-                                />
-                                <span className='ml-2 text-sm text-gray-600 dark:text-gray-400'>
-                                    Remember me
-                                </span>
-                            </label>
-                            <a
-                                href='#'
-                                className='text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-200'
-                            >
-                                Forgot password?
-                            </a>
-                        </div>
-
                         {/* Sign in button */}
                         <button
                             type='submit'
                             onClick={handleSubmit}
-                            className='w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200'
+                            className='w-full bg-gradient-to-r from-gray-400 to-blue-600 hover:from-gray-700 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200'
                         >
                             Sign in
                         </button>

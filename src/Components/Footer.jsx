@@ -3,7 +3,7 @@ import { Instagram, Linkedin, Youtube } from 'lucide-react';
 
 function Footer() {
     return (
-        <footer className='bg-blue-50 text-gray-900 w-full dark:bg-gray-900 dark:text-white transition-colors duration-200'>
+        <footer className='bg-blue-100 text-gray-900 w-full dark:bg-gray-900 dark:text-white transition-colors duration-200'>
             <div className='max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center px-4 py-3 gap-3 md:gap-0'>
                 {/* Left */}
                 <div className='font-semibold mb-2 md:mb-0'>
@@ -11,18 +11,18 @@ function Footer() {
                 </div>
                 {/* Middle */}
                 <div className='flex flex-col md:flex-row gap-2 md:gap-6 items-center'>
-                    <a href='/contact' className='hover:text-yellow-400'>
+                    <a href='/contact' className='hover:text-blue-500'>
                         Contact Us
                     </a>
-                    <a href='/about' className='hover:text-yellow-400'>
+                    <a href='/about' className='hover:text-blue-500'>
                         About Us
                     </a>
-                    <a href='/privacy-policy' className='hover:text-yellow-400'>
+                    <a href='/privacy-policy' className='hover:text-blue-500'>
                         Privacy Policy
                     </a>
                     <a
                         href='/terms-and-conditions'
-                        className='hover:text-yellow-400'
+                        className='hover:text-blue-500'
                     >
                         T&amp;C
                     </a>
@@ -33,7 +33,7 @@ function Footer() {
                         href='https://www.instagram.com/'
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='hover:text-pink-400'
+                        className='hover:text-purple-600'
                     >
                         <Instagram size={22} />
                     </a>

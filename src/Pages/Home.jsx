@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { features, testimonials } from '../constants/homeData';
+import pic from '../assets/QA.png';
 
 export default function Home() {
     return (
@@ -33,15 +34,14 @@ export default function Home() {
                                 to='/ai-quiz'
                                 className='px-6 py-3 border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-gray-900 rounded-lg font-semibold transition-colors'
                             >
-                                Try AI Quiz
+                                Participate
                             </Link>
                         </div>
                     </div>
                     <div className='flex-1'>
                         <img
-                            src='/quiz-illustration.svg'
-                            alt='Quiz illustration'
-                            className='w-full max-w-md mx-auto'
+                            src={pic}
+                            className='w-full max-w-md mx-auto rounded-3xl shadow-lg'
                         />
                     </div>
                 </div>
