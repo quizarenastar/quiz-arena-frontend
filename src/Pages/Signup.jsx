@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { signupThunk } from '../store/slices/authSlice';
+import toast from 'react-hot-toast';
 import {
     Mail,
     Lock,
@@ -12,6 +16,8 @@ import {
 } from 'lucide-react';
 
 export default function Signup() {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -20,9 +26,7 @@ export default function Signup() {
     });
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordStrength, setPasswordStrength] = useState(0);
-    const [acceptTerms, setAcceptTerms] = useState(false);
 
     // Calculate password strength
     const calculatePasswordStrength = (password) => {
@@ -50,7 +54,7 @@ export default function Signup() {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         // Basic validation
@@ -58,22 +62,38 @@ export default function Signup() {
         if (formData.password !== formData.confirmPassword) {
             newErrors.confirmPassword = 'Passwords do not match';
         }
-        if (!acceptTerms) {
-            newErrors.terms = 'Please accept the terms and conditions';
-        }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
         }
 
-        // Implement signup logic here
-        console.log('Signup submitted:', formData);
+        try {
+            const action = await dispatch(
+                signupThunk({
+                    username: formData.username,
+                    email: formData.email,
+                    password: formData.password,
+                })
+            );
+            if (signupThunk.fulfilled.match(action)) {
+                toast.success('Account created successfully');
+                navigate('/login');
+            } else {
+                toast.error(action.payload || 'Signup failed');
+            }
+        } catch (err) {
+            console.log(err);
+            toast.error('An error occurred');
+        }
     };
 
-    const handleGoogleSignup = () => {
-        // Implement Google signup logic here
-        console.log('Google signup clicked');
+    const handleGoogleLogin = () => {
+        if (window.google?.accounts?.id) {
+            window.google.accounts.id.prompt();
+        } else {
+            console.warn('Google Identity script not loaded');
+        }
     };
 
     const getPasswordStrengthColor = () => {
@@ -263,7 +283,7 @@ export default function Signup() {
                         {/* Google signup */}
                         <button
                             type='button'
-                            onClick={handleGoogleSignup}
+                            onClick={handleGoogleLogin}
                             className='w-full flex items-center justify-center px-6 py-4 border border-gray-300 dark:border-gray-600 rounded-2xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200'
                         >
                             <svg className='w-5 h-5 mr-3' viewBox='0 0 24 24'>

@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Moon, Sun } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginThunk, googleThunk } from '../store/slices/authSlice';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -8,6 +12,61 @@ export default function Login() {
     });
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { isAuthenticated } = useSelector((s) => s.auth);
+    console.log(isAuthenticated);
+
+    // Decode JWT without external deps
+    const parseJwt = (token) => {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map(function (c) {
+                        return (
+                            '%' +
+                            ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                        );
+                    })
+                    .join('')
+            );
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            console.log(e);
+
+            return null;
+        }
+    };
+
+    // Initialize Google Identity Services
+    useEffect(() => {
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+        if (!clientId) {
+            console.warn('VITE_GOOGLE_CLIENT_ID is not set');
+            return;
+        }
+        if (window.google?.accounts?.id) {
+            window.google.accounts.id.initialize({
+                client_id: clientId,
+                callback: async (response) => {
+                    const payload = parseJwt(response.credential);
+                    if (!payload) return;
+                    const name = payload.name || payload.given_name || '';
+                    const email = payload.email;
+                    const action = await dispatch(googleThunk({ email, name }));
+                    if (googleThunk.fulfilled.match(action)) {
+                        toast.success('Signed in with Google');
+                        navigate('/');
+                    } else {
+                        toast.error(action.payload || 'Google sign-in failed');
+                    }
+                },
+            });
+        }
+    }, [dispatch, navigate]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,15 +76,23 @@ export default function Login() {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Implement login logic here
-        console.log('Login submitted:', formData);
+        const action = await dispatch(loginThunk(formData));
+        if (loginThunk.fulfilled.match(action)) {
+            toast.success('Logged in successfully');
+            navigate('/');
+        } else {
+            toast.error(action.payload || 'Login failed');
+        }
     };
 
     const handleGoogleLogin = () => {
-        // Implement Google login logic here
-        console.log('Google login clicked');
+        if (window.google?.accounts?.id) {
+            window.google.accounts.id.prompt();
+        } else {
+            console.warn('Google Identity script not loaded');
+        }
     };
 
     return (
@@ -34,20 +101,18 @@ export default function Login() {
             <div className='absolute inset-0 overflow-hidden pointer-events-none'></div>
 
             <div className='max-w-md w-full space-y-8 relative z-10'>
-                {/* Theme toggle button */}
-
-                {/* Header */}
-                <div className='text-center'>
-                    <h2 className='text-3xl font-bold text-gray-900 dark:text-white mb-2'>
-                        Welcome back
-                    </h2>
-                    <p className='text-gray-600 dark:text-gray-400'>
-                        Sign in to your account to continue
-                    </p>
-                </div>
-
                 {/* Form card */}
                 <div className='bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-3xl shadow-2xl dark:shadow-gray-900/20 border border-gray-200 dark:border-gray-700/50 p-8'>
+                    {/* Header */}
+                    <div className='text-center mb-5'>
+                        <h2 className='text-3xl font-bold text-gray-900 dark:text-white mb-2'>
+                            Welcome back
+                        </h2>
+                        <p className='text-gray-600 dark:text-gray-400'>
+                            Sign in to your account to continue
+                        </p>
+                    </div>
+
                     <div className='space-y-6'>
                         {/* Email field */}
                         <div className='space-y-2'>
