@@ -1,4 +1,4 @@
-const BASE_URL = 'https://api.quizarena.in/api/v1';
+const BASE_URL = 'http://localhost:5000/dashboard/v1';
 
 const ApiUrl = {
     AUTH: {
@@ -7,6 +7,10 @@ const ApiUrl = {
         GOOGLE: `${BASE_URL}/users/google`,
         ME: `${BASE_URL}/users/me`,
         LOGOUT: `${BASE_URL}/users/logout`,
+    },
+
+    CONTACT: {
+        SUBMIT: `${BASE_URL}/contact`,
     },
 };
 
