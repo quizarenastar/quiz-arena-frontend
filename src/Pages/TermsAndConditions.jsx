@@ -81,23 +81,10 @@ const TermsAndConditions = () => {
 
             <div className='container mx-auto px-4 py-12 max-w-5xl relative z-10'>
                 {/* Hero Header */}
-                <div className='text-center mb-16'>
-                    <div className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6'>
-                        <Sparkles size={16} />
-                        Legal Documentation
-                    </div>
-                    <h1 className='text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent leading-tight'>
+                <div className='text-center mb-8 '>
+                    <h1 className='text-4xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 bg-clip-text text-transparent bg-clip-text  leading-tight'>
                         Terms & Conditions
                     </h1>
-                    <p className='text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed'>
-                        Your guide to using Quiz Arena responsibly and safely
-                    </p>
-                    <div className='flex items-center justify-center gap-2 mt-4 text-gray-500 dark:text-gray-400'>
-                        <Clock size={16} />
-                        <span className='text-sm'>
-                            Last updated: September 2025
-                        </span>
-                    </div>
                 </div>
 
                 {/* Quick Navigation Card */}

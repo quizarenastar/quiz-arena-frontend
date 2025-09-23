@@ -42,7 +42,7 @@ function Header() {
     ];
 
     return (
-        <header className='sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/50 dark:border-gray-700/50 transition-all duration-300'>
+        <header className='bg-blue-100 dark:bg-gray-900 text-gray-900 dark:text-black shadow-md transition-colors duration-200'>
             <div className='max-w-7xl mx-auto flex items-center justify-between px-6 py-4'>
                 {/* Logo */}
                 <Link to='/' className='flex items-center group'>
@@ -61,10 +61,10 @@ function Header() {
                         <Link
                             key={link.to}
                             to={link.to}
-                            className='px-4 py-2 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100/70 dark:hover:bg-gray-800/70 transition-all duration-200 relative group'
+                            className='px-4 py-2 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-800 dark:hover:text-blue-400  dark:hover:bg-gray-800/70 transition-all duration-200 relative group'
                         >
                             {link.label}
-                            <span className='absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
+                            <span className='absolute inset-x-0 bottom-0 h-0.5  from-blue-900 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300'></span>
                         </Link>
                     ))}
                 </nav>
@@ -95,13 +95,13 @@ function Header() {
                         <div className='hidden md:flex items-center space-x-3'>
                             <Link
                                 to='/login'
-                                className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-200'
+                                className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-800 dark:hover:text-blue-400 transition-colors duration-200'
                             >
                                 Login
                             </Link>
                             <Link
                                 to='/signup'
-                                className='px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200'
+                                className='px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-br from-blue-600  hover:to-blue-700 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200'
                             >
                                 Sign Up
                             </Link>
