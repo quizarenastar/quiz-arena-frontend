@@ -4,7 +4,7 @@ import { Instagram, Linkedin, Youtube, MessageCircle } from 'lucide-react';
 
 function Footer() {
     return (
-        <footer className='relative bg-blue-100 text-gray-900 dark-bg-gray-900 text-white w-full overflow-hidden'>
+        <footer className='relative bg-blue-100 text-gray-900 dark-bg-gray-900 w-full overflow-hidden'>
             {/* Background Pattern */}
             <div className='absolute inset-0 opacity-10'>
                 <div className='absolute top-0 left-1/4 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply animate-pulse'></div>
