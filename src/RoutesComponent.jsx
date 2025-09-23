@@ -9,6 +9,9 @@ import TermsAndConditions from './Pages/TermsAndConditions';
 import AboutUs from './Pages/AboutUs';
 import ContactUs from './Pages/ContactUs';
 import NotFound from './Pages/NotFound';
+import CreateQuiz from './Pages/CreateQuiz';
+import ProtectedRoute from './Components/ProtectedRoute';
+import Leaderboard from './Pages/Leaderboard';
 
 export default function RoutesComponent() {
     return (
@@ -26,6 +29,16 @@ export default function RoutesComponent() {
             <Route path='/about-us' element={<AboutUs />} />
             <Route path='/contact-us' element={<ContactUs />} />
             <Route path='*' element={<NotFound />} />
+
+            <Route
+                path='/create-quiz'
+                element={
+                    <ProtectedRoute>
+                        <CreateQuiz />
+                    </ProtectedRoute>
+                }
+            />
+            <Route path='/leaderboard' element={<Leaderboard />} />
         </Routes>
     );
 }
