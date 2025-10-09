@@ -162,7 +162,7 @@ const ContactUs = () => {
                     {/* Contact Form */}
                     <div className='bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl border border-gray-100 dark:border-gray-700'>
                         <div className='flex items-center gap-3 mb-8'>
-                            <div className='w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center'>
+                            <div className='w-12 h-12 bg-blue-400 rounded-xl flex items-center justify-center'>
                                 <Send className='w-6 h-6 text-white' />
                             </div>
                             <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
