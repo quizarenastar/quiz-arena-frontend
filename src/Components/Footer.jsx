@@ -64,7 +64,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/'
-                                        className='text-gray-600 hover:text-white transition-colors'
+                                        className='text-gray-600 hover:text-black transition-colors'
                                     >
                                         Home
                                     </Link>
@@ -72,7 +72,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/quizzes'
-                                        className='text-gray-600 hover:text-white transition-colors'
+                                        className='text-gray-600 hover:text-black transition-colors'
                                     >
                                         Quizzes
                                     </Link>
@@ -80,7 +80,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/about-us'
-                                        className='text-gray-600 hover:text-white transition-colors'
+                                        className='text-gray-600 hover:text-black transition-colors'
                                     >
                                         About Us
                                     </Link>
@@ -88,7 +88,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/contact-us'
-                                        className='text-gray-600 hover:text-white transition-colors'
+                                        className='text-gray-600 hover:text-black transition-colors'
                                     >
                                         Contact Us
                                     </Link>
@@ -105,7 +105,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/privacy-policy'
-                                        className='text-gray-600 hover:text-white transition-colors'
+                                        className='text-gray-600 hover:text-black transition-colors'
                                     >
                                         Privacy Policy
                                     </Link>
@@ -113,7 +113,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/terms-and-conditions'
-                                        className='text-gray-600 hover:text-white transition-colors'
+                                        className='text-gray-600 hover:text-black transition-colors'
                                     >
                                         Terms & Conditions
                                     </Link>
@@ -127,10 +127,10 @@ function Footer() {
                                 Contact
                             </h3>
                             <div className='space-y-2 text-gray-600'>
-                                <p>Email: support@quizarena.in</p>
+                                <p>Email: quizarenastar@gmail.com</p>
                                 <Link
                                     to='/contact-us'
-                                    className='inline-flex items-center space-x-2 text-gray-600 hover:text-blue-800 transition-colors'
+                                    className='inline-flex items-center space-x-2 text-gray-600 hover:text-black transition-colors'
                                 >
                                     <MessageCircle size={20} />
                                     <span>Send us a message</span>

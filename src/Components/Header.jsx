@@ -28,7 +28,7 @@ function Header() {
             );
         }
         return (
-            <div className='w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white/20'>
+            <div className='w-10 h-10 rounded-full  bg-blue-900  text-white flex items-center justify-center text-sm font-bold shadow-lg border-2 border-white/20'>
                 {username.charAt(0).toUpperCase()}
             </div>
         );

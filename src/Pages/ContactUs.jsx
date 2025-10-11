@@ -101,18 +101,14 @@ const ContactUs = () => {
     ];
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300'>
+        <div className='min-h-screen bg-blue-50 dark:bg-gray-900 transition-colors duration-300'>
             {/* Hero Section */}
             <div className='relative overflow-hidden'>
-                <div className='relative container mx-auto px-4 py-4 sm:py-8'>
+                <div className='relative container mx-auto px-4 py-4 '>
                     <div className='text-center max-w-4xl mx-auto'>
-                        <h1 className=' sm:text-1xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-6'>
+                        <h1 className=' sm:text-1xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-gray-400 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent '>
                             Contact Us
                         </h1>
-                        <p className='text-xl text-gray-600 dark:text-gray-300 leading-relaxed'>
-                            Have questions or suggestions? We'd love to hear
-                            from you.
-                        </p>
                     </div>
                 </div>
             </div>
@@ -253,7 +249,7 @@ const ContactUs = () => {
                             <button
                                 type='submit'
                                 disabled={isSubmitting}
-                                className='w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2'
+                                className='w-full bg-gradient-to-r from-blue-500 to-gray-400 text-white py-4 px-6 rounded-xl font-semibold hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2'
                             >
                                 {isSubmitting ? (
                                     <>
@@ -271,9 +267,6 @@ const ContactUs = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Bottom decoration */}
-            <div className='h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500'></div>
         </div>
     );
 };
