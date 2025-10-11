@@ -7,6 +7,53 @@ const ApiUrl = {
         GOOGLE: `${BASE_URL}/users/google`,
         ME: `${BASE_URL}/users/me`,
         LOGOUT: `${BASE_URL}/users/logout`,
+        UPDATE_PROFILE: `${BASE_URL}/users/profile`,
+    },
+
+    QUIZZES: {
+        // Public quiz operations
+        PUBLIC_QUIZZES: `${BASE_URL}/quizzes/public`,
+        GET_QUIZ: (quizId) => `${BASE_URL}/quizzes/public/${quizId}`,
+
+        // User quiz management (authenticated)
+        MY_QUIZZES: `${BASE_URL}/quizzes/my-quizzes`,
+        GET_MY_QUIZ: (quizId) => `${BASE_URL}/quizzes/${quizId}`,
+        CREATE_QUIZ: `${BASE_URL}/quizzes`,
+        UPDATE_QUIZ: (quizId) => `${BASE_URL}/quizzes/${quizId}`,
+        DELETE_QUIZ: (quizId) => `${BASE_URL}/quizzes/${quizId}`,
+        SUBMIT_QUIZ: (quizId) => `${BASE_URL}/quizzes/${quizId}/submit`,
+
+        // Questions management
+        ADD_QUESTION: (quizId) => `${BASE_URL}/quizzes/${quizId}/questions`,
+        UPDATE_QUESTION: (quizId, questionId) =>
+            `${BASE_URL}/quizzes/${quizId}/questions/${questionId}`,
+        DELETE_QUESTION: (quizId, questionId) =>
+            `${BASE_URL}/quizzes/${quizId}/questions/${questionId}`,
+
+        // AI Integration
+        GENERATE_QUESTIONS: (quizId) =>
+            `${BASE_URL}/quizzes/${quizId}/generate`,
+        GENERATE_QUESTIONS_PREVIEW: `${BASE_URL}/quizzes/generate-preview`,
+
+        // Quiz attempts
+        START_ATTEMPT: (quizId) => `${BASE_URL}/quizzes/${quizId}/start`,
+        SUBMIT_ATTEMPT: (attemptId) =>
+            `${BASE_URL}/quizzes/attempts/${attemptId}/submit`,
+        MY_ATTEMPTS: `${BASE_URL}/quizzes/attempts/my-attempts`,
+        ATTEMPT_DETAILS: (attemptId) =>
+            `${BASE_URL}/quizzes/attempts/${attemptId}`,
+        REPORT_VIOLATION: (attemptId) =>
+            `${BASE_URL}/quizzes/attempts/${attemptId}/violation`,
+
+        // Leaderboard
+        LEADERBOARD: (quizId) => `${BASE_URL}/quizzes/${quizId}/leaderboard`,
+    },
+
+    WALLET: {
+        GET_WALLET: `${BASE_URL}/wallet`,
+        ADD_FUNDS: `${BASE_URL}/wallet/add-funds`,
+        TRANSACTION_HISTORY: `${BASE_URL}/wallet/transactions`,
+        REQUEST_WITHDRAWAL: `${BASE_URL}/wallet/withdraw`,
     },
 
     CONTACT: {

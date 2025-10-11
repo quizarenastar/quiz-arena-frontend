@@ -10,6 +10,11 @@ import AboutUs from './Pages/AboutUs';
 import ContactUs from './Pages/ContactUs';
 import NotFound from './Pages/NotFound';
 import CreateQuiz from './Pages/CreateQuiz';
+import MyQuizzes from './Pages/MyQuizzes';
+import QuizDetails from './Pages/QuizDetails';
+import QuizAttempt from './Pages/QuizAttempt';
+import QuizResult from './Pages/QuizResult';
+import Wallet from './Pages/Wallet';
 import ProtectedRoute from './Components/ProtectedRoute';
 import Leaderboard from './Pages/Leaderboard';
 
@@ -30,6 +35,7 @@ export default function RoutesComponent() {
             <Route path='/contact-us' element={<ContactUs />} />
             <Route path='*' element={<NotFound />} />
 
+            {/* Protected Routes */}
             <Route
                 path='/create-quiz'
                 element={
@@ -38,6 +44,47 @@ export default function RoutesComponent() {
                     </ProtectedRoute>
                 }
             />
+            <Route
+                path='/my-quizzes'
+                element={
+                    <ProtectedRoute>
+                        <MyQuizzes />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path='/quiz/:quizId'
+                element={
+                    <ProtectedRoute>
+                        <QuizDetails />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path='/quiz/:quizId/attempt'
+                element={
+                    <ProtectedRoute>
+                        <QuizAttempt />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path='/quiz/:quizId/result/:attemptId'
+                element={
+                    <ProtectedRoute>
+                        <QuizResult />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path='/wallet'
+                element={
+                    <ProtectedRoute>
+                        <Wallet />
+                    </ProtectedRoute>
+                }
+            />
+
             <Route path='/leaderboard' element={<Leaderboard />} />
         </Routes>
     );

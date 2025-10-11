@@ -56,10 +56,14 @@ export default function Signup() {
             newErrors.confirmPassword = 'Passwords do not match';
         }
 
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
+        console.log('hii');
+
+        // if (Object.keys(newErrors).length > 0) {
+        //     setErrors(newErrors);
+        //     return;
+        // }
+
+        console.log('hii');
 
         try {
             const action = await dispatch(

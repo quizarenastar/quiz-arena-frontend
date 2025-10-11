@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Moon, Sun, Menu, X, User, LogOut, Settings } from 'lucide-react';
+import {
+    Moon,
+    Sun,
+    Menu,
+    X,
+    User,
+    LogOut,
+    Settings,
+    CreditCard,
+} from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import QuizArenaLogo from '../assets/namelogo.png';
 import { useDispatch, useSelector } from 'react-redux';
@@ -37,7 +46,8 @@ function Header() {
     const navLinks = [
         { to: '/', label: 'Home' },
         { to: '/quizzes', label: 'Quizzes' },
-        { to: '/create-quiz', label: 'Create Quiz' },
+        { to: '/create-quiz', label: 'Create Quiz', protected: true },
+        { to: '/my-quizzes', label: 'My Quizzes', protected: true },
         { to: '/leaderboard', label: 'Leaderboard' },
     ];
 
@@ -142,6 +152,19 @@ function Header() {
                                             <User size={16} className='mr-3' />
                                             Profile
                                         </Link>
+                                        <Link
+                                            to='/wallet'
+                                            className='flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200'
+                                            onClick={() =>
+                                                setProfileDropdown(false)
+                                            }
+                                        >
+                                            <CreditCard
+                                                size={16}
+                                                className='mr-3'
+                                            />
+                                            Wallet
+                                        </Link>
                                         {/* <Link
                                             to='/settings'
                                             className='flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200'
@@ -224,7 +247,6 @@ function Header() {
                                 {link.label}
                             </Link>
                         ))}
-
                         <div className='pt-4 border-t border-gray-200/50 dark:border-gray-700/50'>
                             {!user ? (
                                 <div className='space-y-2'>
@@ -258,6 +280,17 @@ function Header() {
                                     >
                                         <User size={18} className='mr-3' />
                                         Profile
+                                    </Link>
+                                    <Link
+                                        to='/wallet'
+                                        className='flex items-center px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/70 transition-all duration-200'
+                                        onClick={() => setMenuOpen(false)}
+                                    >
+                                        <CreditCard
+                                            size={18}
+                                            className='mr-3'
+                                        />
+                                        Wallet
                                     </Link>
                                     {/* <Link
                                         to='/settings'
