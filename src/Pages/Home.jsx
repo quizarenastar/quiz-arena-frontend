@@ -13,7 +13,7 @@ export default function Home() {
                         <h1 className='text-4xl md:text-6xl font-bold text-gray-900 dark:text-white'>
                             Challenge Your Mind,
                             <br />
-                            <span className='text-yellow-400'>
+                            <span className='text-blue-400'>
                                 Quiz Your Way
                             </span>{' '}
                             to Excellence
@@ -26,13 +26,13 @@ export default function Home() {
                         <div className='flex gap-4'>
                             <Link
                                 to='/create-quiz'
-                                className='px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-gray-900 rounded-lg font-semibold flex items-center gap-2'
+                                className='px-6 py-3 bg-blue-300 hover:bg-blue-200 text-gray-900 rounded-lg font-semibold flex items-center gap-2'
                             >
                                 Create Quiz <ArrowRight size={20} />
                             </Link>
                             <Link
                                 to='/ai-quiz'
-                                className='px-6 py-3 border-2 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-gray-900 rounded-lg font-semibold transition-colors'
+                                className='px-6 py-3 border-2 border-blue-300 text-black dark:text-white hover:bg-blue-300 hover:text-gray-900 rounded-lg font-semibold transition-colors'
                             >
                                 Participate
                             </Link>
@@ -62,7 +62,7 @@ export default function Home() {
                                     className='text-center p-6 rounded-lg bg-blue-50 dark:bg-gray-700'
                                 >
                                     <div className='flex justify-center mb-4'>
-                                        <IconComponent className='w-12 h-12 text-yellow-400' />
+                                        <IconComponent className='w-12 h-12 text-blue-400' />
                                     </div>
                                     <h3 className='text-xl font-semibold mb-2 text-gray-900 dark:text-white'>
                                         {feature.title}
@@ -96,7 +96,7 @@ export default function Home() {
                                     <p className='font-semibold text-gray-900 dark:text-white'>
                                         {testimonial.author}
                                     </p>
-                                    <p className='text-sm text-yellow-400'>
+                                    <p className='text-sm text-blue-500'>
                                         {testimonial.role}
                                     </p>
                                 </div>
