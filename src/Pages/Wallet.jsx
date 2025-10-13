@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import WalletService from '../service/WalletService';
+import AddFundsModal from '../Components/wallet/addFundsModal';
+import WithdrawFundsModal from '../Components/wallet/withdrawFundsModal';
 
 const Wallet = () => {
     const [wallet, setWallet] = useState(null);
@@ -17,6 +19,7 @@ const Wallet = () => {
     const [loading, setLoading] = useState(true);
     const [addFundsAmount, setAddFundsAmount] = useState('');
     const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [withdrawUpiId, setWithdrawUpiId] = useState('');
     const [showAddFunds, setShowAddFunds] = useState(false);
     const [showWithdraw, setShowWithdraw] = useState(false);
     const [addingFunds, setAddingFunds] = useState(false);
@@ -58,13 +61,20 @@ const Wallet = () => {
 
         setAddingFunds(true);
         try {
-            await WalletService.addFunds(amount);
-            toast.success('Funds added successfully!');
+            await WalletService.addFunds({
+                amount,
+                paymentMethod: 'upi',
+                transactionId: wallet?.transactionId || '',
+            });
+            toast.success(
+                'Fund addition request submitted! Admin will review it shortly.'
+            );
             setAddFundsAmount('');
+            setWallet({ ...wallet, transactionId: '' });
             setShowAddFunds(false);
             fetchWalletData(); // Refresh wallet data
         } catch (error) {
-            toast.error(error.message || 'Failed to add funds');
+            toast.error(error.message || 'Failed to submit request');
             console.error('Add Funds Error:', error);
         } finally {
             setAddingFunds(false);
@@ -88,14 +98,27 @@ const Wallet = () => {
             return;
         }
 
+        if (!withdrawUpiId || withdrawUpiId.trim() === '') {
+            toast.error('Please enter your UPI ID');
+            return;
+        }
+
+        // Validate UPI ID format
+        const upiPattern = /^[\w.-]+@[\w.-]+$/;
+        if (!upiPattern.test(withdrawUpiId)) {
+            toast.error('Please enter a valid UPI ID (e.g., yourname@paytm)');
+            return;
+        }
+
         setRequesting(true);
         try {
             await WalletService.requestWithdrawal(amount, {
-                method: 'bank_transfer',
-                // Add payment details here based on user input
+                withdrawalMethod: 'upi',
+                upiId: withdrawUpiId,
             });
             toast.success('Withdrawal request submitted successfully!');
             setWithdrawAmount('');
+            setWithdrawUpiId('');
             setShowWithdraw(false);
             fetchWalletData(); // Refresh wallet data
         } catch (error) {
@@ -146,7 +169,6 @@ const Wallet = () => {
                         My Wallet
                     </h1>
                 </div>
-
                 {/* Wallet Balance Card */}
                 <div className='bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-lg p-6 mb-6 text-white'>
                     <div className='flex justify-between items-center'>
@@ -172,7 +194,6 @@ const Wallet = () => {
                         </div>
                     </div>
                 </div>
-
                 {/* Action Buttons */}
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
                     <button
@@ -192,7 +213,6 @@ const Wallet = () => {
                         <span>Request Withdrawal</span>
                     </button>
                 </div>
-
                 {/* Transaction History */}
                 <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm'>
                     <div className='p-6 border-b border-gray-200 dark:border-gray-700'>
@@ -209,176 +229,119 @@ const Wallet = () => {
                             </div>
                         ) : (
                             transactions.map((transaction) => (
-                                <div
-                                    key={transaction._id}
-                                    className='p-6 flex items-center justify-between'
-                                >
-                                    <div className='flex items-center space-x-4'>
-                                        {getTransactionIcon(transaction.type)}
-                                        <div>
-                                            <p className='font-medium text-gray-900 dark:text-white'>
-                                                {WalletService.getTransactionTypeLabel(
-                                                    transaction.type
+                                <div key={transaction._id}>
+                                    <div className='p-6 flex items-center justify-between'>
+                                        <div className='flex items-center space-x-4'>
+                                            {getTransactionIcon(
+                                                transaction.type
+                                            )}
+                                            <div>
+                                                <p className='font-medium text-gray-900 dark:text-white'>
+                                                    {WalletService.getTransactionTypeLabel(
+                                                        transaction.type
+                                                    )}
+                                                </p>
+                                                <p className='text-sm text-gray-500 dark:text-gray-400'>
+                                                    {new Date(
+                                                        transaction.createdAt
+                                                    ).toLocaleDateString(
+                                                        'en-IN',
+                                                        {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit',
+                                                        }
+                                                    )}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className='text-right'>
+                                            <p
+                                                className={`font-semibold ${
+                                                    [
+                                                        'payment',
+                                                        'earning',
+                                                        'refund',
+                                                        'bonus',
+                                                    ].includes(transaction.type)
+                                                        ? 'text-green-600'
+                                                        : 'text-red-600'
+                                                }`}
+                                            >
+                                                {[
+                                                    'payment',
+                                                    'earning',
+                                                    'refund',
+                                                    'bonus',
+                                                ].includes(transaction.type)
+                                                    ? '+'
+                                                    : '-'}
+                                                {WalletService.formatAmount(
+                                                    transaction.amount
                                                 )}
                                             </p>
-                                            <p className='text-sm text-gray-500 dark:text-gray-400'>
-                                                {new Date(
-                                                    transaction.createdAt
-                                                ).toLocaleDateString('en-IN', {
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                })}
+                                            <p
+                                                className={`text-xs px-2 py-1 rounded-full ${
+                                                    transaction.status ===
+                                                    'completed'
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                        : transaction.status ===
+                                                          'pending'
+                                                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                }`}
+                                            >
+                                                {transaction.status}
                                             </p>
                                         </div>
                                     </div>
-
-                                    <div className='text-right'>
-                                        <p
-                                            className={`font-semibold ${
-                                                [
-                                                    'fund_addition',
-                                                    'quiz_earning',
-                                                    'refund',
-                                                ].includes(transaction.type)
-                                                    ? 'text-green-600'
-                                                    : 'text-red-600'
-                                            }`}
-                                        >
-                                            {[
-                                                'fund_addition',
-                                                'quiz_earning',
-                                                'refund',
-                                            ].includes(transaction.type)
-                                                ? '+'
-                                                : '-'}
-                                            {WalletService.formatAmount(
-                                                transaction.amount
-                                            )}
-                                        </p>
-                                        <p
-                                            className={`text-xs px-2 py-1 rounded-full ${
-                                                transaction.status ===
-                                                'completed'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : transaction.status ===
-                                                      'pending'
-                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                    : 'bg-red-100 text-red-800'
-                                            }`}
-                                        >
-                                            {transaction.status}
-                                        </p>
-                                    </div>
+                                    {transaction.status === 'failed' &&
+                                        transaction.reasonForRejection && (
+                                            <div className='px-6 pb-4 -mt-2'>
+                                                <div className='bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800'>
+                                                    <p className='text-xs font-semibold text-red-700 dark:text-red-400 mb-1'>
+                                                        Rejection Reason:
+                                                    </p>
+                                                    <p className='text-sm text-red-600 dark:text-red-300'>
+                                                        {
+                                                            transaction.reasonForRejection
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
                                 </div>
                             ))
                         )}
                     </div>
                 </div>
-
                 {/* Add Funds Modal */}
                 {showAddFunds && (
-                    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-                        <div className='bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4'>
-                            <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
-                                Add Funds to Wallet
-                            </h3>
-
-                            <div className='mb-4'>
-                                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                                    Amount (₹)
-                                </label>
-                                <input
-                                    type='number'
-                                    value={addFundsAmount}
-                                    onChange={(e) =>
-                                        setAddFundsAmount(e.target.value)
-                                    }
-                                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
-                                    placeholder='Enter amount (min ₹10)'
-                                    min='10'
-                                />
-                            </div>
-
-                            <div className='flex space-x-4'>
-                                <button
-                                    onClick={handleAddFunds}
-                                    disabled={addingFunds}
-                                    className='flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-md font-medium transition-colors'
-                                >
-                                    {addingFunds
-                                        ? 'Processing...'
-                                        : 'Add Funds'}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowAddFunds(false);
-                                        setAddFundsAmount('');
-                                    }}
-                                    className='flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium transition-colors'
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <AddFundsModal
+                        wallet={wallet}
+                        setWallet={setWallet}
+                        addFundsAmount={addFundsAmount}
+                        setAddFundsAmount={setAddFundsAmount}
+                        addingFunds={addingFunds}
+                        handleAddFunds={handleAddFunds}
+                        setShowAddFunds={setShowAddFunds}
+                    />
                 )}
-
                 {/* Withdrawal Modal */}
                 {showWithdraw && (
-                    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-                        <div className='bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4'>
-                            <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
-                                Request Withdrawal
-                            </h3>
-
-                            <div className='mb-4'>
-                                <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                                    Amount (₹)
-                                </label>
-                                <input
-                                    type='number'
-                                    value={withdrawAmount}
-                                    onChange={(e) =>
-                                        setWithdrawAmount(e.target.value)
-                                    }
-                                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
-                                    placeholder='Enter amount (min ₹100)'
-                                    min='100'
-                                    max={wallet?.balance || 0}
-                                />
-                                <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                                    Available:{' '}
-                                    {WalletService.formatAmount(
-                                        wallet?.balance || 0
-                                    )}
-                                </p>
-                            </div>
-
-                            <div className='flex space-x-4'>
-                                <button
-                                    onClick={handleRequestWithdrawal}
-                                    disabled={requesting}
-                                    className='flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-md font-medium transition-colors'
-                                >
-                                    {requesting
-                                        ? 'Processing...'
-                                        : 'Request Withdrawal'}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowWithdraw(false);
-                                        setWithdrawAmount('');
-                                    }}
-                                    className='flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium transition-colors'
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <WithdrawFundsModal
+                        wallet={wallet}
+                        withdrawAmount={withdrawAmount}
+                        setWithdrawAmount={setWithdrawAmount}
+                        withdrawUpiId={withdrawUpiId}
+                        setWithdrawUpiId={setWithdrawUpiId}
+                        requesting={requesting}
+                        handleRequestWithdrawal={handleRequestWithdrawal}
+                        setShowWithdraw={setShowWithdraw}
+                    />
                 )}
             </div>
         </div>

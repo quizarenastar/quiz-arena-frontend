@@ -16,12 +16,6 @@ function QuizCard({ quiz, getDifficultyColor }) {
                     {quiz.difficulty?.charAt(0).toUpperCase() +
                         quiz.difficulty?.slice(1) || 'Medium'}
                 </span>
-
-                {quiz.isPaid && quiz.price > 0 && (
-                    <span className='absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium bg-yellow-500 text-white'>
-                        ₹{quiz.price}
-                    </span>
-                )}
             </div>
 
             <div className='p-4 sm:p-5 flex flex-col flex-grow'>
@@ -29,6 +23,15 @@ function QuizCard({ quiz, getDifficultyColor }) {
                     <span className='inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'>
                         {quiz.category || 'General'}
                     </span>
+                    {quiz.price > 0 ? (
+                        <span className='px-3 py-1 ml-2  rounded-full text-xs font-medium bg-yellow-500 text-white'>
+                            ₹{quiz.price || 0}
+                        </span>
+                    ) : (
+                        <span className='px-3 py-1 ml-2  rounded-full text-xs font-medium bg-green-500 text-white'>
+                            Free
+                        </span>
+                    )}
                 </div>
 
                 <h3 className='text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2'>
@@ -159,7 +162,7 @@ function Quizzes() {
                                 onKeyPress={(e) =>
                                     e.key === 'Enter' && handleApplyFilters()
                                 }
-                                className='w-full sm:w-64 pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                                className='w-full sm:w-64 pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm'
                             />
                             <Search className='absolute left-3 top-2.5 w-4 h-4 text-gray-400' />
                         </div>
