@@ -1,15 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-    Moon,
-    Sun,
-    Menu,
-    X,
-    User,
-    LogOut,
-    Settings,
-    CreditCard,
-} from 'lucide-react';
+import { Moon, Sun, Menu, X, User, LogOut, CreditCard } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import QuizArenaLogo from '../assets/namelogo.png';
 import { useDispatch, useSelector } from 'react-redux';

@@ -22,6 +22,7 @@ export default function Profile() {
     const [form, setForm] = useState({
         username: '',
         email: '',
+        phone: '',
         password: '',
         profilePicture: '',
     });
@@ -35,6 +36,7 @@ export default function Profile() {
             setForm({
                 username: user.username || '',
                 email: user.email || '',
+                phone: user.phone || '',
                 password: '',
                 profilePicture: user.profilePicture || '',
             });
@@ -43,6 +45,7 @@ export default function Profile() {
 
     const onSave = async () => {
         const payload = { username: form.username, email: form.email };
+        if (form.phone) payload.phone = form.phone;
         if (form.password) payload.password = form.password;
         if (form.profilePicture !== undefined)
             payload.profilePicture = form.profilePicture;
@@ -87,21 +90,21 @@ export default function Profile() {
                             </div>
                             <div className='mt-4 flex flex-wrap gap-4'>
                                 <div className='px-4 py-3 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 flex items-center gap-2'>
-                                    <Coins size={18} /> Current Balance:{' '}
+                                    <Coins size={18} /> Balance:{' '}
                                     <span className='font-semibold'>
-                                        {user?.currentBalance ?? 0}
+                                        ₹{user?.wallet?.balance ?? 0}
                                     </span>
                                 </div>
                                 <div className='px-4 py-3 rounded-2xl bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-200 flex items-center gap-2'>
-                                    <DollarSign size={18} /> Total Earn:{' '}
+                                    <DollarSign size={18} /> Total Earned:{' '}
                                     <span className='font-semibold'>
-                                        {user?.totalEarn ?? 0}
+                                        ₹{user?.wallet?.totalEarned ?? 0}
                                     </span>
                                 </div>
                                 <div className='px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-200 flex items-center gap-2'>
-                                    <Shield size={18} /> Total Redeem:{' '}
+                                    <Shield size={18} /> Total Spent:{' '}
                                     <span className='font-semibold'>
-                                        {user?.totalRedeem ?? 0}
+                                        ₹{user?.wallet?.totalSpent ?? 0}
                                     </span>
                                 </div>
                             </div>
@@ -160,6 +163,27 @@ export default function Profile() {
                                         ? 'border-blue-300 dark:border-blue-700'
                                         : 'border-gray-200 dark:border-gray-700'
                                 } focus:outline-none`}
+                            />
+                        </div>
+                        <div>
+                            <label className='block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2'>
+                                Phone Number
+                            </label>
+                            <input
+                                type='tel'
+                                disabled={!editing}
+                                value={form.phone}
+                                onChange={(e) =>
+                                    setForm({ ...form, phone: e.target.value })
+                                }
+                                className={`w-full px-4 py-3 rounded-2xl bg-white/60 dark:bg-gray-700/50 border ${
+                                    editing
+                                        ? 'border-blue-300 dark:border-blue-700'
+                                        : 'border-gray-200 dark:border-gray-700'
+                                } focus:outline-none`}
+                                placeholder='10-digit phone number'
+                                maxLength='10'
+                                pattern='[0-9]{10}'
                             />
                         </div>
                         <div>

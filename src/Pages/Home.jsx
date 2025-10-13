@@ -31,7 +31,7 @@ export default function Home() {
                                 Create Quiz <ArrowRight size={20} />
                             </Link>
                             <Link
-                                to='/ai-quiz'
+                                to='/quizzes'
                                 className='px-6 py-3 border-2 border-blue-300 text-black dark:text-white hover:bg-blue-300 hover:text-gray-900 rounded-lg font-semibold transition-colors'
                             >
                                 Participate
