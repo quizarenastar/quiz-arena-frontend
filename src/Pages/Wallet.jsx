@@ -10,8 +10,8 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import WalletService from '../service/WalletService';
-import AddFundsModal from '../Components/wallet/addFundsModal';
-import WithdrawFundsModal from '../Components/wallet/withdrawFundsModal';
+import AddFundsModal from '../Components/wallet/AddFundsModal';
+import WithdrawFundsModal from '../Components/wallet/WithdrawFundsModal';
 
 const Wallet = () => {
     const [wallet, setWallet] = useState(null);
