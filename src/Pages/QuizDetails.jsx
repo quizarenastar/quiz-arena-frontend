@@ -291,46 +291,6 @@ const QuizDetails = () => {
                     </div>
                 </div>
 
-                {/* Questions Preview */}
-                {quiz.questions && quiz.questions.length > 0 && (
-                    <div className='bg-blue-50 dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6'>
-                        <h2 className='text-xl font-semibold text-gray-900 dark:text-white mb-4'>
-                            Questions Preview
-                        </h2>
-                        <div className='space-y-4'>
-                            {quiz.questions.slice(0, 3).map((q, index) => (
-                                <div
-                                    key={index}
-                                    className='border border-gray-200 dark:border-gray-700 rounded-lg p-4'
-                                >
-                                    <div className='flex items-start'>
-                                        <span className='bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full w-8 h-8 flex items-center justify-center font-semibold mr-3 flex-shrink-0'>
-                                            {index + 1}
-                                        </span>
-                                        <div className='flex-1'>
-                                            <p className='text-gray-900 dark:text-white font-medium mb-2'>
-                                                {q.question || q.text}
-                                            </p>
-                                            <div className='flex items-center text-sm text-gray-500 dark:text-yellow-100'>
-                                                <CheckCircle
-                                                    size={14}
-                                                    className='mr-1'
-                                                />
-                                                {q.options?.length || 4} options
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {quiz.questions.length > 3 && (
-                                <p className='text-center text-gray-600 dark:text-yellow-100 text-sm'>
-                                    + {quiz.questions.length - 3} more questions
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                )}
-
                 {/* Quiz Settings */}
                 {quiz.settings && (
                     <div className='bg-blue-50 dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6'>
