@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
     Trophy,
     Clock,
@@ -16,25 +16,85 @@ import QuizService from '../service/QuizService';
 
 const QuizResult = () => {
     const { quizId, attemptId } = useParams();
-    const location = useLocation();
+
     const navigate = useNavigate();
 
-    const [result, setResult] = useState(location.state?.result || null);
-    const [loading, setLoading] = useState(!result);
+    const [result, setResult] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [analysis, setAnalysis] = useState(null);
     const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
-    useEffect(() => {
-        if (!result) {
-            fetchAttemptDetails();
-        }
-    }, [attemptId, result]);
-
-    const fetchAttemptDetails = async () => {
+    const fetchAttemptDetails = useCallback(async () => {
         try {
             setLoading(true);
             const response = await QuizService.getAttemptDetails(attemptId);
-            setResult(response.data);
+
+            console.log('API Response:', response);
+
+            // Backend returns: { attempt, analysis, detailedAnswers, quiz }
+            const { attempt, analysis, detailedAnswers, quiz } = response.data;
+
+            // Transform to expected format
+            const transformedResult = {
+                _id: attempt._id,
+                score: attempt.score || 0,
+                totalPossibleScore:
+                    attempt.totalPossibleScore ||
+                    (attempt.answers?.length || quiz.totalQuestions || 0) * 10,
+                percentage:
+                    attempt.percentage ||
+                    ((attempt.score || 0) /
+                        (attempt.totalPossibleScore ||
+                            (attempt.answers?.length ||
+                                quiz.totalQuestions ||
+                                0) * 10 ||
+                            100)) *
+                        100,
+                correctAnswers: attempt.correctAnswers || 0,
+                totalQuestions:
+                    attempt.totalQuestions ||
+                    attempt.answers?.length ||
+                    quiz.totalQuestions ||
+                    0,
+                timeTaken: Math.floor((attempt.duration || 0) / 1000), // Convert ms to seconds
+                timeLimit: quiz.duration || 300, // Duration is in seconds in the model
+                accuracy:
+                    attempt.percentage ||
+                    ((attempt.score || 0) /
+                        (attempt.totalPossibleScore ||
+                            (attempt.answers?.length ||
+                                quiz.totalQuestions ||
+                                0) * 10 ||
+                            100)) *
+                        100,
+                quiz: quiz,
+                answers: detailedAnswers || attempt.answers || [],
+                status: attempt.status,
+                violationStats: {
+                    total: attempt.antiCheatViolations?.length || 0,
+                    critical:
+                        attempt.antiCheatViolations?.filter(
+                            (v) => v.severity === 'critical'
+                        ).length || 0,
+                    warning:
+                        attempt.antiCheatViolations?.filter(
+                            (v) => v.severity === 'warning'
+                        ).length || 0,
+                    tabSwitches:
+                        attempt.antiCheatViolations?.filter(
+                            (v) => v.type === 'tab-switch'
+                        ).length || 0,
+                    timeSpentOutside: 0,
+                },
+                aiAnalysis: analysis,
+                rank: null, // Not available yet
+                totalAttempts: null, // Not available yet
+            };
+
+            setResult(transformedResult);
+            if (analysis) {
+                setAnalysis(analysis);
+            }
         } catch (error) {
             toast.error(error.message || 'Failed to fetch result details');
             console.error('Fetch Result Error:', error);
@@ -42,7 +102,13 @@ const QuizResult = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [attemptId, navigate]);
+
+    useEffect(() => {
+        if (!result) {
+            fetchAttemptDetails();
+        }
+    }, [result, fetchAttemptDetails]);
 
     const generateAIAnalysis = async () => {
         if (!result) return;
@@ -59,9 +125,9 @@ const QuizResult = () => {
                 strengths: getStrengths(result),
                 weaknesses: getWeaknesses(result),
                 recommendations: getRecommendations(result),
-                improvementAreas: getImprovementAreas(result),
+                improvementAreas: getImprovementAreas(),
                 timeManagement: getTimeManagementAnalysis(result),
-                difficultyAnalysis: getDifficultyAnalysis(result),
+                difficultyAnalysis: getDifficultyAnalysis(),
             };
 
             setAnalysis(mockAnalysis);
@@ -145,7 +211,7 @@ const QuizResult = () => {
         return recommendations;
     };
 
-    const getImprovementAreas = (result) => {
+    const getImprovementAreas = () => {
         // This would analyze wrong answers by category/difficulty
         return [
             'Conceptual understanding',
@@ -156,8 +222,7 @@ const QuizResult = () => {
     };
 
     const getTimeManagementAnalysis = (result) => {
-        const timePercentage =
-            (result.timeTaken / (result.timeLimit * 60)) * 100;
+        const timePercentage = (result.timeTaken / result.timeLimit) * 100;
 
         if (timePercentage < 50) {
             return 'You completed the quiz very quickly. Consider taking more time to review your answers.';
@@ -170,7 +235,7 @@ const QuizResult = () => {
         }
     };
 
-    const getDifficultyAnalysis = (result) => {
+    const getDifficultyAnalysis = () => {
         // Mock difficulty analysis
         return {
             easy: { attempted: 3, correct: 3, percentage: 100 },
@@ -279,7 +344,7 @@ const QuizResult = () => {
                                 {formatTime(result.timeTaken)}
                             </p>
                             <p className='text-sm text-gray-500 dark:text-gray-400'>
-                                of {result.timeLimit}m limit
+                                of {formatTime(result.timeLimit)} limit
                             </p>
                         </div>
 
@@ -521,7 +586,7 @@ const QuizResult = () => {
                                     Recommendations
                                 </h4>
                                 <ul className='space-y-1'>
-                                    {analysis.recommendations.map(
+                                    {analysis.studyRecommendations.map(
                                         (recommendation, index) => (
                                             <li
                                                 key={index}

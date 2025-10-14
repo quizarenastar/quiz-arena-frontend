@@ -20,11 +20,13 @@ const QuizAttempt = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [timeRemaining, setTimeRemaining] = useState(0);
+    const [currentQuestionTime, setCurrentQuestionTime] = useState(0);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [showViolations, setShowViolations] = useState(false);
 
     const timerRef = useRef(null);
+    const questionTimerRef = useRef(null);
     const attemptStartTime = useRef(Date.now());
 
     // Initialize anti-cheat system
@@ -78,6 +80,56 @@ const QuizAttempt = () => {
             handleAutoSubmit('Anti-cheat violation detected');
         }
     }, [antiCheat.violationStats.critical, antiCheat.canContinue]);
+
+    // Question timer effect
+    useEffect(() => {
+        // Reset question timer when question changes
+        const currentQ = quiz?.questions?.[currentQuestionIndex];
+        if (currentQ && currentQ.timeLimit) {
+            setCurrentQuestionTime(currentQ.timeLimit);
+        }
+
+        // Clear previous timer
+        if (questionTimerRef.current) {
+            clearInterval(questionTimerRef.current);
+        }
+
+        // Start question countdown if timeLimit exists
+        if (currentQ && currentQ.timeLimit && !submitting) {
+            questionTimerRef.current = setInterval(() => {
+                setCurrentQuestionTime((prev) => {
+                    if (prev <= 1) {
+                        handleQuestionTimeout();
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+
+        return () => {
+            if (questionTimerRef.current) {
+                clearInterval(questionTimerRef.current);
+            }
+        };
+    }, [currentQuestionIndex, quiz?.questions, submitting]);
+
+    const handleQuestionTimeout = () => {
+        const currentQ = quiz?.questions?.[currentQuestionIndex];
+
+        // Auto-submit current answer (even if not selected)
+        if (!answers[currentQ._id]) {
+            toast.error(`Time's up for question ${currentQuestionIndex + 1}!`);
+        }
+
+        // Auto-advance to next question or submit if last question
+        if (currentQuestionIndex < quiz.questions.length - 1) {
+            setCurrentQuestionIndex(currentQuestionIndex + 1);
+        } else {
+            toast.info('Quiz completed - submitting your answers...');
+            handleAutoSubmit('All questions completed');
+        }
+    };
 
     const startQuizAttempt = async () => {
         try {
@@ -142,7 +194,7 @@ const QuizAttempt = () => {
     const handleAutoSubmit = (reason = 'Time expired') => {
         if (submitting) return;
 
-        toast.warning(`Quiz auto-submitted: ${reason}`);
+        toast.error(`Quiz auto-submitted: ${reason}`);
         handleSubmit(true);
     };
 
@@ -268,17 +320,37 @@ const QuizAttempt = () => {
                                 </button>
                             )}
 
-                            {/* Timer */}
+                            {/* Total Quiz Timer */}
                             <div
                                 className={`flex items-center px-3 py-1 rounded-full ${
                                     timeRemaining < 300
                                         ? 'bg-red-100 text-red-800'
                                         : 'bg-blue-100 text-blue-800'
                                 }`}
+                                title='Total quiz time remaining'
                             >
                                 <Clock size={14} className='mr-1' />
                                 {formatTime(timeRemaining)}
                             </div>
+
+                            {/* Question Timer */}
+                            {currentQuestion?.timeLimit && (
+                                <div
+                                    className={`flex items-center px-3 py-1 rounded-full ${
+                                        currentQuestionTime < 10
+                                            ? 'bg-red-100 text-red-800 animate-pulse'
+                                            : currentQuestionTime < 20
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-green-100 text-green-800'
+                                    }`}
+                                    title='Current question time remaining'
+                                >
+                                    <Clock size={14} className='mr-1' />
+                                    <span className='font-semibold'>
+                                        {currentQuestionTime}s
+                                    </span>
+                                </div>
+                            )}
 
                             {/* Progress */}
                             <div className='text-sm text-gray-600 dark:text-gray-400'>
@@ -352,6 +424,28 @@ const QuizAttempt = () => {
             <div className='max-w-4xl mx-auto px-4 py-8'>
                 {currentQuestion && (
                     <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
+                        {/* Question Progress Indicator */}
+                        <div className='mb-4 flex items-center justify-between'>
+                            <div className='text-sm font-medium text-gray-600 dark:text-gray-400'>
+                                Question {currentQuestionIndex + 1} of{' '}
+                                {totalQuestions}
+                            </div>
+                            <div className='flex items-center space-x-2'>
+                                <div className='w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2'>
+                                    <div
+                                        className='bg-yellow-500 h-2 rounded-full transition-all duration-300'
+                                        style={{
+                                            width: `${
+                                                ((currentQuestionIndex + 1) /
+                                                    totalQuestions) *
+                                                100
+                                            }%`,
+                                        }}
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className='mb-6'>
                             <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
                                 {currentQuestion.question}
@@ -403,41 +497,7 @@ const QuizAttempt = () => {
                         </div>
 
                         {/* Navigation */}
-                        <div className='flex justify-between items-center'>
-                            <button
-                                onClick={() =>
-                                    setCurrentQuestionIndex((prev) =>
-                                        Math.max(0, prev - 1)
-                                    )
-                                }
-                                disabled={currentQuestionIndex === 0}
-                                className='px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white rounded-lg font-medium'
-                            >
-                                Previous
-                            </button>
-
-                            <div className='flex space-x-2'>
-                                {quiz.questions.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() =>
-                                            setCurrentQuestionIndex(index)
-                                        }
-                                        className={`w-8 h-8 rounded-full text-sm font-medium ${
-                                            index === currentQuestionIndex
-                                                ? 'bg-yellow-500 text-white'
-                                                : answers[
-                                                      quiz.questions[index]._id
-                                                  ] !== undefined
-                                                ? 'bg-green-500 text-white'
-                                                : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                                        }`}
-                                    >
-                                        {index + 1}
-                                    </button>
-                                ))}
-                            </div>
-
+                        <div className='flex justify-end items-center'>
                             {currentQuestionIndex === totalQuestions - 1 ? (
                                 <button
                                     onClick={() => handleSubmit()}
@@ -458,9 +518,9 @@ const QuizAttempt = () => {
                                             )
                                         )
                                     }
-                                    className='px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium'
+                                    className='px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium'
                                 >
-                                    Next
+                                    Next Question
                                 </button>
                             )}
                         </div>

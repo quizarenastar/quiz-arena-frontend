@@ -41,7 +41,7 @@ const ApiUrl = {
             `${BASE_URL}/quizzes/attempts/${attemptId}/submit`,
         MY_ATTEMPTS: `${BASE_URL}/quizzes/attempts/my-attempts`,
         ATTEMPT_DETAILS: (attemptId) =>
-            `${BASE_URL}/quizzes/attempts/${attemptId}`,
+            `${BASE_URL}/quizzes/attempts/${attemptId}/analysis`,
         REPORT_VIOLATION: (attemptId) =>
             `${BASE_URL}/quizzes/attempts/${attemptId}/violation`,
 

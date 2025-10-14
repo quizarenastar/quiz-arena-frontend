@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QuizService from '../service/QuizService';
+import QuizTimingHelper from '../Components/QuizTimingHelper';
 
 const CreateQuiz = () => {
     const navigate = useNavigate();
@@ -108,6 +109,7 @@ const CreateQuiz = () => {
                             q.correctAnswer !== undefined ? q.correctAnswer : 0,
                         explanation: q.explanation || '',
                         points: q.points || 1,
+                        timeLimit: q.timeLimit || 30, // Add timeLimit field
                     };
                 });
 
@@ -207,6 +209,7 @@ const CreateQuiz = () => {
             correctAnswer: 0,
             explanation: '',
             points: 1,
+            timeLimit: 30, // Default 30 seconds per question
         };
         setQuiz((prev) => ({
             ...prev,
@@ -544,7 +547,7 @@ const CreateQuiz = () => {
 
                         <div>
                             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                                Time Limit (minutes)
+                                Total Quiz Time Limit (seconds)
                             </label>
                             <input
                                 type='number'
@@ -556,10 +559,31 @@ const CreateQuiz = () => {
                                     )
                                 }
                                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
-                                min='1'
+                                min='10'
+                                step='10'
                             />
+                            {quiz.timeLimit >= 60 && (
+                                <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+                                    = {Math.floor(quiz.timeLimit / 60)}m{' '}
+                                    {quiz.timeLimit % 60 > 0
+                                        ? `${quiz.timeLimit % 60}s`
+                                        : ''}
+                                </p>
+                            )}
                         </div>
                     </div>
+
+                    {/* Quiz Timing Helper */}
+                    <QuizTimingHelper
+                        questions={quiz.questions}
+                        totalDuration={quiz.timeLimit}
+                        onTotalDurationChange={(newDuration) =>
+                            handleQuizChange('timeLimit', newDuration)
+                        }
+                        onQuestionsUpdate={(updatedQuestions) =>
+                            setQuiz({ ...quiz, questions: updatedQuestions })
+                        }
+                    />
 
                     <div className='mt-4'>
                         <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
@@ -995,23 +1019,45 @@ const CreateQuiz = () => {
                                     />
                                 </div>
 
-                                <div className='w-24'>
-                                    <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-                                        Points
-                                    </label>
-                                    <input
-                                        type='number'
-                                        value={question.points}
-                                        onChange={(e) =>
-                                            updateQuestion(
-                                                questionIndex,
-                                                'points',
-                                                parseInt(e.target.value)
-                                            )
-                                        }
-                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
-                                        min='1'
-                                    />
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                    <div>
+                                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                                            Points
+                                        </label>
+                                        <input
+                                            type='number'
+                                            value={question.points}
+                                            onChange={(e) =>
+                                                updateQuestion(
+                                                    questionIndex,
+                                                    'points',
+                                                    parseInt(e.target.value)
+                                                )
+                                            }
+                                            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
+                                            min='1'
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
+                                            Time Limit (seconds)
+                                        </label>
+                                        <input
+                                            type='number'
+                                            value={question.timeLimit || 30}
+                                            onChange={(e) =>
+                                                updateQuestion(
+                                                    questionIndex,
+                                                    'timeLimit',
+                                                    parseInt(e.target.value)
+                                                )
+                                            }
+                                            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
+                                            min='10'
+                                            placeholder='30'
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1078,7 +1124,8 @@ const CreateQuiz = () => {
                                         </span>
                                         <span className='bg-white/20 px-3 py-1 rounded'>
                                             Difficulty:{' '}
-                                            {quiz.difficulty || 'Not specified'}
+                                            {quiz.difficultyLevel ||
+                                                'Not specified'}
                                         </span>
                                         <span className='bg-white/20 px-3 py-1 rounded'>
                                             Questions: {quiz.questions.length}
