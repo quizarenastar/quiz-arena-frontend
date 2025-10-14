@@ -71,7 +71,7 @@ const QuizDetails = () => {
         return (
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
                 <div className='text-center'>
-                    <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-500 mx-auto'></div>
+                    <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto'></div>
                     <p className='mt-4 text-gray-600 dark:text-gray-400'>
                         Loading quiz details...
                     </p>
@@ -105,7 +105,7 @@ const QuizDetails = () => {
                 </button>
 
                 {/* Quiz Header */}
-                <div className='bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg shadow-lg p-8 mb-6 text-white'>
+                <div className='bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg shadow-lg p-8 mb-6 text-white dark:from-gray-500 dark:to-gray-800'>
                     <div className='flex justify-between items-start mb-4'>
                         <div className='flex-1'>
                             <h1 className='text-3xl font-bold mb-2'>
@@ -193,14 +193,14 @@ const QuizDetails = () => {
                 </div>
 
                 {/* Quiz Details */}
-                <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6'>
+                <div className='bg-blue-50 dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6'>
                     <h2 className='text-xl font-semibold text-gray-900 dark:text-white mb-4'>
                         Quiz Information
                     </h2>
 
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                         <div>
-                            <p className='text-sm text-gray-500 dark:text-gray-400 mb-1'>
+                            <p className='text-sm text-gray-600 dark:text-yellow-100 mb-1'>
                                 Category
                             </p>
                             <span className='inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm'>
@@ -209,7 +209,7 @@ const QuizDetails = () => {
                         </div>
 
                         <div>
-                            <p className='text-sm text-gray-500 dark:text-gray-400 mb-1'>
+                            <p className='text-sm text-gray-600 dark:text-yellow-100 mb-1'>
                                 Difficulty
                             </p>
                             <span
@@ -231,7 +231,7 @@ const QuizDetails = () => {
 
                         {quiz.creator && (
                             <div>
-                                <p className='text-sm text-gray-500 dark:text-gray-400 mb-1'>
+                                <p className='text-sm text-gray-600 dark:text-gray-500 mb-1'>
                                     Created By
                                 </p>
                                 <p className='text-gray-900 dark:text-white'>
@@ -241,7 +241,7 @@ const QuizDetails = () => {
                         )}
 
                         <div>
-                            <p className='text-sm text-gray-500 dark:text-gray-400 mb-1'>
+                            <p className='text-sm text-gray-600 dark:text-yellow-100 mb-1'>
                                 Status
                             </p>
                             <span
@@ -293,7 +293,7 @@ const QuizDetails = () => {
 
                 {/* Questions Preview */}
                 {quiz.questions && quiz.questions.length > 0 && (
-                    <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6'>
+                    <div className='bg-blue-50 dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6'>
                         <h2 className='text-xl font-semibold text-gray-900 dark:text-white mb-4'>
                             Questions Preview
                         </h2>
@@ -311,7 +311,7 @@ const QuizDetails = () => {
                                             <p className='text-gray-900 dark:text-white font-medium mb-2'>
                                                 {q.question || q.text}
                                             </p>
-                                            <div className='flex items-center text-sm text-gray-500 dark:text-gray-400'>
+                                            <div className='flex items-center text-sm text-gray-500 dark:text-yellow-100'>
                                                 <CheckCircle
                                                     size={14}
                                                     className='mr-1'
@@ -323,7 +323,7 @@ const QuizDetails = () => {
                                 </div>
                             ))}
                             {quiz.questions.length > 3 && (
-                                <p className='text-center text-gray-500 dark:text-gray-400 text-sm'>
+                                <p className='text-center text-gray-600 dark:text-yellow-100 text-sm'>
                                     + {quiz.questions.length - 3} more questions
                                 </p>
                             )}
@@ -333,7 +333,7 @@ const QuizDetails = () => {
 
                 {/* Quiz Settings */}
                 {quiz.settings && (
-                    <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6'>
+                    <div className='bg-blue-50 dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6'>
                         <h2 className='text-xl font-semibold text-gray-900 dark:text-white mb-4'>
                             Quiz Settings
                         </h2>
@@ -391,7 +391,7 @@ const QuizDetails = () => {
                     <div className='flex justify-center'>
                         <button
                             onClick={handleStartQuiz}
-                            className='px-8 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-semibold flex items-center text-lg shadow-lg transition-colors'
+                            className='px-8 py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-semibold flex items-center text-lg shadow-lg transition-colors dark:bg-gray-600 dark:hover:bg-blue-400'
                         >
                             <Play size={20} className='mr-2' />
                             Start Quiz
