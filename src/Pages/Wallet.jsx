@@ -131,7 +131,7 @@ const Wallet = () => {
 
     const getTransactionIcon = (type) => {
         switch (type) {
-            case 'fund_addition':
+            case 'payment':
                 return <TrendingUp className='text-green-500' size={16} />;
             case 'quiz_earning':
                 return <TrendingUp className='text-green-500' size={16} />;
@@ -164,13 +164,13 @@ const Wallet = () => {
             <div className='max-w-4xl mx-auto px-4'>
                 {/* Header */}
                 <div className='mb-6'>
-                    <h1 className='text-3xl font-bold text-gray-900 dark:text-white flex items-center'>
+                    <h1 className='text-3xl font-bold text-blue-500 dark:text-white flex items-center'>
                         <CreditCard className='mr-3' size={32} />
                         My Wallet
                     </h1>
                 </div>
                 {/* Wallet Balance Card */}
-                <div className='bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg shadow-lg p-6 mb-6 text-white'>
+                <div className='bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg shadow-lg p-6 mb-6 text-white'>
                     <div className='flex justify-between items-center'>
                         <div>
                             <p className='text-yellow-100 text-sm'>
@@ -198,7 +198,7 @@ const Wallet = () => {
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
                     <button
                         onClick={() => setShowAddFunds(true)}
-                        className='p-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors'
+                        className='p-4 bg-green-600 hover:bg-green-400 text-white rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors'
                     >
                         <Plus size={20} />
                         <span>Add Funds</span>
@@ -207,14 +207,14 @@ const Wallet = () => {
                     <button
                         onClick={() => setShowWithdraw(true)}
                         disabled={!wallet?.balance || wallet.balance < 100}
-                        className='p-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors'
+                        className='p-4 bg-gray-700 hover:bg-gray-500 disabled:bg-gray-400 text-white rounded-lg font-medium flex items-center justify-center space-x-2 transition-colors'
                     >
                         <Minus size={20} />
                         <span>Request Withdrawal</span>
                     </button>
                 </div>
                 {/* Transaction History */}
-                <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm'>
+                <div className='bg-blue-50 dark:bg-gray-800 rounded-lg shadow-sm'>
                     <div className='p-6 border-b border-gray-200 dark:border-gray-700'>
                         <h2 className='text-xl font-semibold text-gray-900 dark:text-white flex items-center'>
                             <History className='mr-2' size={20} />

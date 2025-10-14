@@ -11,8 +11,8 @@ function WithdrawFundsModal({
     setShowWithdraw,
 }) {
     return (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
-            <div className='bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4'>
+        <div className='fixed inset-0 bg-gray-50 dark:bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4'>
+            <div className='bg-blue-50 shadow-2xl dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4'>
                 <h3 className='text-xl font-bold text-gray-900 dark:text-white mb-4'>
                     Request Withdrawal
                 </h3>

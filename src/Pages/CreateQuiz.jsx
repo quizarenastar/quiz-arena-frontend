@@ -1030,7 +1030,7 @@ const CreateQuiz = () => {
                     <button
                         onClick={saveQuiz}
                         disabled={loading}
-                        className='px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-md font-medium flex items-center'
+                        className='px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-md font-medium flex items-center'
                     >
                         <Save size={16} className='mr-2' />
                         {loading
@@ -1042,7 +1042,7 @@ const CreateQuiz = () => {
 
                     <button
                         onClick={previewQuiz}
-                        className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium flex items-center'
+                        className='px-6 py-2 bg-cyan-400 hover:bg-cyan-600 text-white rounded-md font-medium flex items-center'
                     >
                         <Eye size={16} className='mr-2' />
                         Preview
