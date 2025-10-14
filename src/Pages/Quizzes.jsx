@@ -139,7 +139,7 @@ function Quizzes() {
             <div className='max-w-7xl mx-auto px-4 sm:px-6'>
                 <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8'>
                     <div>
-                        <h1 className='text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white'>
+                        <h1 className='text-2xl sm:text-3xl font-bold text-blue-500 dark:text-white'>
                             Available Quizzes
                         </h1>
                         <p className='text-gray-600 dark:text-gray-400 mt-1'>
@@ -176,7 +176,7 @@ function Quizzes() {
                             className='w-full sm:w-40 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                         >
                             <option value=''>All Categories</option>
-                            <option value='technology'>Technology</option>
+                            <option value='technology'>Technology</option>s
                             <option value='science'>Science</option>
                             <option value='history'>History</option>
                             <option value='geography'>Geography</option>

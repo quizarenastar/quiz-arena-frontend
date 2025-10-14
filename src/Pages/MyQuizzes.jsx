@@ -121,7 +121,7 @@ const MyQuizzes = () => {
                     </h1>
                     <Link
                         to='/create-quiz'
-                        className='px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium flex items-center'
+                        className='px-4 py-2 bg-blue-600 hover:bg-blue-400 text-white rounded-lg font-medium flex items-center'
                     >
                         <Plus size={16} className='mr-2' />
                         Create New Quiz
@@ -137,14 +137,14 @@ const MyQuizzes = () => {
                                 onClick={() => setFilter(status)}
                                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                                     filter === status
-                                        ? 'bg-yellow-600 text-white'
+                                        ? 'bg-blue-500 text-white'
                                         : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                 }`}
                             >
                                 {status.charAt(0).toUpperCase() +
                                     status.slice(1)}
                                 {status === 'all' && (
-                                    <span className='ml-1 text-xs bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full'>
+                                    <span className='ml-1 text-xs bg-gray-200 text-black dark:bg-gray-600 px-2 py-1 rounded-full'>
                                         {quizzes.length}
                                     </span>
                                 )}
@@ -184,7 +184,7 @@ const MyQuizzes = () => {
                         {filter === 'all' && (
                             <Link
                                 to='/create-quiz'
-                                className='inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium'
+                                className='inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-medium'
                             >
                                 <Plus size={16} className='mr-2' />
                                 Create Your First Quiz
@@ -270,10 +270,10 @@ const MyQuizzes = () => {
                                         </span>
                                         <span
                                             className={`px-2 py-1 text-xs rounded-full ${
-                                                quiz.difficulty === 'beginner'
+                                                quiz.difficulty === 'easy'
                                                     ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                                                     : quiz.difficulty ===
-                                                      'intermediate'
+                                                      'medium'
                                                     ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
                                                     : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
                                             }`}

@@ -4,31 +4,18 @@ import { Instagram, Linkedin, Youtube, MessageCircle } from 'lucide-react';
 
 function Footer() {
     return (
-        <footer className='relative bg-blue-100 text-gray-900 dark-bg-gray-900 w-full overflow-hidden'>
-            {/* Background Pattern */}
-            <div className='absolute inset-0 opacity-10'>
-                <div className='absolute top-0 left-1/4 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply animate-pulse'></div>
-                {/* <div
-                    className='absolute bottom-0 right-1/4 w-96 h-9 rounded-full mix-blend-multiply filter blur-xl animate-pulse'
-                    style={{ animationDelay: '2s' }}
-                ></div>
-                <div
-                    className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse'
-                    style={{ animationDelay: '4s' }}
-                ></div> */}
-            </div>
-
+        <footer className='relative bg-blue-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-full overflow-hidden'>
             {/* Glassmorphism Container */}
-            <div className='relative backdrop-blur-sm bg-white/5 border-t border-white/10'>
+            <div className='relative backdrop-blur-sm bg-white/5 dark:bg-black/5 border-t border-gray-200 dark:border-gray-800'>
                 <div className='max-w-7xl mx-auto px-6 py-12'>
                     {/* Main Content Grid */}
                     <div className='grid grid-cols-1 md:grid-cols-4 gap-8 mb-8'>
                         {/* Brand Section */}
                         <div className='space-y-4'>
-                            <h3 className='text-2xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 bg-clip-text text-transparent'>
+                            <h3 className='text-2xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 dark:from-blue-400 dark:to-gray-300 bg-clip-text text-transparent'>
                                 Connect with us
                             </h3>
-                            <p className='text-gray-600 text-sm leading-relaxed max-w-xs'>
+                            <p className='text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-xs'>
                                 Join our community of knowledge enthusiasts and
                                 stay updated with the latest quizzes and
                                 learning resources.
@@ -36,19 +23,19 @@ function Footer() {
                             <div className='flex space-x-4'>
                                 <a
                                     href='#'
-                                    className='text-gray-600 hover:text-pink-500 transition-colors'
+                                    className='text-gray-600 dark:text-gray-400 hover:text-pink-500 dark:hover:text-pink-400 transition-colors'
                                 >
                                     <Instagram size={24} />
                                 </a>
                                 <a
                                     href='#'
-                                    className='text-gray-600 hover:text-blue-600 transition-colors'
+                                    className='text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors'
                                 >
                                     <Linkedin size={24} />
                                 </a>
                                 <a
                                     href='#'
-                                    className='text-gray-600 hover:text-red-600 transition-colors'
+                                    className='text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors'
                                 >
                                     <Youtube size={24} />
                                 </a>
@@ -57,14 +44,14 @@ function Footer() {
 
                         {/* Quick Links */}
                         <div>
-                            <h3 className='text-xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 bg-clip-text text-transparent'>
+                            <h3 className='text-xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 dark:from-blue-400 dark:to-gray-300 bg-clip-text text-transparent'>
                                 Quick Links
                             </h3>
                             <ul className='space-y-2'>
                                 <li>
                                     <Link
                                         to='/'
-                                        className='text-gray-600 hover:text-black transition-colors'
+                                        className='text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors'
                                     >
                                         Home
                                     </Link>
@@ -72,7 +59,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/quizzes'
-                                        className='text-gray-600 hover:text-black transition-colors'
+                                        className='text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors'
                                     >
                                         Quizzes
                                     </Link>
@@ -80,7 +67,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/about-us'
-                                        className='text-gray-600 hover:text-black transition-colors'
+                                        className='text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors'
                                     >
                                         About Us
                                     </Link>
@@ -88,7 +75,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/contact-us'
-                                        className='text-gray-600 hover:text-black transition-colors'
+                                        className='text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors'
                                     >
                                         Contact Us
                                     </Link>
@@ -98,14 +85,14 @@ function Footer() {
 
                         {/* Legal */}
                         <div>
-                            <h3 className='text-xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 bg-clip-text text-transparent'>
+                            <h3 className='text-xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 dark:from-blue-400 dark:to-gray-300 bg-clip-text text-transparent'>
                                 Legal
                             </h3>
                             <ul className='space-y-2'>
                                 <li>
                                     <Link
                                         to='/privacy-policy'
-                                        className='text-gray-600 hover:text-black transition-colors'
+                                        className='text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors'
                                     >
                                         Privacy Policy
                                     </Link>
@@ -113,7 +100,7 @@ function Footer() {
                                 <li>
                                     <Link
                                         to='/terms-and-conditions'
-                                        className='text-gray-600 hover:text-black transition-colors'
+                                        className='text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors'
                                     >
                                         Terms & Conditions
                                     </Link>
@@ -123,14 +110,14 @@ function Footer() {
 
                         {/* Contact */}
                         <div>
-                            <h3 className='text-xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 bg-clip-text text-transparent'>
+                            <h3 className='text-xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 dark:from-blue-400 dark:to-gray-300 bg-clip-text text-transparent'>
                                 Contact
                             </h3>
-                            <div className='space-y-2 text-gray-600'>
+                            <div className='space-y-2 text-gray-600 dark:text-gray-400'>
                                 <p>Email: quizarenastar@gmail.com</p>
                                 <Link
                                     to='/contact-us'
-                                    className='inline-flex items-center space-x-2 text-gray-600 hover:text-black transition-colors'
+                                    className='inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors'
                                 >
                                     <MessageCircle size={20} />
                                     <span>Send us a message</span>
@@ -140,7 +127,7 @@ function Footer() {
                     </div>
 
                     {/* Copyright */}
-                    <div className='pt-8 border-t border-white/10 text-center text-gray-600 text-sm'>
+                    <div className='pt-8 border-gray-200 dark:border-gray-800 text-center text-gray-600 dark:text-gray-400 text-sm'>
                         <p>
                             &copy; {new Date().getFullYear()} Quiz Arena. All
                             rights reserved.

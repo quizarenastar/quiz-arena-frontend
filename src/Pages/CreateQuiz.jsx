@@ -376,7 +376,7 @@ const CreateQuiz = () => {
         return (
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
                 <div className='text-center'>
-                    <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-500 mx-auto'></div>
+                    <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto'></div>
                     <p className='mt-4 text-gray-600 dark:text-gray-400'>
                         Loading quiz for editing...
                     </p>
@@ -390,7 +390,7 @@ const CreateQuiz = () => {
             <div className='max-w-4xl mx-auto px-4'>
                 {/* Header */}
                 <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6'>
-                    <h1 className='text-3xl font-bold text-gray-900 dark:text-white mb-4'>
+                    <h1 className='text-3xl font-bold text-blue-600 dark:text-white mb-4'>
                         {isEditMode ? 'Edit Quiz' : 'Create New Quiz'}
                     </h1>
 
@@ -415,7 +415,7 @@ const CreateQuiz = () => {
                                             topic: e.target.value,
                                         }))
                                     }
-                                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                     placeholder='e.g., JavaScript Basics'
                                 />
                             </div>
@@ -435,7 +435,7 @@ const CreateQuiz = () => {
                                             ),
                                         }))
                                     }
-                                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                     min='1'
                                     max='20'
                                 />
@@ -453,7 +453,7 @@ const CreateQuiz = () => {
                                             difficultyLevel: e.target.value,
                                         }))
                                     }
-                                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                    className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                 >
                                     {difficulties.map((diff) => (
                                         <option
@@ -473,7 +473,7 @@ const CreateQuiz = () => {
                                         aiGenerating ||
                                         !aiGeneration.topic.trim()
                                     }
-                                    className='w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-md font-medium transition-colors'
+                                    className='w-full px-4 py-2 bg-blue-500 hover:bg-blue-400 disabled:bg-gray-400 text-black rounded-md font-medium transition-colors'
                                 >
                                     {aiGenerating
                                         ? 'Generating...'
@@ -495,7 +495,7 @@ const CreateQuiz = () => {
                                 onChange={(e) =>
                                     handleQuizChange('title', e.target.value)
                                 }
-                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                 placeholder='Enter quiz title'
                             />
                         </div>
@@ -509,7 +509,7 @@ const CreateQuiz = () => {
                                 onChange={(e) =>
                                     handleQuizChange('category', e.target.value)
                                 }
-                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                             >
                                 <option value=''>Select category</option>
                                 {categories.map((cat) => (
@@ -532,7 +532,7 @@ const CreateQuiz = () => {
                                         e.target.value
                                     )
                                 }
-                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                             >
                                 {difficulties.map((diff) => (
                                     <option key={diff.value} value={diff.value}>
@@ -555,7 +555,7 @@ const CreateQuiz = () => {
                                         parseInt(e.target.value)
                                     )
                                 }
-                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                 min='1'
                             />
                         </div>
@@ -571,7 +571,7 @@ const CreateQuiz = () => {
                                 handleQuizChange('description', e.target.value)
                             }
                             rows={3}
-                            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                            className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                             placeholder='Enter quiz description'
                         />
                     </div>
@@ -635,7 +635,7 @@ const CreateQuiz = () => {
                                                 e.target.value
                                             )
                                         }
-                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                     />
                                     <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
                                         When quiz becomes available
@@ -656,7 +656,7 @@ const CreateQuiz = () => {
                                                 e.target.value
                                             )
                                         }
-                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                     />
                                     <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
                                         When quiz closes
@@ -920,7 +920,7 @@ const CreateQuiz = () => {
                                             )
                                         }
                                         rows={2}
-                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                         placeholder='Enter your question'
                                     />
                                 </div>
@@ -965,7 +965,7 @@ const CreateQuiz = () => {
                                                                 e.target.value
                                                             )
                                                         }
-                                                        className='flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                                        className='flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                                         placeholder={`Option ${
                                                             optionIndex + 1
                                                         }`}
@@ -990,7 +990,7 @@ const CreateQuiz = () => {
                                             )
                                         }
                                         rows={2}
-                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                         placeholder='Explain why this is the correct answer'
                                     />
                                 </div>
@@ -1009,7 +1009,7 @@ const CreateQuiz = () => {
                                                 parseInt(e.target.value)
                                             )
                                         }
-                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white'
+                                        className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                         min='1'
                                     />
                                 </div>
@@ -1030,7 +1030,7 @@ const CreateQuiz = () => {
                     <button
                         onClick={saveQuiz}
                         disabled={loading}
-                        className='px-6 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white rounded-md font-medium flex items-center'
+                        className='px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-md font-medium flex items-center'
                     >
                         <Save size={16} className='mr-2' />
                         {loading
@@ -1042,7 +1042,7 @@ const CreateQuiz = () => {
 
                     <button
                         onClick={previewQuiz}
-                        className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium flex items-center'
+                        className='px-6 py-2 bg-cyan-400 hover:bg-cyan-600 text-white rounded-md font-medium flex items-center'
                     >
                         <Eye size={16} className='mr-2' />
                         Preview
@@ -1062,7 +1062,7 @@ const CreateQuiz = () => {
                 <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
                     <div className='bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col'>
                         {/* Modal Header */}
-                        <div className='bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6'>
+                        <div className='bg-gradient-to-r from-blue-600 to-gray-500 text-white p-6'>
                             <div className='flex justify-between items-start'>
                                 <div>
                                     <h2 className='text-2xl font-bold mb-2'>

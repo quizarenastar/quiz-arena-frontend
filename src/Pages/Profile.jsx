@@ -69,14 +69,14 @@ export default function Profile() {
             );
         const letter = (form.username || 'U').charAt(0).toUpperCase();
         return (
-            <div className='w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center text-3xl font-bold'>
+            <div className='w-24 h-24 rounded-full  bg-blue-500 text-white flex items-center justify-center text-3xl font-bold'>
                 {letter}
             </div>
         );
     };
 
     return (
-        <div className='min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900 p-6'>
+        <div className='min-h-screen bg-gray-50 dark:bg-gray-700 p-6'>
             <div className='max-w-3xl mx-auto'>
                 <div className='backdrop-blur-lg bg-white/70 dark:bg-gray-800/70 rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700/50 overflow-hidden'>
                     <div className='p-8 flex flex-col sm:flex-row items-center gap-6'>
@@ -95,13 +95,13 @@ export default function Profile() {
                                         ₹{user?.wallet?.balance ?? 0}
                                     </span>
                                 </div>
-                                <div className='px-4 py-3 rounded-2xl bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-200 flex items-center gap-2'>
+                                <div className='px-4 py-3 rounded-2xl bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-2'>
                                     <DollarSign size={18} /> Total Earned:{' '}
                                     <span className='font-semibold'>
                                         ₹{user?.wallet?.totalEarned ?? 0}
                                     </span>
                                 </div>
-                                <div className='px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-200 flex items-center gap-2'>
+                                <div className='px-4 py-3 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 flex items-center gap-2'>
                                     <Shield size={18} /> Total Spent:{' '}
                                     <span className='font-semibold'>
                                         ₹{user?.wallet?.totalSpent ?? 0}
@@ -113,7 +113,7 @@ export default function Profile() {
                             {!editing ? (
                                 <button
                                     onClick={() => setEditing(true)}
-                                    className='px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow hover:shadow-md flex items-center gap-2'
+                                    className='px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-gray-500 text-white shadow hover:shadow-md flex items-center gap-2'
                                 >
                                     <Edit2 size={18} /> Edit Profile
                                 </button>
@@ -141,7 +141,7 @@ export default function Profile() {
                                         username: e.target.value,
                                     })
                                 }
-                                className={`w-full px-4 py-3 rounded-2xl bg-white/60 dark:bg-gray-700/50 border ${
+                                className={`w-full px-4 py-3 text-gray-500 dark:text-yellow-100 rounded-2xl bg-white/70 dark:bg-gray-700/50 border ${
                                     editing
                                         ? 'border-blue-300 dark:border-blue-700'
                                         : 'border-gray-200 dark:border-gray-700'
@@ -158,7 +158,7 @@ export default function Profile() {
                                 onChange={(e) =>
                                     setForm({ ...form, email: e.target.value })
                                 }
-                                className={`w-full px-4 py-3 rounded-2xl bg-white/60 dark:bg-gray-700/50 border ${
+                                className={`w-full px-4 py-3 text-gray-500 dark:text-yellow-100 rounded-2xl bg-white/70 dark:bg-gray-700/50 border ${
                                     editing
                                         ? 'border-blue-300 dark:border-blue-700'
                                         : 'border-gray-200 dark:border-gray-700'
@@ -176,7 +176,7 @@ export default function Profile() {
                                 onChange={(e) =>
                                     setForm({ ...form, phone: e.target.value })
                                 }
-                                className={`w-full px-4 py-3 rounded-2xl bg-white/60 dark:bg-gray-700/50 border ${
+                                className={`w-full px-4 py-3  dark:text-yellow-100 rounded-2xl bg-white/70 dark:bg-gray-700/50 border ${
                                     editing
                                         ? 'border-blue-300 dark:border-blue-700'
                                         : 'border-gray-200 dark:border-gray-700'
@@ -200,7 +200,7 @@ export default function Profile() {
                                         password: e.target.value,
                                     })
                                 }
-                                className={`w-full px-4 py-3 rounded-2xl bg-white/60 dark:bg-gray-700/50 border ${
+                                className={`w-full px-4 py-3 dark:text-yellow-100 rounded-2xl bg-white/60 dark:bg-gray-700/50 border ${
                                     editing
                                         ? 'border-blue-300 dark:border-blue-700'
                                         : 'border-gray-200 dark:border-gray-700'
@@ -221,7 +221,7 @@ export default function Profile() {
                                         profilePicture: e.target.value,
                                     })
                                 }
-                                className={`w-full px-4 py-3 rounded-2xl bg-white/60 dark:bg-gray-700/50 border ${
+                                className={`w-full px-4 py-3 dark:text-yellow-100 rounded-2xl bg-white/60 dark:bg-gray-700/50 border ${
                                     editing
                                         ? 'border-blue-300 dark:border-blue-700'
                                         : 'border-gray-200 dark:border-gray-700'
