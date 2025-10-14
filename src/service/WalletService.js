@@ -33,10 +33,10 @@ class WalletService {
         return this.makeRequest(ApiUrl.WALLET.GET_WALLET);
     }
 
-    async addFunds(amount, paymentMethod = 'card') {
+    async addFunds(data) {
         return this.makeRequest(ApiUrl.WALLET.ADD_FUNDS, {
             method: 'POST',
-            body: JSON.stringify({ amount, paymentMethod }),
+            body: JSON.stringify(data),
         });
     }
 
@@ -65,11 +65,12 @@ class WalletService {
 
     getTransactionTypeLabel(type) {
         const labels = {
-            quiz_fee: 'Quiz Fee',
-            quiz_earning: 'Quiz Earning',
-            fund_addition: 'Funds Added',
+            payment: 'Fund Addition',
+            earning: 'Quiz Earning',
             withdrawal: 'Withdrawal',
             refund: 'Refund',
+            bonus: 'Bonus',
+            penalty: 'Penalty',
         };
         return labels[type] || type;
     }
