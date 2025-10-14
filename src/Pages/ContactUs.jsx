@@ -79,26 +79,26 @@ const ContactUs = () => {
         },
     ];
 
-    const socialLinks = [
-        {
-            icon: <Twitter className='w-5 h-5' />,
-            name: 'Twitter',
-            url: '#',
-            color: 'hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900 dark:hover:text-blue-400',
-        },
-        {
-            icon: <Facebook className='w-5 h-5' />,
-            name: 'Facebook',
-            url: '#',
-            color: 'hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900 dark:hover:text-blue-400',
-        },
-        {
-            icon: <Linkedin className='w-5 h-5' />,
-            name: 'LinkedIn',
-            url: '#',
-            color: 'hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900 dark:hover:text-blue-300',
-        },
-    ];
+    // const socialLinks = [
+    //     {
+    //         icon: <Twitter className='w-5 h-5' />,
+    //         name: 'Twitter',
+    //         url: '#',
+    //         color: 'hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900 dark:hover:text-blue-400',
+    //     },
+    //     {
+    //         icon: <Facebook className='w-5 h-5' />,
+    //         name: 'Facebook',
+    //         url: '#',
+    //         color: 'hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900 dark:hover:text-blue-400',
+    //     },
+    //     {
+    //         icon: <Linkedin className='w-5 h-5' />,
+    //         name: 'LinkedIn',
+    //         url: '#',
+    //         color: 'hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900 dark:hover:text-blue-300',
+    //     },
+    // ];
 
     return (
         <div className='min-h-screen bg-blue-50 dark:bg-gray-900 transition-colors duration-300'>
@@ -249,6 +249,7 @@ const ContactUs = () => {
                             <button
                                 type='submit'
                                 disabled={isSubmitting}
+                                onClick={handleSubmit}
                                 className='w-full bg-gradient-to-r from-blue-500 to-gray-400 text-white py-4 px-6 rounded-xl font-semibold hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2'
                             >
                                 {isSubmitting ? (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Clock,
@@ -354,7 +354,7 @@ const QuizAttempt = () => {
                     <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
                         <div className='mb-6'>
                             <h2 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
-                                {currentQuestion.text}
+                                {currentQuestion.question}
                             </h2>
 
                             <div className='space-y-3'>
