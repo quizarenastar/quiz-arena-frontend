@@ -28,6 +28,7 @@ const QuizAttempt = () => {
     const timerRef = useRef(null);
     const questionTimerRef = useRef(null);
     const attemptStartTime = useRef(Date.now());
+    const isInitializedRef = useRef(false);
 
     // Initialize anti-cheat system
     const antiCheat = useAntiCheat(quizId, attempt?._id, {
@@ -41,6 +42,10 @@ const QuizAttempt = () => {
     });
 
     useEffect(() => {
+        // Guard against double execution in React StrictMode
+        if (isInitializedRef.current) return;
+        isInitializedRef.current = true;
+
         startQuizAttempt();
         return () => {
             if (timerRef.current) {
@@ -143,7 +148,7 @@ const QuizAttempt = () => {
             if (quizData.isPaid && quizData.price > 0) {
                 // You might want to check wallet balance here
                 const confirmPayment = window.confirm(
-                    `This quiz costs ₹${quizData.price}. Do you want to proceed?`
+                    `This quiz costs ₹${quizData.price}. Do you want to proceed?`,
                 );
                 if (!confirmPayment) {
                     navigate('/quizzes');
@@ -204,7 +209,7 @@ const QuizAttempt = () => {
         const confirmSubmit =
             isAutoSubmit ||
             window.confirm(
-                'Are you sure you want to submit your quiz? You cannot change your answers after submission.'
+                'Are you sure you want to submit your quiz? You cannot change your answers after submission.',
             );
 
         if (!confirmSubmit && !isAutoSubmit) return;
@@ -217,14 +222,14 @@ const QuizAttempt = () => {
                     selectedOption: answers[questionId],
                 })),
                 timeSpent: Math.round(
-                    (Date.now() - attemptStartTime.current) / 1000
+                    (Date.now() - attemptStartTime.current) / 1000,
                 ),
                 tabSwitches: antiCheat.tabSwitchCount || 0,
             };
 
             const response = await QuizService.submitAttempt(
                 attempt._id,
-                submissionData
+                submissionData,
             );
             const result = response.data;
 
@@ -310,9 +315,9 @@ const QuizAttempt = () => {
                                         antiCheat.violationStats.critical > 0
                                             ? 'bg-red-100 text-red-800'
                                             : antiCheat.violationStats.warning >
-                                              0
-                                            ? 'bg-yellow-100 text-yellow-800'
-                                            : 'bg-green-100 text-green-800'
+                                                0
+                                              ? 'bg-yellow-100 text-yellow-800'
+                                              : 'bg-green-100 text-green-800'
                                     }`}
                                 >
                                     <Shield size={14} className='mr-1' />
@@ -340,8 +345,8 @@ const QuizAttempt = () => {
                                         currentQuestionTime < 10
                                             ? 'bg-red-100 text-red-800 animate-pulse'
                                             : currentQuestionTime < 20
-                                            ? 'bg-yellow-100 text-yellow-800'
-                                            : 'bg-green-100 text-green-800'
+                                              ? 'bg-yellow-100 text-yellow-800'
+                                              : 'bg-green-100 text-green-800'
                                     }`}
                                     title='Current question time remaining'
                                 >
@@ -475,7 +480,7 @@ const QuizAttempt = () => {
                                                 onChange={() =>
                                                     handleAnswerChange(
                                                         currentQuestion._id,
-                                                        index
+                                                        index,
                                                     )
                                                 }
                                                 className='mr-3 text-yellow-500'
@@ -491,7 +496,7 @@ const QuizAttempt = () => {
                                                 />
                                             )}
                                         </label>
-                                    )
+                                    ),
                                 )}
                             </div>
                         </div>
@@ -514,8 +519,8 @@ const QuizAttempt = () => {
                                         setCurrentQuestionIndex((prev) =>
                                             Math.min(
                                                 totalQuestions - 1,
-                                                prev + 1
-                                            )
+                                                prev + 1,
+                                            ),
                                         )
                                     }
                                     className='px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium'
