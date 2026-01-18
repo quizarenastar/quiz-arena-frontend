@@ -44,7 +44,13 @@ function QuizCard({ quiz, getDifficultyColor }) {
                 <div className='grid grid-cols-3 gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4'>
                     <div className='flex items-center gap-1 justify-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50'>
                         <Clock className='w-4 h-4' />
-                        <span>{quiz.duration || quiz.timeLimit || 30}m</span>
+                        <span>
+                            {Math.floor(
+                                (quiz.duration || quiz.timeLimit || 30) / 60,
+                            ) > 0
+                                ? `${Math.floor((quiz.duration || quiz.timeLimit || 30) / 60)}m`
+                                : `${quiz.duration || quiz.timeLimit || 30}s`}
+                        </span>
                     </div>
                     <div className='flex items-center gap-1 justify-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50'>
                         <BookOpen className='w-4 h-4' />

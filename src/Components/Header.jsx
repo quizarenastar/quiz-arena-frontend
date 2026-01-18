@@ -39,6 +39,7 @@ function Header() {
         { to: '/quizzes', label: 'Quizzes' },
         { to: '/create-quiz', label: 'Create Quiz', protected: true },
         { to: '/my-quizzes', label: 'My Quizzes', protected: true },
+        { to: '/my-attempts', label: 'My Attempts', protected: true },
         { to: '/leaderboard', label: 'Leaderboard' },
     ];
 
@@ -173,12 +174,13 @@ function Header() {
                                             className='w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200'
                                             onClick={async () => {
                                                 setProfileDropdown(false);
-                                                const action = await dispatch(
-                                                    logoutThunk()
-                                                );
+                                                const action =
+                                                    await dispatch(
+                                                        logoutThunk(),
+                                                    );
                                                 if (
                                                     logoutThunk.fulfilled.match(
-                                                        action
+                                                        action,
                                                     )
                                                 ) {
                                                     toast.success('Logged out');
@@ -186,7 +188,7 @@ function Header() {
                                                 } else {
                                                     toast.error(
                                                         action.payload ||
-                                                            'Logout failed'
+                                                            'Logout failed',
                                                     );
                                                 }
                                             }}
@@ -295,12 +297,11 @@ function Header() {
                                         className='w-full flex items-center px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200'
                                         onClick={async () => {
                                             setMenuOpen(false);
-                                            const action = await dispatch(
-                                                logoutThunk()
-                                            );
+                                            const action =
+                                                await dispatch(logoutThunk());
                                             if (
                                                 logoutThunk.fulfilled.match(
-                                                    action
+                                                    action,
                                                 )
                                             ) {
                                                 toast.success('Logged out');
@@ -308,7 +309,7 @@ function Header() {
                                             } else {
                                                 toast.error(
                                                     action.payload ||
-                                                        'Logout failed'
+                                                        'Logout failed',
                                                 );
                                             }
                                         }}

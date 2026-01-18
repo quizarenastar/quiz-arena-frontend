@@ -9,7 +9,7 @@ const useAntiCheat = (quizId, attemptId, settings = {}) => {
     const [isFullscreen, setIsFullscreen] = useState(false);
 
     const lastFocusTime = useRef(Date.now());
-    const startTime = useRef(Date.now());
+    // const startTime = useRef(Date.now());
     const violationTimeout = useRef(null);
 
     const {

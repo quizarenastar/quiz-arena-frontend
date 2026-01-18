@@ -11,6 +11,7 @@ import ContactUs from './Pages/ContactUs';
 import NotFound from './Pages/NotFound';
 import CreateQuiz from './Pages/CreateQuiz';
 import MyQuizzes from './Pages/MyQuizzes';
+import MyAttempts from './Pages/MyAttempts';
 import QuizDetails from './Pages/QuizDetails';
 import QuizAttempt from './Pages/QuizAttempt';
 import QuizResult from './Pages/QuizResult';
@@ -49,6 +50,14 @@ export default function RoutesComponent() {
                 element={
                     <ProtectedRoute>
                         <MyQuizzes />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path='/my-attempts'
+                element={
+                    <ProtectedRoute>
+                        <MyAttempts />
                     </ProtectedRoute>
                 }
             />
