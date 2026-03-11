@@ -81,6 +81,12 @@ class QuizService {
     }
 
     // Quiz attempts
+    async registerForQuiz(quizId) {
+        return makeRequest(ApiUrl.QUIZZES.REGISTER_QUIZ(quizId), {
+            method: 'POST',
+        });
+    }
+
     async startAttempt(quizId) {
         return makeRequest(ApiUrl.QUIZZES.START_ATTEMPT(quizId), {
             method: 'POST',

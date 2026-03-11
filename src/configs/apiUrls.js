@@ -36,6 +36,7 @@ const ApiUrl = {
         GENERATE_QUESTIONS_PREVIEW: `${BASE_URL}/quizzes/generate-preview`,
 
         // Quiz attempts
+        REGISTER_QUIZ: (quizId) => `${BASE_URL}/quizzes/${quizId}/register`,
         START_ATTEMPT: (quizId) => `${BASE_URL}/quizzes/${quizId}/start`,
         SUBMIT_ATTEMPT: (attemptId) =>
             `${BASE_URL}/quizzes/attempts/${attemptId}/submit`,

@@ -154,7 +154,7 @@ const CreateQuiz = () => {
 
                 setIsEditMode(true);
                 toast.success(
-                    `Quiz loaded: ${transformedQuestions.length} questions`
+                    `Quiz loaded: ${transformedQuestions.length} questions`,
                 );
             } catch (error) {
                 toast.error(error.message || 'Failed to load quiz');
@@ -221,7 +221,7 @@ const CreateQuiz = () => {
         setQuiz((prev) => ({
             ...prev,
             questions: prev.questions.map((q, i) =>
-                i === index ? { ...q, [field]: value } : q
+                i === index ? { ...q, [field]: value } : q,
             ),
         }));
     };
@@ -234,10 +234,10 @@ const CreateQuiz = () => {
                     ? {
                           ...q,
                           options: q.options.map((opt, j) =>
-                              j === optionIndex ? value : opt
+                              j === optionIndex ? value : opt,
                           ),
                       }
-                    : q
+                    : q,
             ),
         }));
     };
@@ -274,7 +274,7 @@ const CreateQuiz = () => {
                     correctAnswer: q.correctAnswer,
                     explanation: q.explanation || '',
                     points: 1,
-                })
+                }),
             );
 
             // Update form with generated data
@@ -298,7 +298,7 @@ const CreateQuiz = () => {
             }));
 
             toast.success(
-                `✨ Generated ${formattedQuestions.length} questions! Title, description, and category have been auto-filled. You can edit them before saving.`
+                `✨ Generated ${formattedQuestions.length} questions! Title, description, and category have been auto-filled. You can edit them before saving.`,
             );
         } catch (error) {
             toast.error(error.message || 'Failed to generate questions');
@@ -434,7 +434,7 @@ const CreateQuiz = () => {
                                         setAiGeneration((prev) => ({
                                             ...prev,
                                             numberOfQuestions: parseInt(
-                                                e.target.value
+                                                e.target.value,
                                             ),
                                         }))
                                     }
@@ -532,7 +532,7 @@ const CreateQuiz = () => {
                                 onChange={(e) =>
                                     handleQuizChange(
                                         'difficultyLevel',
-                                        e.target.value
+                                        e.target.value,
                                     )
                                 }
                                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
@@ -555,7 +555,7 @@ const CreateQuiz = () => {
                                 onChange={(e) =>
                                     handleQuizChange(
                                         'timeLimit',
-                                        parseInt(e.target.value)
+                                        parseInt(e.target.value),
                                     )
                                 }
                                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
@@ -610,7 +610,7 @@ const CreateQuiz = () => {
                                     onChange={(e) =>
                                         handleQuizChange(
                                             'isPaid',
-                                            e.target.checked
+                                            e.target.checked,
                                         )
                                     }
                                     className='mr-2'
@@ -627,7 +627,7 @@ const CreateQuiz = () => {
                                         onChange={(e) =>
                                             handleQuizChange(
                                                 'price',
-                                                parseFloat(e.target.value)
+                                                parseFloat(e.target.value),
                                             )
                                         }
                                         className='px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md w-24 dark:bg-gray-700 dark:text-white'
@@ -642,13 +642,35 @@ const CreateQuiz = () => {
                             )}
                         </div>
 
-                        {/* Timing for Paid Quizzes */}
-                        {quiz.isPaid && (
-                            <div className='mt-4 grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        {/* Quiz Timing - Available for All Quizzes */}
+                        <div className='mt-6 border-t pt-6'>
+                            <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
+                                Quiz Schedule (Optional)
+                            </h3>
+
+                            {quiz.isPaid && (
+                                <div className='bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg p-3 mb-4'>
+                                    <p className='text-sm text-blue-800 dark:text-blue-200'>
+                                        <strong>Prize Pool System:</strong> Paid
+                                        quizzes require start and end times for
+                                        registration and prize distribution.
+                                        Participants register before start time,
+                                        and prizes are distributed after end
+                                        time.
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                                 <div>
                                     <label className='flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                                         <Calendar size={16} className='mr-2' />
-                                        Start Time (Optional)
+                                        Start Time{' '}
+                                        {quiz.isPaid && (
+                                            <span className='text-red-500 ml-1'>
+                                                *
+                                            </span>
+                                        )}
                                     </label>
                                     <input
                                         type='datetime-local'
@@ -656,20 +678,28 @@ const CreateQuiz = () => {
                                         onChange={(e) =>
                                             handleQuizChange(
                                                 'startTime',
-                                                e.target.value
+                                                e.target.value,
                                             )
                                         }
+                                        required={quiz.isPaid}
                                         className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                     />
                                     <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                                        When quiz becomes available
+                                        {quiz.isPaid
+                                            ? 'Registration closes at this time'
+                                            : 'When quiz becomes available'}
                                     </p>
                                 </div>
 
                                 <div>
                                     <label className='flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
                                         <Calendar size={16} className='mr-2' />
-                                        End Time (Optional)
+                                        End Time{' '}
+                                        {quiz.isPaid && (
+                                            <span className='text-red-500 ml-1'>
+                                                *
+                                            </span>
+                                        )}
                                     </label>
                                     <input
                                         type='datetime-local'
@@ -677,17 +707,31 @@ const CreateQuiz = () => {
                                         onChange={(e) =>
                                             handleQuizChange(
                                                 'endTime',
-                                                e.target.value
+                                                e.target.value,
                                             )
                                         }
+                                        required={quiz.isPaid}
                                         className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
                                     />
                                     <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
-                                        When quiz closes
+                                        {quiz.isPaid
+                                            ? 'Prizes distributed after this time'
+                                            : 'When quiz closes'}
                                     </p>
                                 </div>
                             </div>
-                        )}
+
+                            {quiz.isPaid && (
+                                <div className='bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-300 dark:border-yellow-700 rounded-lg p-3 mt-4'>
+                                    <p className='text-xs text-yellow-800 dark:text-yellow-200'>
+                                        <strong>Note:</strong> Quiz will
+                                        auto-cancel if less than 5 participants
+                                        register by start time (full refunds
+                                        issued).
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Advanced Settings */}
@@ -725,7 +769,7 @@ const CreateQuiz = () => {
                                                 onChange={(e) =>
                                                     handleSettingsChange(
                                                         'shuffleQuestions',
-                                                        e.target.checked
+                                                        e.target.checked,
                                                     )
                                                 }
                                                 className='mr-2'
@@ -744,7 +788,7 @@ const CreateQuiz = () => {
                                                 onChange={(e) =>
                                                     handleSettingsChange(
                                                         'shuffleOptions',
-                                                        e.target.checked
+                                                        e.target.checked,
                                                     )
                                                 }
                                                 className='mr-2'
@@ -764,7 +808,7 @@ const CreateQuiz = () => {
                                                 onChange={(e) =>
                                                     handleSettingsChange(
                                                         'showCorrectAnswers',
-                                                        e.target.checked
+                                                        e.target.checked,
                                                     )
                                                 }
                                                 className='mr-2'
@@ -784,7 +828,7 @@ const CreateQuiz = () => {
                                                 onChange={(e) =>
                                                     handleSettingsChange(
                                                         'allowReview',
-                                                        e.target.checked
+                                                        e.target.checked,
                                                     )
                                                 }
                                                 className='mr-2'
@@ -812,7 +856,7 @@ const CreateQuiz = () => {
                                                 onChange={(e) =>
                                                     handleAntiCheatChange(
                                                         'enabled',
-                                                        e.target.checked
+                                                        e.target.checked,
                                                     )
                                                 }
                                                 className='mr-2'
@@ -835,7 +879,8 @@ const CreateQuiz = () => {
                                                         onChange={(e) =>
                                                             handleAntiCheatChange(
                                                                 'detectTabSwitch',
-                                                                e.target.checked
+                                                                e.target
+                                                                    .checked,
                                                             )
                                                         }
                                                         className='mr-2'
@@ -856,7 +901,8 @@ const CreateQuiz = () => {
                                                         onChange={(e) =>
                                                             handleAntiCheatChange(
                                                                 'detectCopyPaste',
-                                                                e.target.checked
+                                                                e.target
+                                                                    .checked,
                                                             )
                                                         }
                                                         className='mr-2'
@@ -877,7 +923,8 @@ const CreateQuiz = () => {
                                                         onChange={(e) =>
                                                             handleAntiCheatChange(
                                                                 'randomizeQuestions',
-                                                                e.target.checked
+                                                                e.target
+                                                                    .checked,
                                                             )
                                                         }
                                                         className='mr-2'
@@ -940,7 +987,7 @@ const CreateQuiz = () => {
                                             updateQuestion(
                                                 questionIndex,
                                                 'text',
-                                                e.target.value
+                                                e.target.value,
                                             )
                                         }
                                         rows={2}
@@ -974,7 +1021,7 @@ const CreateQuiz = () => {
                                                             updateQuestion(
                                                                 questionIndex,
                                                                 'correctAnswer',
-                                                                optionIndex
+                                                                optionIndex,
                                                             )
                                                         }
                                                         className='mt-2'
@@ -986,7 +1033,7 @@ const CreateQuiz = () => {
                                                             updateQuestionOption(
                                                                 questionIndex,
                                                                 optionIndex,
-                                                                e.target.value
+                                                                e.target.value,
                                                             )
                                                         }
                                                         className='flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
@@ -996,7 +1043,7 @@ const CreateQuiz = () => {
                                                     />
                                                 </div>
                                             </div>
-                                        )
+                                        ),
                                     )}
                                 </div>
 
@@ -1010,7 +1057,7 @@ const CreateQuiz = () => {
                                             updateQuestion(
                                                 questionIndex,
                                                 'explanation',
-                                                e.target.value
+                                                e.target.value,
                                             )
                                         }
                                         rows={2}
@@ -1031,7 +1078,7 @@ const CreateQuiz = () => {
                                                 updateQuestion(
                                                     questionIndex,
                                                     'points',
-                                                    parseInt(e.target.value)
+                                                    parseInt(e.target.value),
                                                 )
                                             }
                                             className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
@@ -1050,7 +1097,7 @@ const CreateQuiz = () => {
                                                 updateQuestion(
                                                     questionIndex,
                                                     'timeLimit',
-                                                    parseInt(e.target.value)
+                                                    parseInt(e.target.value),
                                                 )
                                             }
                                             className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white'
@@ -1082,8 +1129,8 @@ const CreateQuiz = () => {
                         {loading
                             ? 'Saving...'
                             : isEditMode
-                            ? 'Update Quiz'
-                            : 'Save Quiz'}
+                              ? 'Update Quiz'
+                              : 'Save Quiz'}
                     </button>
 
                     <button
@@ -1194,7 +1241,7 @@ const CreateQuiz = () => {
                                                                 <span className='mr-3 text-gray-600 font-semibold'>
                                                                     {String.fromCharCode(
                                                                         65 +
-                                                                            optIndex
+                                                                            optIndex,
                                                                     )}
                                                                     .
                                                                 </span>
@@ -1217,7 +1264,7 @@ const CreateQuiz = () => {
                                                                 )}
                                                             </div>
                                                         </div>
-                                                    )
+                                                    ),
                                                 )}
                                             </div>
 

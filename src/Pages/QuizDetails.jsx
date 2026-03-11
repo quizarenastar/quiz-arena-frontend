@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QuizService from '../service/QuizService';
+import QuizRegistration from '../Components/QuizRegistration';
 
 const QuizDetails = () => {
     const { quizId } = useParams();
@@ -393,13 +394,129 @@ const QuizDetails = () => {
                                 </button>
                             </>
                         ) : (
-                            <button
-                                onClick={handleStartQuiz}
-                                className='px-8 py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-semibold flex items-center text-lg shadow-lg transition-colors dark:bg-gray-600 dark:hover:bg-blue-400'
-                            >
-                                <Play size={20} className='mr-2' />
-                                Start Quiz
-                            </button>
+                            <>
+                                {/* Show registration flow for paid quizzes with start time */}
+                                {quiz.isPaid && quiz.startTime ? (
+                                    <>
+                                        <QuizRegistration
+                                            quiz={quiz}
+                                            onRegistrationComplete={() => {
+                                                // Reload quiz details to get updated participant count
+                                                window.location.reload();
+                                            }}
+                                        />
+
+                                        {/* Show Start Quiz button only if:
+                                            1. User is registered
+                                            2. Quiz has started (startTime passed)
+                                            3. Quiz hasn't been cancelled
+                                        */}
+                                        {(() => {
+                                            const currentUser = JSON.parse(
+                                                localStorage.getItem('user') ||
+                                                    '{}',
+                                            );
+
+                                            // Safer ID comparison
+                                            const isRegistered =
+                                                quiz?.participantManagement?.registeredUsers?.some(
+                                                    (reg) => {
+                                                        let regId =
+                                                            typeof reg.userId ===
+                                                            'object'
+                                                                ? reg.userId
+                                                                      ._id ||
+                                                                  reg.userId
+                                                                : reg.userId;
+                                                        return (
+                                                            String(regId) ===
+                                                            String(
+                                                                currentUser._id,
+                                                            )
+                                                        );
+                                                    },
+                                                );
+
+                                            const now = new Date();
+                                            const startTime = new Date(
+                                                quiz.startTime,
+                                            );
+                                            const hasStarted = now >= startTime;
+                                            const isCancelled =
+                                                quiz?.autoCancel?.isCancelled ||
+                                                quiz.status === 'cancelled';
+
+                                            // If registered, ALWAYS show a button (either valid or waiting)
+                                            if (isRegistered && !isCancelled) {
+                                                if (hasStarted) {
+                                                    return (
+                                                        <button
+                                                            onClick={
+                                                                handleStartQuiz
+                                                            }
+                                                            className='w-full md:w-auto px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold flex items-center justify-center text-lg shadow-lg transition-colors'
+                                                        >
+                                                            <Play
+                                                                size={20}
+                                                                className='mr-2'
+                                                            />
+                                                            Start Quiz Now
+                                                        </button>
+                                                    );
+                                                } else {
+                                                    return (
+                                                        <button
+                                                            disabled
+                                                            className='w-full md:w-auto px-8 py-3 bg-gray-400 cursor-not-allowed text-white rounded-lg font-semibold flex items-center justify-center text-lg shadow-lg'
+                                                        >
+                                                            <Clock
+                                                                size={20}
+                                                                className='mr-2'
+                                                            />
+                                                            Waiting for Start
+                                                            Time...
+                                                        </button>
+                                                    );
+                                                }
+                                            }
+
+                                            // If not registered (and paid quiz), handled by QuizRegistration component
+                                            if (quiz.isPaid && !isRegistered) {
+                                                return null; // QuizRegistration handles the "Register" button
+                                            }
+
+                                            // Fallback for free quizzes or other cases
+                                            if (hasStarted && !isCancelled) {
+                                                return (
+                                                    <button
+                                                        onClick={
+                                                            handleStartQuiz
+                                                        }
+                                                        className='w-full md:w-auto px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold flex items-center justify-center text-lg shadow-lg transition-colors'
+                                                    >
+                                                        <Play
+                                                            size={20}
+                                                            className='mr-2'
+                                                        />
+                                                        Start Quiz
+                                                    </button>
+                                                );
+                                            }
+
+                                            return null;
+                                        })()}
+                                    </>
+                                ) : (
+                                    /* Free quiz or paid quiz without start time - allow immediate start */
+                                    <button
+                                        onClick={handleStartQuiz}
+                                        className='px-8 py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-semibold flex items-center text-lg shadow-lg transition-colors dark:bg-gray-600 dark:hover:bg-blue-400'
+                                    >
+                                        <Play size={20} className='mr-2' />
+                                        Start Quiz
+                                    </button>
+                                )}
+                            </>
                         )}
                     </div>
                 )}
