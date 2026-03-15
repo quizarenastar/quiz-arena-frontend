@@ -52,6 +52,8 @@ const ApiUrl = {
 
         // Leaderboard
         LEADERBOARD: (quizId) => `${BASE_URL}/quizzes/${quizId}/leaderboard`,
+        PUBLIC_LEADERBOARD: (quizId) => `${BASE_URL}/quizzes/public/${quizId}/leaderboard`,
+
     },
 
     WALLET: {

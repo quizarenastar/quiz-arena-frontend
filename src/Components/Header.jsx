@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Moon, Sun, Menu, X, User, LogOut, CreditCard } from 'lucide-react';
+import {
+    Moon,
+    Sun,
+    Menu,
+    X,
+    User,
+    LogOut,
+    CreditCard,
+    BookOpenCheck,
+    BookOpen,
+} from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import QuizArenaLogo from '../assets/namelogo.png';
 import { useDispatch, useSelector } from 'react-redux';
@@ -38,8 +48,7 @@ function Header() {
         { to: '/', label: 'Home' },
         { to: '/quizzes', label: 'Quizzes' },
         { to: '/create-quiz', label: 'Create Quiz', protected: true },
-        { to: '/my-quizzes', label: 'My Quizzes', protected: true },
-        { to: '/my-attempts', label: 'My Attempts', protected: true },
+        // { to: '/war-room', label: 'War Room', protected: true },
         // { to: '/leaderboard', label: 'Leaderboard' },
     ];
 
@@ -157,19 +166,32 @@ function Header() {
                                             />
                                             Wallet
                                         </Link>
-                                        {/* <Link
-                                            to='/settings'
+                                        <Link
+                                            to='/my-quizzes'
                                             className='flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200'
                                             onClick={() =>
                                                 setProfileDropdown(false)
                                             }
                                         >
-                                            <Settings
+                                            <BookOpen
                                                 size={16}
                                                 className='mr-3'
                                             />
-                                            Settings
-                                        </Link> */}
+                                            My Quizzes
+                                        </Link>
+                                        <Link
+                                            to='/my-attempts'
+                                            className='flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200'
+                                            onClick={() =>
+                                                setProfileDropdown(false)
+                                            }
+                                        >
+                                            <BookOpenCheck
+                                                size={16}
+                                                className='mr-3'
+                                            />
+                                            My Attempts
+                                        </Link>
                                         <button
                                             className='w-full flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200'
                                             onClick={async () => {

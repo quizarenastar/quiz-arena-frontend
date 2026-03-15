@@ -130,8 +130,18 @@ class QuizService {
 
     // Leaderboard
     async getLeaderboard(quizId) {
-        return makeRequest(ApiUrl.QUIZZES.LEADERBOARD(quizId));
+        // Try authenticated first, fallback to public
+        try {
+            return await makeRequest(ApiUrl.QUIZZES.LEADERBOARD(quizId));
+        } catch {
+            return makeRequest(ApiUrl.QUIZZES.PUBLIC_LEADERBOARD(quizId));
+        }
     }
+
+    async getPublicLeaderboard(quizId) {
+        return makeRequest(ApiUrl.QUIZZES.PUBLIC_LEADERBOARD(quizId));
+    }
+
 }
 
 export default new QuizService();
