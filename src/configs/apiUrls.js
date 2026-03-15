@@ -36,6 +36,7 @@ const ApiUrl = {
         GENERATE_QUESTIONS_PREVIEW: `${BASE_URL}/quizzes/generate-preview`,
 
         // Quiz attempts
+        REGISTER_QUIZ: (quizId) => `${BASE_URL}/quizzes/${quizId}/register`,
         START_ATTEMPT: (quizId) => `${BASE_URL}/quizzes/${quizId}/start`,
         SUBMIT_ATTEMPT: (attemptId) =>
             `${BASE_URL}/quizzes/attempts/${attemptId}/submit`,
@@ -44,9 +45,15 @@ const ApiUrl = {
             `${BASE_URL}/quizzes/attempts/${attemptId}/analysis`,
         REPORT_VIOLATION: (attemptId) =>
             `${BASE_URL}/quizzes/attempts/${attemptId}/violation`,
+        SUBMIT_SINGLE_ANSWER: (attemptId) =>
+            `${BASE_URL}/quizzes/attempts/${attemptId}/answer`,
+        CURRENT_QUESTION: (attemptId) =>
+            `${BASE_URL}/quizzes/attempts/${attemptId}/current-question`,
 
         // Leaderboard
         LEADERBOARD: (quizId) => `${BASE_URL}/quizzes/${quizId}/leaderboard`,
+        PUBLIC_LEADERBOARD: (quizId) => `${BASE_URL}/quizzes/public/${quizId}/leaderboard`,
+
     },
 
     WALLET: {

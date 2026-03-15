@@ -81,6 +81,12 @@ class QuizService {
     }
 
     // Quiz attempts
+    async registerForQuiz(quizId) {
+        return makeRequest(ApiUrl.QUIZZES.REGISTER_QUIZ(quizId), {
+            method: 'POST',
+        });
+    }
+
     async startAttempt(quizId) {
         return makeRequest(ApiUrl.QUIZZES.START_ATTEMPT(quizId), {
             method: 'POST',
@@ -110,10 +116,32 @@ class QuizService {
         });
     }
 
+    // One-by-one question flow
+    async submitSingleAnswer(attemptId, answerData) {
+        return makeRequest(ApiUrl.QUIZZES.SUBMIT_SINGLE_ANSWER(attemptId), {
+            method: 'POST',
+            body: JSON.stringify(answerData),
+        });
+    }
+
+    async getCurrentQuestion(attemptId) {
+        return makeRequest(ApiUrl.QUIZZES.CURRENT_QUESTION(attemptId));
+    }
+
     // Leaderboard
     async getLeaderboard(quizId) {
-        return makeRequest(ApiUrl.QUIZZES.LEADERBOARD(quizId));
+        // Try authenticated first, fallback to public
+        try {
+            return await makeRequest(ApiUrl.QUIZZES.LEADERBOARD(quizId));
+        } catch {
+            return makeRequest(ApiUrl.QUIZZES.PUBLIC_LEADERBOARD(quizId));
+        }
     }
+
+    async getPublicLeaderboard(quizId) {
+        return makeRequest(ApiUrl.QUIZZES.PUBLIC_LEADERBOARD(quizId));
+    }
+
 }
 
 export default new QuizService();
