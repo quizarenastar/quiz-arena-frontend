@@ -45,6 +45,10 @@ const ApiUrl = {
             `${BASE_URL}/quizzes/attempts/${attemptId}/analysis`,
         REPORT_VIOLATION: (attemptId) =>
             `${BASE_URL}/quizzes/attempts/${attemptId}/violation`,
+        SUBMIT_SINGLE_ANSWER: (attemptId) =>
+            `${BASE_URL}/quizzes/attempts/${attemptId}/answer`,
+        CURRENT_QUESTION: (attemptId) =>
+            `${BASE_URL}/quizzes/attempts/${attemptId}/current-question`,
 
         // Leaderboard
         LEADERBOARD: (quizId) => `${BASE_URL}/quizzes/${quizId}/leaderboard`,

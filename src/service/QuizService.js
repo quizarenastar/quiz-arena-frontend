@@ -116,6 +116,18 @@ class QuizService {
         });
     }
 
+    // One-by-one question flow
+    async submitSingleAnswer(attemptId, answerData) {
+        return makeRequest(ApiUrl.QUIZZES.SUBMIT_SINGLE_ANSWER(attemptId), {
+            method: 'POST',
+            body: JSON.stringify(answerData),
+        });
+    }
+
+    async getCurrentQuestion(attemptId) {
+        return makeRequest(ApiUrl.QUIZZES.CURRENT_QUESTION(attemptId));
+    }
+
     // Leaderboard
     async getLeaderboard(quizId) {
         return makeRequest(ApiUrl.QUIZZES.LEADERBOARD(quizId));

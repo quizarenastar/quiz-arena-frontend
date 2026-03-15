@@ -40,7 +40,7 @@ function Header() {
         { to: '/create-quiz', label: 'Create Quiz', protected: true },
         { to: '/my-quizzes', label: 'My Quizzes', protected: true },
         { to: '/my-attempts', label: 'My Attempts', protected: true },
-        { to: '/leaderboard', label: 'Leaderboard' },
+        // { to: '/leaderboard', label: 'Leaderboard' },
     ];
 
     return (

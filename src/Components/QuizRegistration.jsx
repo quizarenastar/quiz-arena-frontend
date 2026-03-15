@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Clock,
     Users,
@@ -6,12 +7,14 @@ import {
     Calendar,
     CheckCircle,
     Loader,
+    Wallet,
 } from 'lucide-react';
 import QuizService from '../service/QuizService';
 import toast from 'react-hot-toast';
 import PrizePoolDisplay from './PrizePoolDisplay';
 
 const QuizRegistration = ({ quiz, onRegistrationComplete }) => {
+    const navigate = useNavigate();
     const [isRegistered, setIsRegistered] = useState(false);
     const [participantCount, setParticipantCount] = useState(
         quiz?.participantManagement?.participantCount || 0,
@@ -117,7 +120,36 @@ const QuizRegistration = ({ quiz, onRegistrationComplete }) => {
                 }
             }
         } catch (error) {
-            toast.error(error.message || 'Failed to register for quiz');
+            const message = error.message || 'Failed to register for quiz';
+            // Check for insufficient balance
+            if (
+                message.toLowerCase().includes('insufficient') ||
+                message.toLowerCase().includes('balance') ||
+                message.toLowerCase().includes('not enough')
+            ) {
+                toast.error(
+                    (t) => (
+                        <div className='flex flex-col'>
+                            <span>
+                                💰 Insufficient wallet balance. You need ₹
+                                {quiz.price} to register.
+                            </span>
+                            <button
+                                onClick={() => {
+                                    toast.dismiss(t.id);
+                                    navigate('/wallet');
+                                }}
+                                className='mt-2 px-3 py-1 bg-blue-600 text-white rounded text-sm'
+                            >
+                                Go to Wallet →
+                            </button>
+                        </div>
+                    ),
+                    { duration: 6000 },
+                );
+            } else {
+                toast.error(message);
+            }
             console.error('Registration error:', error);
         } finally {
             setRegistering(false);

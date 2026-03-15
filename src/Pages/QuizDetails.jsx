@@ -66,7 +66,16 @@ const QuizDetails = () => {
         fetchQuizDetails();
     }, [quizId, navigate]);
 
-    const handleStartQuiz = () => {
+    const handleStartQuiz = async () => {
+        // Request fullscreen before navigating to attempt page
+        try {
+            if (document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen();
+            }
+        } catch (err) {
+            // If fullscreen fails, still navigate — QuizAttempt page will enforce it
+            console.warn('Fullscreen request failed:', err);
+        }
         navigate(`/quiz/${quizId}/attempt`);
     };
 
