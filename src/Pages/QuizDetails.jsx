@@ -11,6 +11,12 @@ import {
     CheckCircle,
     Play,
     Edit,
+    Zap,
+    BarChart3,
+    Shield,
+    Tag,
+    User,
+    ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QuizService from '../service/QuizService';
@@ -30,7 +36,6 @@ const QuizDetails = () => {
                 setLoading(true);
                 const response = await QuizService.getQuiz(quizId);
 
-                // Merge quiz data with questions from separate array
                 const quizWithQuestions = {
                     ...response.data.quiz,
                     questions:
@@ -41,18 +46,16 @@ const QuizDetails = () => {
 
                 setQuiz(quizWithQuestions);
 
-                // Check if user has already attempted this quiz
                 if (response.data.userAttempt) {
                     setUserAttempt(response.data.userAttempt);
                 }
 
-                // Check if current user is the owner
                 const currentUser = JSON.parse(
                     localStorage.getItem('user') || '{}',
                 );
                 setIsOwner(
-                    response.data.quiz.creator?._id === currentUser._id ||
-                        response.data.quiz.createdBy === currentUser._id,
+                    String(response.data.quiz.creatorId?._id) === String(currentUser._id) ||
+                        String(response.data.quiz.creatorId) === String(currentUser._id),
                 );
             } catch (error) {
                 toast.error(error.message || 'Failed to fetch quiz details');
@@ -67,13 +70,11 @@ const QuizDetails = () => {
     }, [quizId, navigate]);
 
     const handleStartQuiz = async () => {
-        // Request fullscreen before navigating to attempt page
         try {
             if (document.documentElement.requestFullscreen) {
                 await document.documentElement.requestFullscreen();
             }
         } catch (err) {
-            // If fullscreen fails, still navigate — QuizAttempt page will enforce it
             console.warn('Fullscreen request failed:', err);
         }
         navigate(`/quiz/${quizId}/attempt`);
@@ -83,13 +84,81 @@ const QuizDetails = () => {
         navigate(`/create-quiz?edit=${quizId}`);
     };
 
+    const getDifficultyConfig = (diff) => {
+        const d = diff?.toLowerCase() || 'medium';
+        if (d === 'easy')
+            return {
+                label: 'Easy',
+                color: 'text-emerald-600 dark:text-emerald-400',
+                bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+                border: 'border-emerald-200 dark:border-emerald-500/20',
+                dot: 'bg-emerald-500 dark:bg-emerald-400',
+            };
+        if (d === 'hard')
+            return {
+                label: 'Hard',
+                color: 'text-red-600 dark:text-red-400',
+                bg: 'bg-red-50 dark:bg-red-500/10',
+                border: 'border-red-200 dark:border-red-500/20',
+                dot: 'bg-red-500 dark:bg-red-400',
+            };
+        return {
+            label: 'Medium',
+            color: 'text-amber-600 dark:text-amber-400',
+            bg: 'bg-amber-50 dark:bg-amber-500/10',
+            border: 'border-amber-200 dark:border-amber-500/20',
+            dot: 'bg-amber-500 dark:bg-amber-400',
+        };
+    };
+
+    const getStatusConfig = (status) => {
+        const s = status?.toLowerCase() || 'draft';
+        if (s === 'approved')
+            return {
+                label: 'Approved',
+                color: 'text-emerald-700 dark:text-emerald-400',
+                bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+                border: 'border-emerald-200 dark:border-emerald-500/30',
+            };
+        if (s === 'pending')
+            return {
+                label: 'Pending Review',
+                color: 'text-amber-700 dark:text-amber-400',
+                bg: 'bg-amber-50 dark:bg-amber-500/10',
+                border: 'border-amber-200 dark:border-amber-500/30',
+            };
+        if (s === 'rejected')
+            return {
+                label: 'Rejected',
+                color: 'text-red-700 dark:text-red-400',
+                bg: 'bg-red-50 dark:bg-red-500/10',
+                border: 'border-red-200 dark:border-red-500/30',
+            };
+        return {
+            label: 'Draft',
+            color: 'text-gray-600 dark:text-gray-400',
+            bg: 'bg-gray-100 dark:bg-gray-500/10',
+            border: 'border-gray-200 dark:border-gray-500/30',
+        };
+    };
+
+    const formatDuration = (dur) => {
+        const d = dur || 0;
+        if (d >= 60)
+            return `${Math.floor(d / 60)}m ${d % 60 ? (d % 60) + 's' : ''}`.trim();
+        return `${d}s`;
+    };
+
     if (loading) {
         return (
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
+            <div className='min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center'>
                 <div className='text-center'>
-                    <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto'></div>
-                    <p className='mt-4 text-gray-600 dark:text-gray-400'>
-                        Loading quiz details...
+                    <div className='relative w-16 h-16 mx-auto mb-4'>
+                        <div className='absolute inset-0 rounded-full border-2 border-violet-200 dark:border-violet-500/20'></div>
+                        <div className='absolute inset-0 rounded-full border-2 border-transparent border-t-violet-500 animate-spin'></div>
+                    </div>
+                    <p className='text-gray-500 dark:text-gray-500 text-sm'>
+                        Loading quiz...
                     </p>
                 </div>
             </div>
@@ -98,335 +167,364 @@ const QuizDetails = () => {
 
     if (!quiz) {
         return (
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
+            <div className='min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center'>
                 <div className='text-center'>
-                    <p className='text-xl text-gray-600 dark:text-gray-400'>
+                    <p className='text-xl text-gray-500 dark:text-gray-400 mb-4'>
                         Quiz not found
                     </p>
+                    <button
+                        onClick={() => navigate('/quizzes')}
+                        className='px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-medium transition-colors'
+                    >
+                        Back to Quizzes
+                    </button>
                 </div>
             </div>
         );
     }
 
-    return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900 py-8'>
-            <div className='max-w-4xl mx-auto px-4'>
-                {/* Back Button */}
-                <button
-                    onClick={() => navigate(-1)}
-                    className='mb-6 flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                >
-                    <ArrowLeft size={20} className='mr-2' />
-                    Back
-                </button>
+    const diffConfig = getDifficultyConfig(
+        quiz.difficulty || quiz.difficultyLevel,
+    );
+    const statusConfig = getStatusConfig(quiz.status);
+    const duration = quiz.timeLimit || quiz.duration || 0;
 
-                {/* Quiz Header */}
-                <div className='bg-gradient-to-r from-blue-400 to-blue-600 rounded-lg shadow-lg p-8 mb-6 text-white dark:from-gray-500 dark:to-gray-800'>
-                    <div className='flex justify-between items-start mb-4'>
-                        <div className='flex-1'>
-                            <h1 className='text-3xl font-bold mb-2'>
-                                {quiz.title}
-                            </h1>
-                            <p className='text-yellow-100 mb-4'>
-                                {quiz.description || 'No description provided'}
-                            </p>
-                        </div>
+    return (
+        <div className='min-h-screen bg-gray-50 dark:bg-[#0a0a0f] text-gray-900 dark:text-white'>
+            {/* Ambient background glow (dark mode only) */}
+            <div className='fixed inset-0 pointer-events-none hidden dark:block'>
+                <div className='absolute top-0 left-1/4 w-96 h-96 bg-violet-600/8 rounded-full blur-[128px]'></div>
+                <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/6 rounded-full blur-[128px]'></div>
+            </div>
+
+            <div className='relative max-w-3xl mx-auto px-4 py-6'>
+                {/* Top Bar */}
+                <div className='flex items-center justify-between mb-8'>
+                    <button
+                        onClick={() => navigate(-1)}
+                        className='flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group'
+                    >
+                        <ArrowLeft
+                            size={18}
+                            className='group-hover:-translate-x-0.5 transition-transform'
+                        />
+                        <span className='text-sm'>Back</span>
+                    </button>
+
+                    <div className='flex items-center gap-2'>
+                        {/* Status badge */}
+                        <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium border ${statusConfig.bg} ${statusConfig.color} ${statusConfig.border}`}
+                        >
+                            {statusConfig.label}
+                        </span>
+
                         {isOwner && (
                             <button
                                 onClick={handleEdit}
-                                className='ml-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg flex items-center transition-colors'
+                                className='flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all'
                             >
-                                <Edit size={16} className='mr-2' />
+                                <Edit size={14} />
                                 Edit
                             </button>
                         )}
                     </div>
+                </div>
 
-                    {/* Quiz Stats */}
-                    <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-                        <div className='flex items-center'>
-                            <BookOpen size={20} className='mr-2' />
-                            <div>
-                                <p className='text-xs text-yellow-100'>
-                                    Questions
-                                </p>
-                                <p className='text-lg font-semibold'>
-                                    {quiz.questions?.length || 0}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className='flex items-center'>
-                            <Clock size={20} className='mr-2' />
-                            <div>
-                                <p className='text-xs text-yellow-100'>
-                                    Duration
-                                </p>
-                                <p className='text-lg font-semibold'>
-                                    {Math.floor(
-                                        (quiz.timeLimit || quiz.duration || 0) /
-                                            60,
-                                    ) > 0
-                                        ? `${Math.floor((quiz.timeLimit || quiz.duration || 0) / 60)} min`
-                                        : `${quiz.timeLimit || quiz.duration || 0} sec`}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className='flex items-center'>
-                            <Users size={20} className='mr-2' />
-                            <div>
-                                <p className='text-xs text-yellow-100'>
-                                    Attempts
-                                </p>
-                                <p className='text-lg font-semibold'>
-                                    {quiz.attemptCount || 0}
-                                </p>
-                            </div>
-                        </div>
-
+                {/* Hero Section */}
+                <div className='mb-8'>
+                    {/* Tags row */}
+                    <div className='flex flex-wrap items-center gap-2 mb-4'>
+                        {quiz.category && (
+                            <span className='inline-flex items-center gap-1 px-2.5 py-1 bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 rounded-lg text-xs text-violet-700 dark:text-violet-300'>
+                                <Tag size={12} />
+                                {quiz.category}
+                            </span>
+                        )}
+                        <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 ${diffConfig.bg} border ${diffConfig.border} rounded-lg text-xs ${diffConfig.color}`}
+                        >
+                            <span
+                                className={`w-1.5 h-1.5 rounded-full ${diffConfig.dot}`}
+                            ></span>
+                            {diffConfig.label}
+                        </span>
                         {quiz.isPaid ? (
-                            <div className='flex items-center'>
-                                <DollarSign size={20} className='mr-2' />
-                                <div>
-                                    <p className='text-xs text-yellow-100'>
-                                        Price
-                                    </p>
-                                    <p className='text-lg font-semibold'>
-                                        ₹{quiz.price}
-                                    </p>
-                                </div>
-                            </div>
+                            <span className='inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg text-xs text-amber-700 dark:text-amber-300'>
+                                <DollarSign size={12} />₹{quiz.price}
+                            </span>
                         ) : (
-                            <div className='flex items-center'>
-                                <Trophy size={20} className='mr-2' />
-                                <div>
-                                    <p className='text-xs text-yellow-100'>
-                                        Type
-                                    </p>
-                                    <p className='text-lg font-semibold'>
-                                        Free
-                                    </p>
-                                </div>
-                            </div>
+                            <span className='inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg text-xs text-emerald-700 dark:text-emerald-300'>
+                                <Zap size={12} />
+                                Free
+                            </span>
                         )}
+                    </div>
+
+                    {/* Title */}
+                    <h1 className='text-3xl md:text-4xl font-bold mb-3 tracking-tight text-gray-900 dark:text-white'>
+                        {quiz.title}
+                    </h1>
+
+                    {/* Description */}
+                    {quiz.description && (
+                        <p className='text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-2xl'>
+                            {quiz.description}
+                        </p>
+                    )}
+
+                    {/* Creator */}
+                    {quiz.creatorId && (
+                        <div className='flex items-center gap-2 mt-4'>
+                            <div className='w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-white'>
+                                <User size={12} />
+                            </div>
+                            <span className='text-sm text-gray-500 dark:text-gray-400'>
+                                by{' '}
+                                <span className='text-gray-700 dark:text-gray-300'>
+                                    {quiz.creatorId.username || quiz.creatorId.name || quiz.creatorId.email}
+                                </span>
+                            </span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Stats Grid */}
+                <div className='grid grid-cols-2 md:grid-cols-4 gap-3 mb-8'>
+                    <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 hover:shadow-md dark:hover:bg-white/[0.05] transition-all'>
+                        <div className='flex items-center gap-2 mb-2'>
+                            <div className='w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center'>
+                                <BookOpen
+                                    size={16}
+                                    className='text-violet-600 dark:text-violet-400'
+                                />
+                            </div>
+                        </div>
+                        <p className='text-2xl font-bold text-gray-900 dark:text-white'>
+                            {quiz.questions?.length || quiz.totalQuestions || 0}
+                        </p>
+                        <p className='text-xs text-gray-400 dark:text-gray-500 mt-0.5'>
+                            Questions
+                        </p>
+                    </div>
+
+                    <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 hover:shadow-md dark:hover:bg-white/[0.05] transition-all'>
+                        <div className='flex items-center gap-2 mb-2'>
+                            <div className='w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center'>
+                                <Clock
+                                    size={16}
+                                    className='text-blue-600 dark:text-blue-400'
+                                />
+                            </div>
+                        </div>
+                        <p className='text-2xl font-bold text-gray-900 dark:text-white'>
+                            {formatDuration(duration)}
+                        </p>
+                        <p className='text-xs text-gray-400 dark:text-gray-500 mt-0.5'>
+                            Duration
+                        </p>
+                    </div>
+
+                    <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 hover:shadow-md dark:hover:bg-white/[0.05] transition-all'>
+                        <div className='flex items-center gap-2 mb-2'>
+                            <div className='w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center'>
+                                <Users
+                                    size={16}
+                                    className='text-emerald-600 dark:text-emerald-400'
+                                />
+                            </div>
+                        </div>
+                        <p className='text-2xl font-bold text-gray-900 dark:text-white'>
+                            {quiz.attemptCount || 0}
+                        </p>
+                        <p className='text-xs text-gray-400 dark:text-gray-500 mt-0.5'>
+                            Attempts
+                        </p>
+                    </div>
+
+                    <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 hover:shadow-md dark:hover:bg-white/[0.05] transition-all'>
+                        <div className='flex items-center gap-2 mb-2'>
+                            <div className='w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center'>
+                                <BarChart3
+                                    size={16}
+                                    className='text-amber-600 dark:text-amber-400'
+                                />
+                            </div>
+                        </div>
+                        <p className={`text-2xl font-bold ${diffConfig.color}`}>
+                            {diffConfig.label}
+                        </p>
+                        <p className='text-xs text-gray-400 dark:text-gray-500 mt-0.5'>
+                            Difficulty
+                        </p>
                     </div>
                 </div>
 
-                {/* Quiz Details */}
-                <div className='bg-blue-50 dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6'>
-                    <h2 className='text-xl font-semibold text-gray-900 dark:text-white mb-4'>
-                        Quiz Information
-                    </h2>
-
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                        <div>
-                            <p className='text-sm text-gray-600 dark:text-yellow-100 mb-1'>
-                                Category
-                            </p>
-                            <span className='inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm'>
-                                {quiz.category || 'General'}
-                            </span>
-                        </div>
-
-                        <div>
-                            <p className='text-sm text-gray-600 dark:text-yellow-100 mb-1'>
-                                Difficulty
-                            </p>
-                            <span
-                                className={`inline-block px-3 py-1 rounded-full text-sm ${
-                                    quiz.difficultyLevel === 'easy' ||
-                                    quiz.difficulty === 'easy'
-                                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                                        : quiz.difficultyLevel === 'medium' ||
-                                            quiz.difficulty === 'medium'
-                                          ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                                          : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                                }`}
-                            >
-                                {quiz.difficultyLevel ||
-                                    quiz.difficulty ||
-                                    'Medium'}
-                            </span>
-                        </div>
-
-                        {quiz.creator && (
-                            <div>
-                                <p className='text-sm text-gray-600 dark:text-gray-500 mb-1'>
-                                    Created By
-                                </p>
-                                <p className='text-gray-900 dark:text-white'>
-                                    {quiz.creator.name || quiz.creator.email}
-                                </p>
-                            </div>
-                        )}
-
-                        <div>
-                            <p className='text-sm text-gray-600 dark:text-yellow-100 mb-1'>
-                                Status
-                            </p>
-                            <span
-                                className={`inline-block px-3 py-1 rounded-full text-sm ${
-                                    quiz.status === 'approved'
-                                        ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                                        : quiz.status === 'pending'
-                                          ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
-                                          : quiz.status === 'rejected'
-                                            ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                                }`}
-                            >
-                                {quiz.status || 'Draft'}
-                            </span>
-                        </div>
-
-                        {quiz.startTime && (
-                            <div>
-                                <p className='text-sm text-gray-500 dark:text-gray-400 mb-1'>
-                                    <Calendar
-                                        size={14}
-                                        className='inline mr-1'
-                                    />
-                                    Start Time
-                                </p>
-                                <p className='text-gray-900 dark:text-white'>
-                                    {new Date(quiz.startTime).toLocaleString()}
-                                </p>
-                            </div>
-                        )}
-
-                        {quiz.endTime && (
-                            <div>
-                                <p className='text-sm text-gray-500 dark:text-gray-400 mb-1'>
-                                    <Calendar
-                                        size={14}
-                                        className='inline mr-1'
-                                    />
-                                    End Time
-                                </p>
-                                <p className='text-gray-900 dark:text-white'>
-                                    {new Date(quiz.endTime).toLocaleString()}
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Quiz Settings */}
-                {quiz.settings && (
-                    <div className='bg-blue-50 dark:bg-gray-700 rounded-lg shadow-sm p-6 mb-6'>
-                        <h2 className='text-xl font-semibold text-gray-900 dark:text-white mb-4'>
-                            Quiz Settings
-                        </h2>
+                {/* Schedule Section */}
+                {(quiz.startTime || quiz.endTime) && (
+                    <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-5 mb-8'>
+                        <h3 className='text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2'>
+                            <Calendar size={14} />
+                            Schedule
+                        </h3>
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                            {quiz.settings.shuffleQuestions && (
-                                <div className='flex items-center'>
-                                    <CheckCircle
-                                        size={16}
-                                        className='text-green-500 mr-2'
-                                    />
-                                    <span className='text-gray-700 dark:text-gray-300'>
-                                        Questions Shuffled
-                                    </span>
+                            {quiz.startTime && (
+                                <div className='flex items-center gap-3'>
+                                    <div className='w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400'></div>
+                                    <div>
+                                        <p className='text-xs text-gray-400 dark:text-gray-500'>
+                                            Starts
+                                        </p>
+                                        <p className='text-sm text-gray-700 dark:text-gray-200'>
+                                            {new Date(
+                                                quiz.startTime,
+                                            ).toLocaleString()}
+                                        </p>
+                                    </div>
                                 </div>
                             )}
-                            {quiz.settings.shuffleOptions && (
-                                <div className='flex items-center'>
-                                    <CheckCircle
-                                        size={16}
-                                        className='text-green-500 mr-2'
-                                    />
-                                    <span className='text-gray-700 dark:text-gray-300'>
-                                        Options Shuffled
-                                    </span>
-                                </div>
-                            )}
-                            {quiz.settings.showCorrectAnswers && (
-                                <div className='flex items-center'>
-                                    <CheckCircle
-                                        size={16}
-                                        className='text-green-500 mr-2'
-                                    />
-                                    <span className='text-gray-700 dark:text-gray-300'>
-                                        Show Correct Answers
-                                    </span>
-                                </div>
-                            )}
-                            {quiz.settings.allowReview && (
-                                <div className='flex items-center'>
-                                    <CheckCircle
-                                        size={16}
-                                        className='text-green-500 mr-2'
-                                    />
-                                    <span className='text-gray-700 dark:text-gray-300'>
-                                        Review Allowed
-                                    </span>
+                            {quiz.endTime && (
+                                <div className='flex items-center gap-3'>
+                                    <div className='w-2 h-2 rounded-full bg-red-500 dark:bg-red-400'></div>
+                                    <div>
+                                        <p className='text-xs text-gray-400 dark:text-gray-500'>
+                                            Ends
+                                        </p>
+                                        <p className='text-sm text-gray-700 dark:text-gray-200'>
+                                            {new Date(
+                                                quiz.endTime,
+                                            ).toLocaleString()}
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     </div>
                 )}
 
-                {/* Action Button */}
+                {/* Anti-Cheat Notice */}
+                <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-5 mb-8'>
+                    <div className='flex items-start gap-3'>
+                        <div className='w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center flex-shrink-0 mt-0.5'>
+                            <Shield
+                                size={16}
+                                className='text-violet-600 dark:text-violet-400'
+                            />
+                        </div>
+                        <div>
+                            <h3 className='text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1'>
+                                Anti-Cheat Protected
+                            </h3>
+                            <p className='text-xs text-gray-500 dark:text-gray-500 leading-relaxed'>
+                                This quiz runs in fullscreen mode. Tab
+                                switching, copy/paste, and developer tools are
+                                monitored. After 2 warnings, your quiz will be
+                                auto-submitted.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Action Area */}
                 {quiz.status === 'approved' && (
-                    <div className='flex flex-col items-center gap-4'>
+                    <>
                         {userAttempt ? (
-                            <>
-                                {/* Already Attempted Message */}
-                                <div className='bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center max-w-md'>
-                                    <CheckCircle className='w-8 h-8 mx-auto text-green-500 mb-2' />
-                                    <h3 className='text-lg font-semibold text-green-800 dark:text-green-200 mb-1'>
-                                        Quiz Already Completed
+                            /* Already Completed */
+                            <div className='space-y-4'>
+                                <div className='bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl p-6 text-center'>
+                                    <div className='w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center mx-auto mb-3'>
+                                        <CheckCircle
+                                            size={24}
+                                            className='text-emerald-600 dark:text-emerald-400'
+                                        />
+                                    </div>
+                                    <h3 className='text-lg font-semibold text-emerald-800 dark:text-emerald-300 mb-1'>
+                                        Quiz Completed
                                     </h3>
-                                    <p className='text-green-700 dark:text-green-300 text-sm mb-2'>
-                                        You scored {userAttempt.correctAnswers}{' '}
-                                        out of {userAttempt.totalQuestions}{' '}
+                                    <p className='text-sm text-gray-600 dark:text-gray-400 mb-1'>
+                                        You scored{' '}
+                                        <span className='text-gray-900 dark:text-white font-semibold'>
+                                            {userAttempt.correctAnswers}
+                                        </span>{' '}
+                                        out of{' '}
+                                        <span className='text-gray-900 dark:text-white font-semibold'>
+                                            {userAttempt.totalQuestions}
+                                        </span>{' '}
                                         questions
                                     </p>
-                                    <p className='text-green-600 dark:text-green-400 text-xs'>
+                                    <p className='text-xs text-gray-400 dark:text-gray-500'>
                                         Completed on{' '}
                                         {new Date(
                                             userAttempt.createdAt,
                                         ).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <button
-                                    onClick={() =>
-                                        navigate(
-                                            `/quiz/${quizId}/result/${userAttempt._id}`,
-                                        )
-                                    }
-                                    className='px-8 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold flex items-center text-lg shadow-lg transition-colors'
-                                >
-                                    <Trophy size={20} className='mr-2' />
-                                    View Result
-                                </button>
-                            </>
+
+                                <div className='flex gap-3'>
+                                    <button
+                                        onClick={() =>
+                                            navigate(
+                                                `/quiz/${quizId}/result/${userAttempt._id}`,
+                                            )
+                                        }
+                                        className='flex-1 px-6 py-3.5 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-violet-500/20'
+                                    >
+                                        <Trophy size={18} />
+                                        View Result
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            navigate(
+                                                `/quiz/${quizId}/leaderboard`,
+                                            )
+                                        }
+                                        className='px-6 py-3.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all'
+                                    >
+                                        <BarChart3 size={18} />
+                                        Leaderboard
+                                    </button>
+                                </div>
+                            </div>
+                        ) : isOwner ? (
+                            /* Owner View — no participation */
+                            <div className='bg-violet-50 dark:bg-violet-500/5 border border-violet-200 dark:border-violet-500/20 rounded-2xl p-6 text-center'>
+                                <div className='w-12 h-12 rounded-full bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center mx-auto mb-3'>
+                                    <Edit
+                                        size={24}
+                                        className='text-violet-600 dark:text-violet-400'
+                                    />
+                                </div>
+                                <h3 className='text-lg font-semibold text-violet-800 dark:text-violet-300 mb-1'>
+                                    You created this quiz
+                                </h3>
+                                <p className='text-sm text-gray-500 dark:text-gray-400 mb-1'>
+                                    Creators cannot participate in their own quizzes.
+                                </p>
+                                <p className='text-sm text-gray-600 dark:text-gray-300'>
+                                    <span className='font-semibold'>{quiz.attemptCount || 0}</span> attempt{(quiz.attemptCount || 0) !== 1 ? 's' : ''} so far
+                                    {quiz.participantManagement?.participantCount > 0 && (
+                                        <> · <span className='font-semibold'>{quiz.participantManagement.participantCount}</span> registered</>
+                                    )}
+                                </p>
+                            </div>
                         ) : (
                             <>
-                                {/* Show registration flow for paid quizzes with start time */}
+                                {/* Paid quiz with start time — show registration flow */}
                                 {quiz.isPaid && quiz.startTime ? (
                                     <>
                                         <QuizRegistration
                                             quiz={quiz}
                                             onRegistrationComplete={() => {
-                                                // Reload quiz details to get updated participant count
                                                 window.location.reload();
                                             }}
                                         />
 
-                                        {/* Show Start Quiz button only if:
-                                            1. User is registered
-                                            2. Quiz has started (startTime passed)
-                                            3. Quiz hasn't been cancelled
-                                        */}
                                         {(() => {
                                             const currentUser = JSON.parse(
                                                 localStorage.getItem('user') ||
                                                     '{}',
                                             );
 
-                                            // Safer ID comparison
                                             const isRegistered =
                                                 quiz?.participantManagement?.registeredUsers?.some(
                                                     (reg) => {
@@ -455,7 +553,6 @@ const QuizDetails = () => {
                                                 quiz?.autoCancel?.isCancelled ||
                                                 quiz.status === 'cancelled';
 
-                                            // If registered, ALWAYS show a button (either valid or waiting)
                                             if (isRegistered && !isCancelled) {
                                                 if (hasStarted) {
                                                     return (
@@ -463,12 +560,9 @@ const QuizDetails = () => {
                                                             onClick={
                                                                 handleStartQuiz
                                                             }
-                                                            className='w-full md:w-auto px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold flex items-center justify-center text-lg shadow-lg transition-colors'
+                                                            className='w-full mt-4 px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl font-semibold flex items-center justify-center gap-2 text-lg transition-all shadow-lg shadow-emerald-500/20'
                                                         >
-                                                            <Play
-                                                                size={20}
-                                                                className='mr-2'
-                                                            />
+                                                            <Play size={20} />
                                                             Start Quiz Now
                                                         </button>
                                                     );
@@ -476,12 +570,9 @@ const QuizDetails = () => {
                                                     return (
                                                         <button
                                                             disabled
-                                                            className='w-full md:w-auto px-8 py-3 bg-gray-400 cursor-not-allowed text-white rounded-lg font-semibold flex items-center justify-center text-lg shadow-lg'
+                                                            className='w-full mt-4 px-8 py-4 bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 cursor-not-allowed text-gray-400 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg'
                                                         >
-                                                            <Clock
-                                                                size={20}
-                                                                className='mr-2'
-                                                            />
+                                                            <Clock size={20} />
                                                             Waiting for Start
                                                             Time...
                                                         </button>
@@ -489,24 +580,19 @@ const QuizDetails = () => {
                                                 }
                                             }
 
-                                            // If not registered (and paid quiz), handled by QuizRegistration component
                                             if (quiz.isPaid && !isRegistered) {
-                                                return null; // QuizRegistration handles the "Register" button
+                                                return null;
                                             }
 
-                                            // Fallback for free quizzes or other cases
                                             if (hasStarted && !isCancelled) {
                                                 return (
                                                     <button
                                                         onClick={
                                                             handleStartQuiz
                                                         }
-                                                        className='w-full md:w-auto px-8 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold flex items-center justify-center text-lg shadow-lg transition-colors'
+                                                        className='w-full mt-4 px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl font-semibold flex items-center justify-center gap-2 text-lg transition-all shadow-lg shadow-emerald-500/20'
                                                     >
-                                                        <Play
-                                                            size={20}
-                                                            className='mr-2'
-                                                        />
+                                                        <Play size={20} />
                                                         Start Quiz
                                                     </button>
                                                 );
@@ -516,18 +602,25 @@ const QuizDetails = () => {
                                         })()}
                                     </>
                                 ) : (
-                                    /* Free quiz or paid quiz without start time - allow immediate start */
+                                    /* Free quiz or paid quiz without start time — immediate start */
                                     <button
                                         onClick={handleStartQuiz}
-                                        className='px-8 py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-lg font-semibold flex items-center text-lg shadow-lg transition-colors dark:bg-gray-600 dark:hover:bg-blue-400'
+                                        className='w-full px-8 py-4 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white rounded-xl font-bold flex items-center justify-center gap-2.5 text-lg transition-all shadow-lg shadow-violet-500/25 group'
                                     >
-                                        <Play size={20} className='mr-2' />
+                                        <Play
+                                            size={22}
+                                            className='group-hover:scale-110 transition-transform'
+                                        />
                                         Start Quiz
+                                        <ChevronRight
+                                            size={18}
+                                            className='opacity-60 group-hover:translate-x-0.5 transition-transform'
+                                        />
                                     </button>
                                 )}
                             </>
                         )}
-                    </div>
+                    </>
                 )}
             </div>
         </div>

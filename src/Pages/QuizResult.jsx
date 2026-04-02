@@ -4,100 +4,54 @@ import {
     Trophy,
     Clock,
     Target,
-    TrendingUp,
     AlertTriangle,
     CheckCircle,
     XCircle,
-    Brain,
-    Home,
+    ArrowLeft,
+    BarChart3,
+    Shield,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QuizService from '../service/QuizService';
 
 const QuizResult = () => {
     const { quizId, attemptId } = useParams();
-
     const navigate = useNavigate();
 
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [analysis, setAnalysis] = useState(null);
-    const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
     const fetchAttemptDetails = useCallback(async () => {
         try {
             setLoading(true);
             const response = await QuizService.getAttemptDetails(attemptId);
+            const { attempt, detailedAnswers, quiz } = response.data;
 
-            console.log('API Response:', response);
+            const totalQuestions =
+                attempt.totalQuestions ||
+                attempt.answers?.length ||
+                quiz.totalQuestions ||
+                0;
+            const correctAnswers = attempt.correctAnswers || 0;
+            const accuracy =
+                totalQuestions > 0
+                    ? Math.round((correctAnswers / totalQuestions) * 100)
+                    : 0;
 
-            // Backend returns: { attempt, analysis, detailedAnswers, quiz }
-            const { attempt, analysis, detailedAnswers, quiz } = response.data;
-
-            // Transform to expected format
-            const transformedResult = {
+            setResult({
                 _id: attempt._id,
-                score: attempt.score || 0,
-                totalPossibleScore:
-                    attempt.totalPossibleScore ||
-                    (attempt.answers?.length || quiz.totalQuestions || 0) * 10,
-                percentage:
-                    attempt.percentage ||
-                    ((attempt.score || 0) /
-                        (attempt.totalPossibleScore ||
-                            (attempt.answers?.length ||
-                                quiz.totalQuestions ||
-                                0) * 10 ||
-                            100)) *
-                        100,
-                correctAnswers: attempt.correctAnswers || 0,
-                totalQuestions:
-                    attempt.totalQuestions ||
-                    attempt.answers?.length ||
-                    quiz.totalQuestions ||
-                    0,
-                timeTaken: Math.floor((attempt.duration || 0) / 1000), // Convert ms to seconds
-                timeLimit: quiz.duration || 300, // Duration is in seconds in the model
-                accuracy:
-                    attempt.percentage ||
-                    ((attempt.score || 0) /
-                        (attempt.totalPossibleScore ||
-                            (attempt.answers?.length ||
-                                quiz.totalQuestions ||
-                                0) * 10 ||
-                            100)) *
-                        100,
-                quiz: quiz,
+                correctAnswers,
+                totalQuestions,
+                accuracy,
+                timeTaken: Math.floor((attempt.duration || 0) / 1000),
+                timeLimit: quiz.duration || 300,
+                quiz,
                 answers: detailedAnswers || attempt.answers || [],
                 status: attempt.status,
-                violationStats: {
-                    total: attempt.antiCheatViolations?.length || 0,
-                    critical:
-                        attempt.antiCheatViolations?.filter(
-                            (v) => v.severity === 'critical'
-                        ).length || 0,
-                    warning:
-                        attempt.antiCheatViolations?.filter(
-                            (v) => v.severity === 'warning'
-                        ).length || 0,
-                    tabSwitches:
-                        attempt.antiCheatViolations?.filter(
-                            (v) => v.type === 'tab-switch'
-                        ).length || 0,
-                    timeSpentOutside: 0,
-                },
-                aiAnalysis: analysis,
-                rank: null, // Not available yet
-                totalAttempts: null, // Not available yet
-            };
-
-            setResult(transformedResult);
-            if (analysis) {
-                setAnalysis(analysis);
-            }
+                violations: attempt.antiCheatViolations || [],
+            });
         } catch (error) {
             toast.error(error.message || 'Failed to fetch result details');
-            console.error('Fetch Result Error:', error);
             navigate('/quizzes');
         } finally {
             setLoading(false);
@@ -105,175 +59,62 @@ const QuizResult = () => {
     }, [attemptId, navigate]);
 
     useEffect(() => {
-        if (!result) {
-            fetchAttemptDetails();
-        }
+        if (!result) fetchAttemptDetails();
     }, [result, fetchAttemptDetails]);
 
-    const generateAIAnalysis = async () => {
-        if (!result) return;
-
-        setLoadingAnalysis(true);
-        try {
-            // This would call your AI analysis endpoint
-            // For now, we'll create a mock analysis
-            const mockAnalysis = {
-                overallPerformance: getPerformanceLevel(
-                    result.score,
-                    result.totalPossibleScore
-                ),
-                strengths: getStrengths(result),
-                weaknesses: getWeaknesses(result),
-                recommendations: getRecommendations(result),
-                improvementAreas: getImprovementAreas(),
-                timeManagement: getTimeManagementAnalysis(result),
-                difficultyAnalysis: getDifficultyAnalysis(),
-            };
-
-            setAnalysis(mockAnalysis);
-        } catch (error) {
-            toast.error('Failed to generate AI analysis');
-            console.error('AI Analysis Error:', error);
-        } finally {
-            setLoadingAnalysis(false);
-        }
-    };
-
-    // Helper functions for analysis
-    const getPerformanceLevel = (score, total) => {
-        const percentage = (score / total) * 100;
-        if (percentage >= 90) return 'Excellent';
-        if (percentage >= 80) return 'Very Good';
-        if (percentage >= 70) return 'Good';
-        if (percentage >= 60) return 'Average';
-        return 'Needs Improvement';
-    };
-
-    const getStrengths = (result) => {
-        const strengths = [];
-        if (result.accuracy > 0.8)
-            strengths.push('High accuracy in answering questions');
-        if (result.timeTaken < result.timeLimit * 0.8)
-            strengths.push('Excellent time management');
-        if (result.violationStats?.total < 2)
-            strengths.push('Good focus and concentration');
-        return strengths.length
-            ? strengths
-            : ['Completion of the quiz shows dedication'];
-    };
-
-    const getWeaknesses = (result) => {
-        const weaknesses = [];
-        if (result.accuracy < 0.6)
-            weaknesses.push('Low accuracy suggests need for more preparation');
-        if (result.timeTaken > result.timeLimit * 0.9)
-            weaknesses.push('Time management could be improved');
-        if (result.violationStats?.total > 5)
-            weaknesses.push('Focus and concentration need attention');
-        return weaknesses;
-    };
-
-    const getRecommendations = (result) => {
-        const recommendations = [];
-        const accuracy = result.score / result.totalPossibleScore;
-
-        if (accuracy < 0.7) {
-            recommendations.push(
-                'Review the fundamental concepts of this topic'
-            );
-            recommendations.push(
-                'Practice more questions in areas where you scored low'
-            );
-        }
-
-        if (result.timeTaken > result.timeLimit * 0.8) {
-            recommendations.push(
-                'Practice answering questions under time pressure'
-            );
-            recommendations.push(
-                'Learn to quickly eliminate incorrect options'
-            );
-        }
-
-        if (result.violationStats?.tabSwitches > 2) {
-            recommendations.push(
-                'Improve focus by practicing in distraction-free environment'
-            );
-        }
-
-        if (recommendations.length === 0) {
-            recommendations.push('Keep up the excellent work!');
-            recommendations.push(
-                'Try more challenging quizzes to further improve'
-            );
-        }
-
-        return recommendations;
-    };
-
-    const getImprovementAreas = () => {
-        // This would analyze wrong answers by category/difficulty
-        return [
-            'Conceptual understanding',
-            'Application of knowledge',
-            'Time management',
-            'Attention to detail',
-        ];
-    };
-
-    const getTimeManagementAnalysis = (result) => {
-        const timePercentage = (result.timeTaken / result.timeLimit) * 100;
-
-        if (timePercentage < 50) {
-            return 'You completed the quiz very quickly. Consider taking more time to review your answers.';
-        } else if (timePercentage < 80) {
-            return 'Good time management! You used your time efficiently.';
-        } else if (timePercentage < 100) {
-            return 'You used most of the available time. Practice to improve your speed.';
-        } else {
-            return 'You exceeded the time limit. Focus on improving your answering speed.';
-        }
-    };
-
-    const getDifficultyAnalysis = () => {
-        // Mock difficulty analysis
-        return {
-            easy: { attempted: 3, correct: 3, percentage: 100 },
-            medium: { attempted: 4, correct: 2, percentage: 50 },
-            hard: { attempted: 3, correct: 1, percentage: 33 },
-        };
-    };
-
     const formatTime = (seconds) => {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        return `${minutes}m ${remainingSeconds}s`;
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${m}m ${s}s`;
     };
 
-    const getScoreColor = (score, total) => {
-        const percentage = (score / total) * 100;
-        if (percentage >= 80) return 'text-green-600';
-        if (percentage >= 60) return 'text-yellow-600';
-        return 'text-red-600';
-    };
-
-    const getGradeIcon = (score, total) => {
-        const percentage = (score / total) * 100;
-        if (percentage >= 80)
-            return <Trophy className='text-yellow-500' size={48} />;
-        if (percentage >= 60)
-            return <Target className='text-blue-500' size={48} />;
-        return <AlertTriangle className='text-orange-500' size={48} />;
+    const getGrade = (accuracy) => {
+        if (accuracy >= 90)
+            return {
+                label: 'Excellent',
+                emoji: '🏆',
+                color: 'text-emerald-600 dark:text-emerald-400',
+                bg: 'bg-emerald-50 dark:bg-emerald-500/10',
+                border: 'border-emerald-200 dark:border-emerald-500/20',
+                ring: 'stroke-emerald-500',
+            };
+        if (accuracy >= 70)
+            return {
+                label: 'Great Job',
+                emoji: '🌟',
+                color: 'text-blue-600 dark:text-blue-400',
+                bg: 'bg-blue-50 dark:bg-blue-500/10',
+                border: 'border-blue-200 dark:border-blue-500/20',
+                ring: 'stroke-blue-500',
+            };
+        if (accuracy >= 50)
+            return {
+                label: 'Not Bad',
+                emoji: '👍',
+                color: 'text-amber-600 dark:text-amber-400',
+                bg: 'bg-amber-50 dark:bg-amber-500/10',
+                border: 'border-amber-200 dark:border-amber-500/20',
+                ring: 'stroke-amber-500',
+            };
+        return {
+            label: 'Keep Trying',
+            emoji: '💪',
+            color: 'text-red-500 dark:text-red-400',
+            bg: 'bg-red-50 dark:bg-red-500/10',
+            border: 'border-red-200 dark:border-red-500/20',
+            ring: 'stroke-red-500',
+        };
     };
 
     if (loading) {
         return (
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
+            <div className='min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center'>
                 <div className='text-center'>
-                    <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-500 mx-auto'></div>
-                    <p className='mt-4 text-gray-600 dark:text-gray-400'>
-                        Loading results...
-                    </p>
+                    <div className='relative w-16 h-16 mx-auto mb-4'>
+                        <div className='absolute inset-0 rounded-full border-2 border-violet-200 dark:border-violet-500/20'></div>
+                        <div className='absolute inset-0 rounded-full border-2 border-transparent border-t-violet-500 animate-spin'></div>
+                    </div>
+                    <p className='text-gray-500 text-sm'>Loading results...</p>
                 </div>
             </div>
         );
@@ -281,14 +122,14 @@ const QuizResult = () => {
 
     if (!result) {
         return (
-            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
+            <div className='min-h-screen bg-gray-50 dark:bg-[#0a0a0f] flex items-center justify-center'>
                 <div className='text-center'>
-                    <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-4'>
+                    <p className='text-xl text-gray-500 dark:text-gray-400 mb-4'>
                         Result not found
-                    </h2>
+                    </p>
                     <button
                         onClick={() => navigate('/quizzes')}
-                        className='px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg'
+                        className='px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-medium transition-colors'
                     >
                         Back to Quizzes
                     </button>
@@ -297,366 +138,274 @@ const QuizResult = () => {
         );
     }
 
-    const accuracy = (result.score / result.totalPossibleScore) * 100;
+    const grade = getGrade(result.accuracy);
+    const circumference = 2 * Math.PI * 54;
+    const dashOffset = circumference - (result.accuracy / 100) * circumference;
 
     return (
-        <div className='min-h-screen bg-gray-50 dark:bg-gray-900 py-8'>
-            <div className='max-w-4xl mx-auto px-4'>
-                {/* Header */}
+        <div className='min-h-screen bg-gray-50 dark:bg-[#0a0a0f] text-gray-900 dark:text-white'>
+            {/* Ambient glow (dark mode) */}
+            <div className='fixed inset-0 pointer-events-none hidden dark:block'>
+                <div className='absolute top-0 left-1/4 w-96 h-96 bg-violet-600/8 rounded-full blur-[128px]'></div>
+                <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/6 rounded-full blur-[128px]'></div>
+            </div>
+
+            <div className='relative max-w-2xl mx-auto px-4 py-6'>
+                {/* Back */}
+                <button
+                    onClick={() => navigate(`/quiz/${quizId}`)}
+                    className='flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group mb-8'
+                >
+                    <ArrowLeft
+                        size={18}
+                        className='group-hover:-translate-x-0.5 transition-transform'
+                    />
+                    <span className='text-sm'>Back to Quiz</span>
+                </button>
+
+                {/* Hero — Score Circle */}
                 <div className='text-center mb-8'>
-                    <div className='mb-4'>
-                        {getGradeIcon(result.score, result.totalPossibleScore)}
+                    <div className='relative w-36 h-36 mx-auto mb-5'>
+                        <svg
+                            className='w-full h-full -rotate-90'
+                            viewBox='0 0 120 120'
+                        >
+                            <circle
+                                cx='60'
+                                cy='60'
+                                r='54'
+                                fill='none'
+                                strokeWidth='8'
+                                className='stroke-gray-200 dark:stroke-white/[0.06]'
+                            />
+                            <circle
+                                cx='60'
+                                cy='60'
+                                r='54'
+                                fill='none'
+                                strokeWidth='8'
+                                strokeLinecap='round'
+                                className={grade.ring}
+                                strokeDasharray={circumference}
+                                strokeDashoffset={dashOffset}
+                                style={{
+                                    transition: 'stroke-dashoffset 1s ease-out',
+                                }}
+                            />
+                        </svg>
+                        <div className='absolute inset-0 flex flex-col items-center justify-center'>
+                            <span className='text-3xl font-bold'>
+                                {result.accuracy}%
+                            </span>
+                            <span className='text-xs text-gray-400 dark:text-gray-500'>
+                                Accuracy
+                            </span>
+                        </div>
                     </div>
-                    <h1 className='text-3xl font-bold text-gray-900 dark:text-white mb-2'>
-                        Quiz Completed!
+
+                    <div className='text-3xl mb-1'>{grade.emoji}</div>
+                    <h1 className={`text-2xl font-bold ${grade.color} mb-1`}>
+                        {grade.label}
                     </h1>
-                    <p className='text-gray-600 dark:text-gray-400'>
+                    <p className='text-sm text-gray-500 dark:text-gray-400'>
                         {result.quiz?.title || 'Quiz Result'}
                     </p>
+                    {result.status === 'auto-submitted' && (
+                        <span className='inline-flex items-center gap-1 mt-2 px-2.5 py-1 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg text-xs text-amber-700 dark:text-amber-300'>
+                            <AlertTriangle size={12} />
+                            Auto-submitted
+                        </span>
+                    )}
                 </div>
 
-                {/* Score Overview */}
-                <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6'>
-                    <div className='grid grid-cols-1 md:grid-cols-4 gap-6'>
-                        <div className='text-center'>
-                            <p className='text-sm text-gray-600 dark:text-gray-400 mb-1'>
-                                Final Score
-                            </p>
-                            <p
-                                className={`text-3xl font-bold ${getScoreColor(
-                                    result.score,
-                                    result.totalPossibleScore
-                                )}`}
-                            >
-                                {result.score}/{result.totalPossibleScore}
-                            </p>
-                            <p className='text-sm text-gray-500 dark:text-gray-400'>
-                                {accuracy.toFixed(1)}%
-                            </p>
+                {/* Stats Row */}
+                <div className='grid grid-cols-3 gap-3 mb-6'>
+                    <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 text-center'>
+                        <div className='w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mx-auto mb-2'>
+                            <CheckCircle
+                                size={16}
+                                className='text-emerald-600 dark:text-emerald-400'
+                            />
                         </div>
+                        <p className='text-xl font-bold'>
+                            {result.correctAnswers}
+                            <span className='text-sm font-normal text-gray-400'>
+                                /{result.totalQuestions}
+                            </span>
+                        </p>
+                        <p className='text-xs text-gray-400 dark:text-gray-500 mt-0.5'>
+                            Correct
+                        </p>
+                    </div>
 
-                        <div className='text-center'>
-                            <p className='text-sm text-gray-600 dark:text-gray-400 mb-1'>
-                                Time Taken
-                            </p>
-                            <p className='text-2xl font-semibold text-gray-900 dark:text-white flex items-center justify-center'>
-                                <Clock size={20} className='mr-1' />
-                                {formatTime(result.timeTaken)}
-                            </p>
-                            <p className='text-sm text-gray-500 dark:text-gray-400'>
-                                of {formatTime(result.timeLimit)} limit
-                            </p>
+                    <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 text-center'>
+                        <div className='w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center mx-auto mb-2'>
+                            <Clock
+                                size={16}
+                                className='text-blue-600 dark:text-blue-400'
+                            />
                         </div>
+                        <p className='text-xl font-bold'>
+                            {formatTime(result.timeTaken)}
+                        </p>
+                        <p className='text-xs text-gray-400 dark:text-gray-500 mt-0.5'>
+                            Time Taken
+                        </p>
+                    </div>
 
-                        <div className='text-center'>
-                            <p className='text-sm text-gray-600 dark:text-gray-400 mb-1'>
-                                Accuracy
-                            </p>
-                            <p className='text-2xl font-semibold text-gray-900 dark:text-white flex items-center justify-center'>
-                                <Target size={20} className='mr-1' />
-                                {accuracy.toFixed(1)}%
-                            </p>
-                            <p className='text-sm text-gray-500 dark:text-gray-400'>
-                                {result.correctAnswers ||
-                                    Math.round(result.score)}{' '}
-                                correct
-                            </p>
+                    <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4 text-center'>
+                        <div className='w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center mx-auto mb-2'>
+                            <XCircle
+                                size={16}
+                                className='text-red-500 dark:text-red-400'
+                            />
                         </div>
-
-                        <div className='text-center'>
-                            <p className='text-sm text-gray-600 dark:text-gray-400 mb-1'>
-                                Rank
-                            </p>
-                            <p className='text-2xl font-semibold text-gray-900 dark:text-white flex items-center justify-center'>
-                                <TrendingUp size={20} className='mr-1' />#
-                                {result.rank || 'N/A'}
-                            </p>
-                            <p className='text-sm text-gray-500 dark:text-gray-400'>
-                                out of {result.totalAttempts || 'N/A'}
-                            </p>
-                        </div>
+                        <p className='text-xl font-bold'>
+                            {result.totalQuestions - result.correctAnswers}
+                        </p>
+                        <p className='text-xs text-gray-400 dark:text-gray-500 mt-0.5'>
+                            Wrong
+                        </p>
                     </div>
                 </div>
 
-                {/* Anti-cheat Report */}
-                {result.violationStats && result.violationStats.total > 0 && (
-                    <div className='bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800 p-6 mb-6'>
-                        <h3 className='text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-4 flex items-center'>
-                            <AlertTriangle size={20} className='mr-2' />
-                            Anti-cheat Report
-                        </h3>
-                        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 text-sm'>
-                            <div>
-                                <p className='text-yellow-700 dark:text-yellow-300'>
-                                    Total Violations
-                                </p>
-                                <p className='font-semibold'>
-                                    {result.violationStats.total}
-                                </p>
-                            </div>
-                            <div>
-                                <p className='text-yellow-700 dark:text-yellow-300'>
-                                    Tab Switches
-                                </p>
-                                <p className='font-semibold'>
-                                    {result.violationStats.tabSwitches || 0}
-                                </p>
-                            </div>
-                            <div>
-                                <p className='text-yellow-700 dark:text-yellow-300'>
-                                    Time Outside
-                                </p>
-                                <p className='font-semibold'>
-                                    {result.violationStats.timeSpentOutside ||
-                                        0}
-                                    s
-                                </p>
-                            </div>
+                {/* Violations */}
+                {result.violations.length > 0 && (
+                    <div className='bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-4 mb-6'>
+                        <div className='flex items-center gap-2 mb-2'>
+                            <Shield
+                                size={16}
+                                className='text-amber-600 dark:text-amber-400'
+                            />
+                            <span className='text-sm font-semibold text-amber-800 dark:text-amber-300'>
+                                Anti-Cheat Report
+                            </span>
                         </div>
+                        <p className='text-xs text-gray-600 dark:text-gray-400'>
+                            <span className='font-semibold'>
+                                {result.violations.length}
+                            </span>{' '}
+                            violation
+                            {result.violations.length !== 1 ? 's' : ''}{' '}
+                            detected during this attempt.
+                        </p>
                     </div>
                 )}
 
-                {/* Question-by-Question Breakdown */}
-                {result.questionBreakdown && (
-                    <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6'>
-                        <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-4'>
+                {/* Answer Breakdown */}
+                {result.answers && result.answers.length > 0 && (
+                    <div className='mb-6'>
+                        <h3 className='text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3'>
                             Question Breakdown
                         </h3>
-                        <div className='space-y-4'>
-                            {result.questionBreakdown.map((question, index) => (
-                                <div
-                                    key={index}
-                                    className='border border-gray-200 dark:border-gray-600 rounded-lg p-4'
-                                >
-                                    <div className='flex items-start justify-between'>
-                                        <div className='flex-1'>
-                                            <p className='font-medium text-gray-900 dark:text-white mb-2'>
-                                                Question {index + 1}:{' '}
-                                                {question.text}
-                                            </p>
-                                            <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
-                                                <div>
-                                                    <p className='text-gray-600 dark:text-gray-400'>
-                                                        Your Answer:
-                                                    </p>
-                                                    <p
-                                                        className={`font-medium ${
-                                                            question.isCorrect
-                                                                ? 'text-green-600'
-                                                                : 'text-red-600'
-                                                        }`}
-                                                    >
-                                                        {question.userAnswer ||
-                                                            'Not answered'}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <p className='text-gray-600 dark:text-gray-400'>
-                                                        Correct Answer:
-                                                    </p>
-                                                    <p className='font-medium text-green-600'>
-                                                        {question.correctAnswer}
-                                                    </p>
-                                                </div>
+                        <div className='space-y-2'>
+                            {result.answers.map((answer, i) => {
+                                const isCorrect = answer.isCorrect;
+                                const questionText =
+                                    answer.question || `Question ${i + 1}`;
+                                const options = answer.options;
+
+                                return (
+                                    <div
+                                        key={i}
+                                        className={`bg-white dark:bg-white/[0.03] border rounded-2xl overflow-hidden ${
+                                            isCorrect
+                                                ? 'border-emerald-200 dark:border-emerald-500/20'
+                                                : 'border-red-200 dark:border-red-500/20'
+                                        }`}
+                                    >
+                                        <div className='flex items-center gap-3 px-4 py-3'>
+                                            <span
+                                                className={`w-6 h-6 flex-shrink-0 rounded-full flex items-center justify-center ${
+                                                    isCorrect
+                                                        ? 'bg-emerald-100 dark:bg-emerald-500/10'
+                                                        : 'bg-red-100 dark:bg-red-500/10'
+                                                }`}
+                                            >
+                                                {isCorrect ? (
+                                                    <CheckCircle
+                                                        size={14}
+                                                        className='text-emerald-600 dark:text-emerald-400'
+                                                    />
+                                                ) : (
+                                                    <XCircle
+                                                        size={14}
+                                                        className='text-red-500 dark:text-red-400'
+                                                    />
+                                                )}
+                                            </span>
+                                            <div className='flex-1 min-w-0'>
+                                                <p className='text-sm font-medium text-gray-800 dark:text-gray-200 truncate'>
+                                                    {questionText}
+                                                </p>
+                                                {options && !isCorrect && (
+                                                    <div className='flex flex-wrap gap-x-4 mt-1 text-xs'>
+                                                        <span className='text-red-500'>
+                                                            Yours:{' '}
+                                                            {answer.selectedAnswer !==
+                                                                null &&
+                                                            answer.selectedAnswer !==
+                                                                undefined
+                                                                ? options[
+                                                                      answer.selectedAnswer
+                                                                  ] || 'N/A'
+                                                                : 'Skipped'}
+                                                        </span>
+                                                        <span className='text-emerald-600 dark:text-emerald-400'>
+                                                            Correct:{' '}
+                                                            {options[
+                                                                answer.correctAnswer
+                                                            ] || 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
-                                            {question.explanation && (
-                                                <div className='mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg'>
-                                                    <p className='text-sm text-blue-800 dark:text-blue-200'>
-                                                        <strong>
-                                                            Explanation:
-                                                        </strong>{' '}
-                                                        {question.explanation}
-                                                    </p>
-                                                </div>
-                                            )}
+                                            <span
+                                                className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                                                    isCorrect
+                                                        ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                                                        : 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400'
+                                                }`}
+                                            >
+                                                {isCorrect ? '+1' : '0'}
+                                            </span>
                                         </div>
-                                        <div className='ml-4'>
-                                            {question.isCorrect ? (
-                                                <CheckCircle
-                                                    className='text-green-500'
-                                                    size={24}
-                                                />
-                                            ) : (
-                                                <XCircle
-                                                    className='text-red-500'
-                                                    size={24}
-                                                />
-                                            )}
-                                        </div>
+
+                                        {/* Explanation */}
+                                        {answer.explanation && (
+                                            <div className='px-4 pb-3'>
+                                                <p className='text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-white/[0.02] rounded-lg p-2.5'>
+                                                    <span className='font-semibold'>
+                                                        Explanation:
+                                                    </span>{' '}
+                                                    {answer.explanation}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
 
-                {/* AI Analysis Section */}
-                <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6'>
-                    <div className='flex items-center justify-between mb-4'>
-                        <h3 className='text-lg font-semibold text-gray-900 dark:text-white flex items-center'>
-                            <Brain className='mr-2' size={20} />
-                            AI Performance Analysis
-                        </h3>
-
-                        {!analysis && (
-                            <button
-                                onClick={generateAIAnalysis}
-                                disabled={loadingAnalysis}
-                                className='px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg font-medium'
-                            >
-                                {loadingAnalysis
-                                    ? 'Analyzing...'
-                                    : 'Generate Analysis'}
-                            </button>
-                        )}
-                    </div>
-
-                    {analysis ? (
-                        <div className='space-y-6'>
-                            {/* Overall Performance */}
-                            <div>
-                                <h4 className='font-medium text-gray-900 dark:text-white mb-2'>
-                                    Overall Performance
-                                </h4>
-                                <p className='text-gray-600 dark:text-gray-400'>
-                                    Your performance is rated as{' '}
-                                    <strong>
-                                        {analysis.overallPerformance}
-                                    </strong>{' '}
-                                    based on your score, time management, and
-                                    focus during the quiz.
-                                </p>
-                            </div>
-
-                            {/* Strengths */}
-                            <div>
-                                <h4 className='font-medium text-gray-900 dark:text-white mb-2'>
-                                    Strengths
-                                </h4>
-                                <ul className='space-y-1'>
-                                    {analysis.strengths.map(
-                                        (strength, index) => (
-                                            <li
-                                                key={index}
-                                                className='flex items-start text-green-600'
-                                            >
-                                                <CheckCircle
-                                                    size={16}
-                                                    className='mr-2 mt-0.5 flex-shrink-0'
-                                                />
-                                                <span className='text-gray-600 dark:text-gray-400'>
-                                                    {strength}
-                                                </span>
-                                            </li>
-                                        )
-                                    )}
-                                </ul>
-                            </div>
-
-                            {/* Areas for Improvement */}
-                            {analysis.weaknesses.length > 0 && (
-                                <div>
-                                    <h4 className='font-medium text-gray-900 dark:text-white mb-2'>
-                                        Areas for Improvement
-                                    </h4>
-                                    <ul className='space-y-1'>
-                                        {analysis.weaknesses.map(
-                                            (weakness, index) => (
-                                                <li
-                                                    key={index}
-                                                    className='flex items-start text-orange-600'
-                                                >
-                                                    <AlertTriangle
-                                                        size={16}
-                                                        className='mr-2 mt-0.5 flex-shrink-0'
-                                                    />
-                                                    <span className='text-gray-600 dark:text-gray-400'>
-                                                        {weakness}
-                                                    </span>
-                                                </li>
-                                            )
-                                        )}
-                                    </ul>
-                                </div>
-                            )}
-
-                            {/* Recommendations */}
-                            <div>
-                                <h4 className='font-medium text-gray-900 dark:text-white mb-2'>
-                                    Recommendations
-                                </h4>
-                                <ul className='space-y-1'>
-                                    {analysis.studyRecommendations.map(
-                                        (recommendation, index) => (
-                                            <li
-                                                key={index}
-                                                className='flex items-start text-blue-600'
-                                            >
-                                                <TrendingUp
-                                                    size={16}
-                                                    className='mr-2 mt-0.5 flex-shrink-0'
-                                                />
-                                                <span className='text-gray-600 dark:text-gray-400'>
-                                                    {recommendation}
-                                                </span>
-                                            </li>
-                                        )
-                                    )}
-                                </ul>
-                            </div>
-
-                            {/* Time Management Analysis */}
-                            <div>
-                                <h4 className='font-medium text-gray-900 dark:text-white mb-2'>
-                                    Time Management
-                                </h4>
-                                <p className='text-gray-600 dark:text-gray-400'>
-                                    {analysis.timeManagement}
-                                </p>
-                            </div>
-                        </div>
-                    ) : (
-                        !loadingAnalysis && (
-                            <p className='text-gray-600 dark:text-gray-400 text-center py-8'>
-                                Click "Generate Analysis" to get personalized
-                                insights about your performance.
-                            </p>
-                        )
-                    )}
-
-                    {loadingAnalysis && (
-                        <div className='text-center py-8'>
-                            <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-4'></div>
-                            <p className='text-gray-600 dark:text-gray-400'>
-                                Analyzing your performance...
-                            </p>
-                        </div>
-                    )}
-                </div>
-
                 {/* Action Buttons */}
-                <div className='flex flex-wrap gap-4 justify-center'>
+                <div className='flex gap-3'>
                     <button
-                        onClick={() => navigate('/')}
-                        className='px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium flex items-center'
+                        onClick={() =>
+                            navigate(`/quiz/${quizId}/leaderboard`)
+                        }
+                        className='flex-1 px-6 py-3.5 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-violet-500/20'
                     >
-                        <Home size={16} className='mr-2' />
-                        Home
+                        <BarChart3 size={18} />
+                        Leaderboard
                     </button>
-
                     <button
                         onClick={() => navigate('/quizzes')}
-                        className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium'
+                        className='flex-1 px-6 py-3.5 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all'
                     >
+                        <Target size={18} />
                         More Quizzes
-                    </button>
-
-                    <button
-                        onClick={() => navigate(`/quiz/${quizId}/leaderboard`)}
-                        className='px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium flex items-center'
-                    >
-                        <Trophy size={16} className='mr-2' />
-                        Leaderboard
                     </button>
                 </div>
             </div>
