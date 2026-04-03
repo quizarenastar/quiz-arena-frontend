@@ -16,8 +16,8 @@ import QuizDetails from './Pages/QuizDetails';
 import QuizAttempt from './Pages/QuizAttempt';
 import QuizResult from './Pages/QuizResult';
 import Wallet from './Pages/Wallet';
-import ProtectedRoute from './Components/ProtectedRoute';
 import Leaderboard from './Pages/Leaderboard';
+import ProtectedRoute from './Components/ProtectedRoute';
 
 export default function RoutesComponent() {
     return (
@@ -93,8 +93,10 @@ export default function RoutesComponent() {
                     </ProtectedRoute>
                 }
             />
-
-            <Route path='/leaderboard' element={<Leaderboard />} />
+            <Route
+                path='/quiz/:quizId/leaderboard'
+                element={<Leaderboard />}
+            />
         </Routes>
     );
 }

@@ -15,6 +15,7 @@ import {
     BookOpen,
     ChevronRight,
     Zap,
+    Info,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QuizService from '../service/QuizService';
@@ -210,6 +211,7 @@ const CreateQuiz = () => {
     const [showPreview, setShowPreview] = useState(false);
     const [showAiModal, setShowAiModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [showPrizeInfo, setShowPrizeInfo] = useState(false);
 
     const [quiz, setQuiz] = useState({
         title: '',
@@ -224,16 +226,6 @@ const CreateQuiz = () => {
         endTime: '',
         settings: {
             shuffleQuestions: false,
-            shuffleOptions: false,
-            showCorrectAnswers: true,
-            allowReview: true,
-            antiCheat: {
-                enabled: false,
-                detectTabSwitch: false,
-                detectCopyPaste: false,
-                timeLimit: false,
-                randomizeQuestions: false,
-            },
         },
         questions: [],
     });
@@ -310,7 +302,10 @@ const CreateQuiz = () => {
                     endTime: quizData.endTime
                         ? new Date(quizData.endTime).toISOString().slice(0, 16)
                         : '',
-                    settings: quizData.settings || quiz.settings,
+                    settings: {
+                        shuffleQuestions:
+                            quizData.settings?.shuffleQuestions || false,
+                    },
                     questions: transformedQuestions,
                 });
                 setIsEditMode(true);
@@ -471,7 +466,9 @@ const CreateQuiz = () => {
                 timeLimit: quiz.timeLimit,
                 startTime: quiz.startTime,
                 endTime: quiz.endTime,
-                settings: quiz.settings,
+                settings: {
+                    shuffleQuestions: quiz.settings?.shuffleQuestions || false,
+                },
                 questions: quiz.questions.map((q) => ({
                     question: q.text,
                     options: q.options,
@@ -487,13 +484,17 @@ const CreateQuiz = () => {
                 await QuizService.updateQuiz(quiz._id, quizData);
                 toast.success('Quiz updated successfully!');
             } else {
-            const result = await QuizService.createQuiz(quizData);
+                const result = await QuizService.createQuiz(quizData);
                 setQuiz((p) => ({ ...p, _id: result.data.quiz._id }));
                 const aiReview = result.data?.aiReview;
                 if (aiReview?.approved) {
-                    toast.success(`Quiz approved automatically! (Quality score: ${aiReview.score}/100)`);
+                    toast.success(
+                        `Quiz approved automatically! (Quality score: ${aiReview.score}/100)`,
+                    );
                 } else {
-                    toast.success('Quiz submitted for review — our AI will assess it shortly');
+                    toast.success(
+                        'Quiz submitted for review — our AI will assess it shortly',
+                    );
                 }
                 navigate('/my-quizzes');
             }
@@ -535,8 +536,9 @@ const CreateQuiz = () => {
                             {quiz.questions.length > 0 && (
                                 <p className='text-xs text-gray-400 dark:text-gray-500'>
                                     {quiz.questions.length} question
-                                    {quiz.questions.length !== 1 ? 's' : ''} ·{' '}
-                                    {totalPoints} pts
+                                    {quiz.questions.length !== 1
+                                        ? 's'
+                                        : ''} · {totalPoints} pts
                                 </p>
                             )}
                         </div>
@@ -829,13 +831,41 @@ const CreateQuiz = () => {
                                         </p>
                                     </div>
                                 </div>
-                                <Toggle
-                                    checked={quiz.isPaid}
-                                    onChange={() =>
-                                        handleQuizChange('isPaid', !quiz.isPaid)
-                                    }
-                                />
+                                <div className='flex items-center gap-2'>
+                                    <Toggle
+                                        checked={quiz.isPaid}
+                                        onChange={() => {
+                                            if (isEditMode) return;
+                                            handleQuizChange(
+                                                'isPaid',
+                                                !quiz.isPaid,
+                                            );
+                                        }}
+                                    />
+                                    <button
+                                        type='button'
+                                        onClick={() => setShowPrizeInfo(true)}
+                                        className='p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all'
+                                        title='Prize distribution info'
+                                    >
+                                        <Info size={16} />
+                                    </button>
+                                </div>
                             </div>
+
+                            {isEditMode && (
+                                <div className='mt-3 flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50'>
+                                    <AlertCircle
+                                        size={14}
+                                        className='text-amber-500 mt-0.5 flex-shrink-0'
+                                    />
+                                    <p className='text-xs text-amber-700 dark:text-amber-300'>
+                                        Pricing cannot be changed after quiz
+                                        creation as participants may have
+                                        already registered.
+                                    </p>
+                                </div>
+                            )}
 
                             {quiz.isPaid && (
                                 <div className='mt-4 pt-4 border-t border-[#e8edf5] dark:border-[#1f2740] flex items-center gap-3'>
@@ -858,10 +888,11 @@ const CreateQuiz = () => {
                                                         ),
                                                     )
                                                 }
-                                                className={`${inp} pl-8`}
+                                                className={`${inp} pl-8 ${isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 placeholder='0'
                                                 min='0'
                                                 step='1'
+                                                disabled={isEditMode}
                                             />
                                         </div>
                                     </div>
@@ -1420,6 +1451,194 @@ const CreateQuiz = () => {
                                 className='px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all'
                             >
                                 Close Preview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Prize Distribution Info Modal ── */}
+            {showPrizeInfo && (
+                <div className='fixed inset-0 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm'>
+                    <div className='bg-white dark:bg-[#141929] rounded-2xl border border-[#e8edf5] dark:border-[#1f2740] shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto'>
+                        {/* Header */}
+                        <div className='flex items-center justify-between px-6 py-4 border-b border-[#e8edf5] dark:border-[#1f2740]'>
+                            <div className='flex items-center gap-3'>
+                                <div className='p-2 rounded-xl bg-amber-50 dark:bg-amber-900/20'>
+                                    <DollarSign
+                                        size={16}
+                                        className='text-amber-600 dark:text-amber-400'
+                                    />
+                                </div>
+                                <div>
+                                    <h2 className='text-sm font-bold text-gray-900 dark:text-white'>
+                                        Prize Distribution
+                                    </h2>
+                                    <p className='text-xs text-gray-400 dark:text-gray-500'>
+                                        How winnings are split
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowPrizeInfo(false)}
+                                className='p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all'
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className='p-6 space-y-5'>
+                            {/* Pool Split */}
+                            <div>
+                                <h3 className='text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3'>
+                                    Pool Breakdown
+                                </h3>
+                                <div className='grid grid-cols-3 gap-2'>
+                                    <div className='text-center p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30'>
+                                        <p className='text-lg font-bold text-amber-600 dark:text-amber-400'>
+                                            50%
+                                        </p>
+                                        <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+                                            Prize Money
+                                        </p>
+                                    </div>
+                                    <div className='text-center p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30'>
+                                        <p className='text-lg font-bold text-blue-600 dark:text-blue-400'>
+                                            30%
+                                        </p>
+                                        <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+                                            Creator Fee
+                                        </p>
+                                    </div>
+                                    <div className='text-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700/50'>
+                                        <p className='text-lg font-bold text-gray-600 dark:text-gray-300'>
+                                            20%
+                                        </p>
+                                        <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+                                            Platform Fee
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Scenarios */}
+                            <div>
+                                <h3 className='text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3'>
+                                    Prize Scenarios
+                                </h3>
+                                <div className='space-y-2.5'>
+                                    {/* < 5 participants */}
+                                    <div className='p-3.5 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800/30'>
+                                        <div className='flex items-center justify-between mb-1.5'>
+                                            <span className='text-xs font-bold text-red-700 dark:text-red-400'>
+                                                Less than 5 participants
+                                            </span>
+                                            <span className='text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-semibold'>
+                                                Auto-Cancel
+                                            </span>
+                                        </div>
+                                        <p className='text-xs text-gray-600 dark:text-gray-400'>
+                                            Quiz is automatically cancelled. All
+                                            participants receive a{' '}
+                                            <strong>full refund</strong> of
+                                            their entry fee.
+                                        </p>
+                                    </div>
+
+                                    {/* 5–9 participants */}
+                                    <div className='p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30'>
+                                        <div className='flex items-center justify-between mb-1.5'>
+                                            <span className='text-xs font-bold text-emerald-700 dark:text-emerald-400'>
+                                                5 – 9 participants
+                                            </span>
+                                            <span className='text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-semibold'>
+                                                1 Winner
+                                            </span>
+                                        </div>
+                                        <p className='text-xs text-gray-600 dark:text-gray-400'>
+                                            🥇 <strong>1st place</strong> takes
+                                            the entire 50% prize pool.
+                                        </p>
+                                    </div>
+
+                                    {/* 10–19 participants */}
+                                    <div className='p-3.5 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30'>
+                                        <div className='flex items-center justify-between mb-1.5'>
+                                            <span className='text-xs font-bold text-blue-700 dark:text-blue-400'>
+                                                10 – 19 participants
+                                            </span>
+                                            <span className='text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold'>
+                                                2 Winners
+                                            </span>
+                                        </div>
+                                        <p className='text-xs text-gray-600 dark:text-gray-400'>
+                                            🥇 <strong>1st place</strong> — 60%
+                                            of prize pool
+                                            <br />
+                                            🥈 <strong>2nd place</strong> — 40%
+                                            of prize pool
+                                        </p>
+                                    </div>
+
+                                    {/* 20+ participants */}
+                                    <div className='p-3.5 rounded-xl bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/30'>
+                                        <div className='flex items-center justify-between mb-1.5'>
+                                            <span className='text-xs font-bold text-purple-700 dark:text-purple-400'>
+                                                20+ participants
+                                            </span>
+                                            <span className='text-xs px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-semibold'>
+                                                Top 10%
+                                            </span>
+                                        </div>
+                                        <p className='text-xs text-gray-600 dark:text-gray-400'>
+                                            Top 10% of participants share the
+                                            50% prize pool{' '}
+                                            <strong>equally</strong>. e.g. 50
+                                            participants → top 5 win.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Example */}
+                            <div className='p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30'>
+                                <h4 className='text-xs font-bold text-indigo-700 dark:text-indigo-400 mb-2'>
+                                    💡 Example: ₹50 entry × 10 participants
+                                </h4>
+                                <div className='grid grid-cols-3 gap-2 text-xs text-gray-600 dark:text-gray-400'>
+                                    <div>
+                                        <p className='font-semibold text-gray-800 dark:text-gray-200'>
+                                            ₹250
+                                        </p>
+                                        <p>Prize (50%)</p>
+                                    </div>
+                                    <div>
+                                        <p className='font-semibold text-gray-800 dark:text-gray-200'>
+                                            ₹150
+                                        </p>
+                                        <p>Creator (30%)</p>
+                                    </div>
+                                    <div>
+                                        <p className='font-semibold text-gray-800 dark:text-gray-200'>
+                                            ₹100
+                                        </p>
+                                        <p>Platform (20%)</p>
+                                    </div>
+                                </div>
+                                <p className='text-xs text-indigo-600 dark:text-indigo-300 mt-2'>
+                                    🥇 1st gets ₹150 (60%) · 🥈 2nd gets ₹100
+                                    (40%)
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className='border-t border-[#e8edf5] dark:border-[#1f2740] p-4 flex justify-end'>
+                            <button
+                                onClick={() => setShowPrizeInfo(false)}
+                                className='px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all'
+                            >
+                                Got it
                             </button>
                         </div>
                     </div>

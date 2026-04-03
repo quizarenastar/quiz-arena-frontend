@@ -48,8 +48,6 @@ function Header() {
         { to: '/', label: 'Home' },
         { to: '/quizzes', label: 'Quizzes' },
         { to: '/create-quiz', label: 'Create Quiz', protected: true },
-        // { to: '/war-room', label: 'War Room', protected: true },
-        // { to: '/leaderboard', label: 'Leaderboard' },
     ];
 
     return (
@@ -133,7 +131,7 @@ function Header() {
 
                             {/* Profile Dropdown */}
                             {profileDropdown && (
-                                <div className='absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-xl overflow-hidden'>
+                                <div className='absolute z-50 right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-xl overflow-hidden'>
                                     <div className='p-4 border-b border-gray-100 dark:border-gray-700'>
                                         <p className='text-sm font-medium text-gray-900 dark:text-white'>
                                             {user.username}
@@ -307,14 +305,30 @@ function Header() {
                                         />
                                         Wallet
                                     </Link>
-                                    {/* <Link
-                                        to='/settings'
+
+                                    <Link
+                                        to='/my-quizzes'
                                         className='flex items-center px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/70 transition-all duration-200'
                                         onClick={() => setMenuOpen(false)}
                                     >
-                                        <Settings size={18} className='mr-3' />
-                                        Settings
-                                    </Link> */}
+                                        <BookOpenCheck
+                                            size={18}
+                                            className='mr-3'
+                                        />
+                                        My Quizzes
+                                    </Link>
+                                    <Link
+                                        to='/my-attempts'
+                                        className='flex items-center px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-800/70 transition-all duration-200'
+                                        onClick={() => setMenuOpen(false)}
+                                    >
+                                        <BookOpenCheck
+                                            size={18}
+                                            className='mr-3'
+                                        />
+                                        My Attempts
+                                    </Link>
+
                                     <button
                                         className='w-full flex items-center px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200'
                                         onClick={async () => {

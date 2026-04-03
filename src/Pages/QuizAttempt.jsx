@@ -34,8 +34,9 @@ const QuizAttempt = () => {
 
     // Anti-cheat state
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [tabSwitchCount, setTabSwitchCount] = useState(0);
-    const [showTabWarning, setShowTabWarning] = useState(false);
+    const [violationCount, setViolationCount] = useState(0);
+    const [showWarning, setShowWarning] = useState(false);
+    const [warningMessage, setWarningMessage] = useState('');
     const [violations, setViolations] = useState([]);
     const [showViolations, setShowViolations] = useState(false);
     const [quizEnded, setQuizEnded] = useState(false); // prevents interaction after auto-submit
@@ -46,7 +47,7 @@ const QuizAttempt = () => {
     const questionStartTimeRef = useRef(Date.now());
     const isInitializedRef = useRef(false);
     const isFullscreenExitingRef = useRef(false); // debounce flag to prevent ESC counting as tab switch
-    const settingsRef = useRef(null);
+    const violationCountRef = useRef(0); // ref to avoid stale closures
 
     // ========== FULLSCREEN MANAGEMENT ==========
     const enterFullscreen = useCallback(async () => {
@@ -71,8 +72,8 @@ const QuizAttempt = () => {
                     isFullscreenExitingRef.current = false;
                 }, 500); // debounce for 500ms
 
-                // Record fullscreen exit as its own violation (NOT a tab switch)
-                recordViolation('fullscreen_exit', 'User exited fullscreen');
+                // Record fullscreen exit as a violation (counts toward auto-submit)
+                handleViolation('fullscreen_exit', 'User exited fullscreen');
             }
         };
 
@@ -94,35 +95,9 @@ const QuizAttempt = () => {
         if (!attemptId || submittingQuiz || quizEnded) return;
 
         const handleVisibilityChange = () => {
-            if (document.hidden) return; // Only act when coming back
-
-            // Skip if this was triggered by a fullscreen exit (ESC press)
+            if (document.hidden) return;
             if (isFullscreenExitingRef.current) return;
-
-            setTabSwitchCount((prev) => {
-                const newCount = prev + 1;
-
-                if (newCount <= 2) {
-                    // 1st and 2nd tab switch → show warning
-                    setShowTabWarning(true);
-                    recordViolation(
-                        'tab_switch',
-                        `Tab switch #${newCount}/3 — warning issued`,
-                    );
-                    toast.error(
-                        `⚠️ Warning ${newCount}/2: Tab switching detected! Your quiz will be auto-submitted after 3 violations.`,
-                    );
-                } else if (newCount >= 3) {
-                    // 3rd tab switch → auto-submit
-                    recordViolation(
-                        'tab_switch',
-                        `Tab switch #${newCount} — auto-submitting`,
-                    );
-                    handleAutoSubmit('Tab switch violation — auto-submitted');
-                }
-
-                return newCount;
-            });
+            handleViolation('tab_switch', 'Tab switch detected');
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -140,11 +115,11 @@ const QuizAttempt = () => {
 
         const blockCopy = (e) => {
             e.preventDefault();
-            recordViolation('copy_paste', 'Copy attempt blocked');
+            handleViolation('copy_paste', 'Copy attempt blocked');
         };
         const blockPaste = (e) => {
             e.preventDefault();
-            recordViolation('copy_paste', 'Paste attempt blocked');
+            handleViolation('copy_paste', 'Paste attempt blocked');
         };
         const blockContextMenu = (e) => {
             e.preventDefault();
@@ -162,7 +137,7 @@ const QuizAttempt = () => {
                     ['i', 'j', 'c'].includes(e.key.toLowerCase()))
             ) {
                 e.preventDefault();
-                recordViolation('devtools', `Blocked shortcut: ${e.key}`);
+                handleViolation('devtools', `Blocked shortcut: ${e.key}`);
             }
         };
 
@@ -179,8 +154,15 @@ const QuizAttempt = () => {
         };
     }, [attemptId]);
 
-    // ========== RECORD VIOLATION ==========
-    const recordViolation = async (type, details) => {
+    // ========== UNIFIED VIOLATION HANDLER ==========
+    // ALL violation types (tab switch, copy/paste, devtools, fullscreen exit)
+    // count toward the 2-warning auto-submit limit.
+    const handleViolation = (type, details) => {
+        violationCountRef.current += 1;
+        const count = violationCountRef.current;
+        setViolationCount(count);
+
+        // Store violation in state
         setViolations((prev) => [
             ...prev,
             {
@@ -191,15 +173,25 @@ const QuizAttempt = () => {
             },
         ]);
 
+        // Report to server
         if (attemptId) {
-            try {
-                await QuizService.reportViolation(attemptId, {
-                    type,
-                    details,
-                });
-            } catch (err) {
-                console.error('Failed to report violation:', err);
-            }
+            QuizService.reportViolation(attemptId, { type, details }).catch(
+                (err) => console.error('Failed to report violation:', err),
+            );
+        }
+
+        if (count <= 2) {
+            // 1st and 2nd violation → warning
+            setWarningMessage(
+                `${details} (Violation ${count}/2). Your quiz will be auto-submitted after the next violation!`,
+            );
+            setShowWarning(true);
+            toast.error(
+                `⚠️ Warning ${count}/2: ${details}. Next violation = auto-submit!`,
+            );
+        } else {
+            // 3rd+ violation → auto-submit
+            handleAutoSubmit(`Too many violations (${count}) — auto-submitted`);
         }
     };
 
@@ -260,7 +252,6 @@ const QuizAttempt = () => {
             const quizResponse = await QuizService.getQuiz(quizId);
             const quizData = quizResponse.data.quiz;
             setQuiz(quizData);
-            settingsRef.current = quizData.settings;
 
             // Request fullscreen immediately
             await enterFullscreen();
@@ -274,8 +265,6 @@ const QuizAttempt = () => {
             setCurrentQuestionIndex(attemptData.currentQuestionIndex);
             setTotalQuestions(attemptData.totalQuestions);
             setAnsweredCount(attemptData.answeredCount || 0);
-            settingsRef.current =
-                attemptData.settings || quizData.settings;
 
             // Set timer
             const timeLimitSeconds = Math.floor(
@@ -306,8 +295,7 @@ const QuizAttempt = () => {
 
             const response = await QuizService.submitSingleAnswer(attemptId, {
                 questionId: currentQuestion._id,
-                selectedOption:
-                    selectedOption !== null ? selectedOption : null,
+                selectedOption: selectedOption !== null ? selectedOption : null,
                 timeSpent,
             });
 
@@ -353,7 +341,7 @@ const QuizAttempt = () => {
             await QuizService.submitAttempt(attemptId, {
                 answers: [], // Server already has all answers
                 timeSpent: 0,
-                tabSwitches: tabSwitchCount,
+                tabSwitches: violationCount,
             });
 
             // Exit fullscreen
@@ -451,8 +439,8 @@ const QuizAttempt = () => {
                 </div>
             )}
 
-            {/* ===== TAB SWITCH WARNING MODAL ===== */}
-            {showTabWarning && (
+            {/* ===== VIOLATION WARNING MODAL ===== */}
+            {showWarning && (
                 <div className='fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50'>
                     <div className='bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-lg mx-4 text-center shadow-2xl border-2 border-red-500'>
                         <AlertTriangle
@@ -460,22 +448,21 @@ const QuizAttempt = () => {
                             size={56}
                         />
                         <h3 className='text-xl font-bold text-red-600 dark:text-red-400 mb-3'>
-                            ⚠️ Tab Switch Detected!
+                            ⚠️ Violation Detected!
                         </h3>
                         <p className='text-gray-700 dark:text-gray-300 mb-4 text-lg'>
-                            You switched away from the quiz tab. This is a
-                            violation of exam rules.
+                            {warningMessage}
                         </p>
                         <p className='text-red-600 dark:text-red-400 font-bold mb-2'>
-                            Tab switches: {tabSwitchCount} / 3
+                            Violations: {violationCount} / 2
                         </p>
                         <p className='text-red-600 dark:text-red-400 font-bold mb-6'>
                             WARNING: Your quiz will be automatically submitted
-                            after 3 tab switch violations!
+                            after the next violation!
                         </p>
                         <button
                             onClick={() => {
-                                setShowTabWarning(false);
+                                setShowWarning(false);
                                 enterFullscreen();
                             }}
                             className='px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors'
@@ -674,8 +661,7 @@ const QuizAttempt = () => {
 
                         {/* Submit Answer Button */}
                         <div className='flex justify-end'>
-                            {currentQuestionIndex ===
-                            totalQuestions - 1 ? (
+                            {currentQuestionIndex === totalQuestions - 1 ? (
                                 <button
                                     onClick={() => handleSubmitAnswer()}
                                     disabled={submittingAnswer}
