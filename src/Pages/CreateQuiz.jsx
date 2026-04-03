@@ -259,6 +259,13 @@ const CreateQuiz = () => {
     useEffect(() => {
         if (!editQuizId) return;
         const load = async () => {
+            const formatLocal = (dateStr) => {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return '';
+                const pad = (n) => n.toString().padStart(2, '0');
+                return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            };
             try {
                 setLoading(true);
                 const response = await QuizService.getQuiz(editQuizId);
@@ -294,14 +301,8 @@ const CreateQuiz = () => {
                     isPaid: quizData.isPaid || false,
                     price: quizData.price || 0,
                     timeLimit: quizData.timeLimit || quizData.duration || 300,
-                    startTime: quizData.startTime
-                        ? new Date(quizData.startTime)
-                              .toISOString()
-                              .slice(0, 16)
-                        : '',
-                    endTime: quizData.endTime
-                        ? new Date(quizData.endTime).toISOString().slice(0, 16)
-                        : '',
+                    startTime: formatLocal(quizData.startTime),
+                    endTime: formatLocal(quizData.endTime),
                     settings: {
                         shuffleQuestions:
                             quizData.settings?.shuffleQuestions || false,
@@ -464,8 +465,8 @@ const CreateQuiz = () => {
                 isPaid: quiz.isPaid,
                 price: quiz.isPaid ? quiz.price : 0,
                 timeLimit: quiz.timeLimit,
-                startTime: quiz.startTime,
-                endTime: quiz.endTime,
+                startTime: new Date(quiz.startTime).toISOString(),
+                endTime: new Date(quiz.endTime).toISOString(),
                 settings: {
                     shuffleQuestions: quiz.settings?.shuffleQuestions || false,
                 },
