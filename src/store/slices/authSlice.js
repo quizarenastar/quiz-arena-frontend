@@ -193,10 +193,14 @@ const authSlice = createSlice({
             .addCase(fetchProfileThunk.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.user = action.payload?.data || action.payload;
+                state.isAuthenticated = true;
             })
             .addCase(fetchProfileThunk.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || 'Failed to fetch profile';
+                // If profile fetch fails (e.g. token expired), mark as not authenticated
+                state.user = null;
+                state.isAuthenticated = false;
             })
             .addCase(updateProfileThunk.pending, (state) => {
                 state.status = 'loading';

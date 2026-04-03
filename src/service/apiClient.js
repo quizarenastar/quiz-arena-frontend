@@ -3,7 +3,31 @@
  * Centralizes HTTP request logic to avoid duplication across services
  */
 
+import { store, persistor } from '../store/store';
+import { logout } from '../store/slices/authSlice';
+
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+
+let isRedirectingToLogin = false;
+
+/**
+ * Handle 401 Unauthorized — clear auth state, purge persisted storage,
+ * then redirect to login. Awaits the purge so localStorage is clean
+ * before the page reloads.
+ */
+async function handleUnauthorized() {
+    if (isRedirectingToLogin) return;
+    isRedirectingToLogin = true;
+
+    // Clear Redux auth state
+    store.dispatch(logout());
+
+    // Purge redux-persist storage (waits for localStorage to be cleared)
+    await persistor.purge();
+
+    // Redirect to login
+    window.location.href = '/login';
+}
 
 /**
  * Make an authenticated API request
@@ -26,6 +50,12 @@ async function makeRequest(url, options = {}) {
         });
 
         const data = await response.json();
+
+        // If token is expired/invalid, force logout
+        if (response.status === 401) {
+            handleUnauthorized();
+            throw new Error('Session expired. Please log in again.');
+        }
 
         if (!response.ok) {
             throw new Error(data.message || 'Something went wrong');

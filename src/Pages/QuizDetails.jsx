@@ -219,7 +219,11 @@ const QuizDetails = () => {
                             {statusConfig.label}
                         </span>
 
-                        {isOwner && (
+                        {isOwner && !(
+                            (quiz.startTime && new Date() >= new Date(quiz.startTime)) ||
+                            (quiz.attemptCount > 0) ||
+                            (quiz.analytics?.totalAttempts > 0)
+                        ) && (
                             <button
                                 onClick={handleEdit}
                                 className='flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all'

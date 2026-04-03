@@ -297,13 +297,19 @@ const MyQuizzes = () => {
 
                                     {/* Action Buttons */}
                                     <div className='flex space-x-2'>
-                                        <button
-                                            onClick={() => handleEdit(quiz._id)}
-                                            className='flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md text-center flex items-center justify-center'
-                                        >
-                                            <Edit size={14} className='mr-1' />
-                                            Edit
-                                        </button>
+                                        {/* Hide Edit if quiz has started (start time passed or has attempts) */}
+                                        {!((
+                                            quiz.startTime &&
+                                            new Date() >= new Date(quiz.startTime)
+                                        ) || (quiz.attemptCount > 0) || (quiz.analytics?.totalAttempts > 0)) && (
+                                            <button
+                                                onClick={() => handleEdit(quiz._id)}
+                                                className='flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md text-center flex items-center justify-center'
+                                            >
+                                                <Edit size={14} className='mr-1' />
+                                                Edit
+                                            </button>
+                                        )}
 
                                         <button
                                             onClick={() => handleView(quiz._id)}
