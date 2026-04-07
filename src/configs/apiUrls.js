@@ -66,6 +66,19 @@ const ApiUrl = {
     CONTACT: {
         SUBMIT: `${BASE_URL}/contact`,
     },
+
+    WAR_ROOMS: {
+        CREATE: `${BASE_URL}/war-rooms`,
+        PUBLIC: `${BASE_URL}/war-rooms/public`,
+        MY_ROOMS: `${BASE_URL}/war-rooms/my-rooms`,
+        GET_BY_CODE: (roomCode) => `${BASE_URL}/war-rooms/code/${roomCode}`,
+        JOIN: (roomCode) => `${BASE_URL}/war-rooms/code/${roomCode}/join`,
+        LEAVE: (roomId) => `${BASE_URL}/war-rooms/${roomId}/leave`,
+        DELETE: (roomId) => `${BASE_URL}/war-rooms/${roomId}`,
+        HISTORY: (roomId) => `${BASE_URL}/war-rooms/${roomId}/history`,
+        ROUND_DETAILS: (roomId, quizId) =>
+            `${BASE_URL}/war-rooms/${roomId}/history/${quizId}`,
+    },
 };
 
 export default ApiUrl;

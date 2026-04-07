@@ -17,6 +17,9 @@ import QuizAttempt from './Pages/QuizAttempt';
 import QuizResult from './Pages/QuizResult';
 import Wallet from './Pages/Wallet';
 import Leaderboard from './Pages/Leaderboard';
+import WarRooms from './Pages/WarRooms';
+import WarRoom from './Pages/WarRoom';
+import WarRoomHistory from './Pages/WarRoomHistory';
 import ProtectedRoute from './Components/ProtectedRoute';
 
 export default function RoutesComponent() {
@@ -96,6 +99,30 @@ export default function RoutesComponent() {
             <Route
                 path='/quiz/:quizId/leaderboard'
                 element={<Leaderboard />}
+            />
+            <Route
+                path='/war-rooms'
+                element={
+                    <ProtectedRoute>
+                        <WarRooms />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path='/war-rooms/:roomCode'
+                element={
+                    <ProtectedRoute>
+                        <WarRoom />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path='/war-rooms/:roomId/history'
+                element={
+                    <ProtectedRoute>
+                        <WarRoomHistory />
+                    </ProtectedRoute>
+                }
             />
         </Routes>
     );
