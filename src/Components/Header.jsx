@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
     Moon,
     Sun,
@@ -24,6 +24,13 @@ function Header() {
     const { user } = useSelector((s) => s.auth);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Check if we should hide the header
+    const hideHeaderPaths = ['/war-rooms/', '/quiz/'];
+    if (hideHeaderPaths.some(path => location.pathname.startsWith(path))) {
+        return null;
+    }
 
     const avatarNode = () => {
         const picture = user?.profilePicture;
