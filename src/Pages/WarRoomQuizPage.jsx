@@ -59,14 +59,16 @@ export default function WarRoomQuizPage() {
                 setQuizData(data);
                 setResults(null);
                 setProgress({});
-                setCurrentIndex(0);
+
+                const answeredSet = new Set(data.answeredQuestionIndices || []);
+                setCurrentIndex(answeredSet.size > 0 ? answeredSet.size : 0);
                 setSelectedAnswer(null);
                 setAnswerResult(null);
-                setScore(0);
-                setStreak(0);
-                setAnsweredQuestions(new Set());
+                setScore(data.currentScore || 0);
+                setStreak(0); // Optional: if we want to track streak, we'd need more data, resolving it to 0 is fine on reconnect
+                setAnsweredQuestions(answeredSet);
                 setIsFinished(false);
-                // Set total time
+                // Set total time left
                 setTimeLeft(data.duration);
             },
             onProgressUpdate: (data) => {
