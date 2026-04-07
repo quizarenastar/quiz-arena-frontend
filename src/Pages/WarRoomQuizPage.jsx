@@ -13,8 +13,8 @@ import {
     Users,
     Flame,
 } from 'lucide-react';
-import useWarRoomSocket from '../../hooks/useWarRoomSocket';
-import WarRoomResults from '../../Components/warroom/WarRoomResults';
+import useWarRoomSocket from '../hooks/useWarRoomSocket';
+import WarRoomResults from '../Components/warroom/WarRoomResults';
 import toast from 'react-hot-toast';
 
 export default function WarRoomQuizPage() {
