@@ -47,6 +47,7 @@ function Header() {
     const navLinks = [
         { to: '/', label: 'Home' },
         { to: '/quizzes', label: 'Quizzes' },
+        { to: '/war-rooms', label: '⚔️ War Room', protected: true },
         { to: '/create-quiz', label: 'Create Quiz', protected: true },
     ];
 
