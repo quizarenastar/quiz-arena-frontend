@@ -5,7 +5,6 @@ import {
     Swords,
     Copy,
     Check,
-    Settings,
     Play,
     Loader,
     ArrowLeft,
@@ -13,12 +12,12 @@ import {
     Clock,
     Zap,
     Share2,
+    History,
 } from 'lucide-react';
 import useWarRoomSocket from '../hooks/useWarRoomSocket';
 import WarRoomChat from '../Components/warroom/WarRoomChat';
 import WarRoomMemberList from '../Components/warroom/WarRoomMemberList';
-import WarRoomQuizView from '../Components/warroom/WarRoomQuizView';
-import WarRoomResults from '../Components/warroom/WarRoomResults';
+import StartQuizModal from '../Components/warroom/StartQuizModal';
 import toast from 'react-hot-toast';
 
 export default function WarRoom() {
@@ -30,22 +29,15 @@ export default function WarRoom() {
     // Room state
     const [room, setRoom] = useState(null);
     const [messages, setMessages] = useState([]);
-    const [roomStatus, setRoomStatus] = useState('waiting');
     const [members, setMembers] = useState([]);
-    const [settings, setSettings] = useState({});
     const [isReady, setIsReady] = useState(false);
     const [copied, setCopied] = useState(false);
 
-    // Quiz state
+    // Quiz flow
+    const [showStartModal, setShowStartModal] = useState(false);
+    const [startingQuiz, setStartingQuiz] = useState(false);
     const [countdown, setCountdown] = useState(null);
     const [generating, setGenerating] = useState(false);
-    const [quizData, setQuizData] = useState(null);
-    const [progress, setProgress] = useState({});
-    const [results, setResults] = useState(null);
-
-    // Settings editing
-    const [editingSettings, setEditingSettings] = useState(false);
-    const [settingsForm, setSettingsForm] = useState({});
 
     const isHost = useMemo(
         () => room?.hostId?.toString() === currentUserId,
@@ -59,8 +51,6 @@ export default function WarRoom() {
                 const r = response.room;
                 setRoom(r);
                 setMembers(r.members || []);
-                setSettings(r.settings || {});
-                setRoomStatus(r.status);
                 setMessages(response.messages || []);
 
                 // Restore ready state
@@ -82,9 +72,7 @@ export default function WarRoom() {
                 );
                 if (newHostId) {
                     setRoom((prev) =>
-                        prev
-                            ? { ...prev, hostId: newHostId }
-                            : prev
+                        prev ? { ...prev, hostId: newHostId } : prev
                     );
                     setMembers((prev) =>
                         prev.map((m) =>
@@ -117,39 +105,26 @@ export default function WarRoom() {
                 );
                 toast(`${data.username} was removed`);
             },
-            onSettingsUpdated: ({ settings: newSettings }) => {
-                setSettings(newSettings);
-            },
+            onSettingsUpdated: () => {},
             onCountdown: ({ seconds }) => {
                 setCountdown(seconds);
-                setRoomStatus('countdown');
                 setGenerating(false);
+                setShowStartModal(false);
             },
             onGenerating: () => {
                 setGenerating(true);
                 setCountdown(null);
+                setShowStartModal(false);
             },
-            onQuizStart: (data) => {
-                setQuizData(data);
-                setRoomStatus('in-progress');
-                setCountdown(null);
-                setGenerating(false);
-                setResults(null);
-                setProgress({});
+            onQuizStart: () => {
+                // Navigate to the full-page quiz
+                navigate(`/war-rooms/${roomCode}/quiz`);
             },
-            onProgressUpdate: (data) => {
-                setProgress((prev) => ({
-                    ...prev,
-                    [data.userId]: data,
-                }));
-            },
-            onPlayerFinished: (data) => {
-                toast(`${data.username} finished!`, { icon: '🏁' });
-            },
-            onQuizResults: (data) => {
-                setResults(data);
-                setRoomStatus('finished');
-                setQuizData(null);
+            onProgressUpdate: () => {},
+            onPlayerFinished: () => {},
+            onQuizResults: () => {
+                // If results come while on this page, do nothing
+                // User sees results on the quiz page
             },
             onChatMessage: (msg) => {
                 setMessages((prev) => [...prev, msg]);
@@ -160,12 +135,11 @@ export default function WarRoom() {
             },
             onError: (msg) => {
                 toast.error(msg);
+                setStartingQuiz(false);
             },
-            onDisconnected: () => {
-                // Will auto-reconnect
-            },
+            onDisconnected: () => {},
         }),
-        [currentUserId, navigate]
+        [currentUserId, navigate, roomCode]
     );
 
     const {
@@ -173,9 +147,6 @@ export default function WarRoom() {
         sendChat,
         toggleReady,
         startQuiz,
-        submitAnswer,
-        finishQuiz,
-        updateSettings,
         kickPlayer,
     } = useWarRoomSocket(roomCode, handlers);
 
@@ -192,19 +163,9 @@ export default function WarRoom() {
         toggleReady(newReady);
     };
 
-    const handleSaveSettings = () => {
-        updateSettings(settingsForm);
-        setEditingSettings(false);
-    };
-
-    const handlePlayAgain = () => {
-        setResults(null);
-        setRoomStatus('waiting');
-        // Reset ready states
-        setMembers((prev) =>
-            prev.map((m) => ({ ...m, isReady: false }))
-        );
-        setIsReady(false);
+    const handleStartQuiz = (quizSettings) => {
+        setStartingQuiz(true);
+        startQuiz(quizSettings);
     };
 
     const readyCount = members.filter((m) => m.isReady).length;
@@ -276,15 +237,28 @@ export default function WarRoom() {
                                     className='text-xs'
                                     style={{ color: '#64748b' }}
                                 >
-                                    Round{' '}
-                                    {room?.roundNumber || 0}
+                                    Round {room?.roundNumber || 0}
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Room Code */}
+                    {/* Room Code & Connection */}
                     <div className='flex items-center gap-2'>
+                        <button
+                            onClick={() =>
+                                navigate(`/war-rooms/${room._id}/history`)
+                            }
+                            className='flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs cursor-pointer'
+                            style={{
+                                background: 'rgba(30,30,50,0.6)',
+                                border: '1px solid rgba(139,92,246,0.15)',
+                                color: '#94a3b8',
+                            }}
+                        >
+                            <History size={14} />
+                            History
+                        </button>
                         <div
                             className='flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer'
                             style={{
@@ -308,8 +282,6 @@ export default function WarRoom() {
                                 <Copy size={14} style={{ color: '#a78bfa' }} />
                             )}
                         </div>
-
-                        {/* Connection indicator */}
                         <div
                             className='w-3 h-3 rounded-full'
                             style={{
@@ -330,7 +302,7 @@ export default function WarRoom() {
                     {/* Left: Main Content */}
                     <div className='flex-1 min-w-0'>
                         {/* COUNTDOWN OVERLAY */}
-                        {(roomStatus === 'countdown' || generating) && (
+                        {(countdown || generating) && (
                             <div className='flex flex-col items-center justify-center py-20'>
                                 {generating ? (
                                     <>
@@ -377,16 +349,14 @@ export default function WarRoom() {
                             </div>
                         )}
 
-                        {/* WAITING / FINISHED STATE */}
-                        {(roomStatus === 'waiting' ||
-                            (roomStatus === 'finished' && !results)) && (
+                        {/* WAITING STATE */}
+                        {!countdown && !generating && (
                             <div className='space-y-5'>
                                 {/* Room Info Card */}
                                 <div
                                     className='p-6 rounded-2xl'
                                     style={{
-                                        background:
-                                            'rgba(30, 30, 50, 0.4)',
+                                        background: 'rgba(30, 30, 50, 0.4)',
                                         border: '1px solid rgba(139,92,246,0.1)',
                                     }}
                                 >
@@ -395,102 +365,30 @@ export default function WarRoom() {
                                             className='font-semibold flex items-center gap-2'
                                             style={{ color: '#e2e8f0' }}
                                         >
-                                            <Settings
-                                                size={16}
-                                                style={{
-                                                    color: '#a78bfa',
-                                                }}
-                                            />
-                                            Quiz Settings
+                                            <Zap size={16} style={{ color: '#a78bfa' }} />
+                                            Room Info
                                         </h3>
-                                        {isHost && (
-                                            <button
-                                                onClick={() => {
-                                                    setSettingsForm({
-                                                        ...settings,
-                                                    });
-                                                    setEditingSettings(
-                                                        !editingSettings
-                                                    );
-                                                }}
-                                                className='text-xs px-3 py-1.5 rounded-lg cursor-pointer'
-                                                style={{
-                                                    background:
-                                                        'rgba(139,92,246,0.1)',
-                                                    color: '#a78bfa',
-                                                    border: '1px solid rgba(139,92,246,0.2)',
-                                                }}
-                                            >
-                                                {editingSettings
-                                                    ? 'Cancel'
-                                                    : 'Edit'}
-                                            </button>
-                                        )}
                                     </div>
-
-                                    {editingSettings ? (
-                                        <div className='space-y-3'>
-                                            <div className='grid grid-cols-2 gap-3'>
-                                                <div>
-                                                    <label className='text-xs block mb-1' style={{color:'#94a3b8'}}>Topic</label>
-                                                    <input
-                                                        type='text'
-                                                        value={settingsForm.topic || ''}
-                                                        onChange={(e) => setSettingsForm({...settingsForm, topic: e.target.value})}
-                                                        className='w-full px-3 py-2 rounded-lg text-sm outline-none'
-                                                        style={{background:'rgba(15,15,25,0.8)', border:'1px solid rgba(139,92,246,0.2)', color:'#f1f5f9'}}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className='text-xs block mb-1' style={{color:'#94a3b8'}}>Difficulty</label>
-                                                    <select
-                                                        value={settingsForm.difficulty || 'medium'}
-                                                        onChange={(e) => setSettingsForm({...settingsForm, difficulty: e.target.value})}
-                                                        className='w-full px-3 py-2 rounded-lg text-sm outline-none cursor-pointer'
-                                                        style={{background:'rgba(15,15,25,0.8)', border:'1px solid rgba(139,92,246,0.2)', color:'#f1f5f9'}}
-                                                    >
-                                                        <option value='easy'>Easy</option>
-                                                        <option value='medium'>Medium</option>
-                                                        <option value='hard'>Hard</option>
-                                                    </select>
-                                                </div>
-                                                <div>
-                                                    <label className='text-xs block mb-1' style={{color:'#94a3b8'}}>Questions: {settingsForm.totalQuestions}</label>
-                                                    <input type='range' min={5} max={30} step={5} value={settingsForm.totalQuestions || 10} onChange={(e) => setSettingsForm({...settingsForm, totalQuestions: parseInt(e.target.value)})} className='w-full accent-purple-500' />
-                                                </div>
-                                                <div>
-                                                    <label className='text-xs block mb-1' style={{color:'#94a3b8'}}>Time/Q: {settingsForm.timePerQuestion}s</label>
-                                                    <input type='range' min={10} max={120} step={5} value={settingsForm.timePerQuestion || 30} onChange={(e) => setSettingsForm({...settingsForm, timePerQuestion: parseInt(e.target.value)})} className='w-full accent-purple-500' />
-                                                </div>
+                                    <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
+                                        {[
+                                            { label: 'Status', value: room?.status === 'waiting' ? '🟢 Waiting' : room?.status === 'finished' ? '🏁 Finished' : '⏳ In Progress' },
+                                            { label: 'Visibility', value: room?.visibility === 'public' ? '🌐 Public' : '🔒 Private' },
+                                            { label: 'Players', value: `${members.length}/${room?.maxPlayers || 10}`, icon: <Users size={14} /> },
+                                            { label: 'Rounds Played', value: room?.roundNumber || 0, icon: <Clock size={14} /> },
+                                        ].map((item) => (
+                                            <div
+                                                key={item.label}
+                                                className='p-3 rounded-xl'
+                                                style={{ background: 'rgba(15,15,25,0.6)' }}
+                                            >
+                                                <p className='text-xs mb-1' style={{ color: '#64748b' }}>{item.label}</p>
+                                                <p className='text-sm font-semibold flex items-center gap-1' style={{ color: '#e2e8f0' }}>
+                                                    {item.icon}
+                                                    {item.value}
+                                                </p>
                                             </div>
-                                            <button onClick={handleSaveSettings} className='px-4 py-2 rounded-lg text-sm font-medium cursor-pointer' style={{background:'linear-gradient(135deg, #8b5cf6, #6d28d9)', color:'#fff'}}>
-                                                Save Settings
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
-                                            {[
-                                                { label: 'Topic', value: settings.topic || 'General Knowledge', icon: <Zap size={14} /> },
-                                                { label: 'Difficulty', value: (settings.difficulty || 'medium').charAt(0).toUpperCase() + (settings.difficulty || 'medium').slice(1) },
-                                                { label: 'Questions', value: settings.totalQuestions || 10 },
-                                                { label: 'Time/Q', value: `${settings.timePerQuestion || 30}s`, icon: <Clock size={14} /> },
-                                            ].map((item) => (
-                                                <div
-                                                    key={item.label}
-                                                    className='p-3 rounded-xl'
-                                                    style={{
-                                                        background: 'rgba(15,15,25,0.6)',
-                                                    }}
-                                                >
-                                                    <p className='text-xs mb-1' style={{ color: '#64748b' }}>{item.label}</p>
-                                                    <p className='text-sm font-semibold flex items-center gap-1' style={{ color: '#e2e8f0' }}>
-                                                        {item.icon}
-                                                        {item.value}
-                                                    </p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {/* Members */}
@@ -516,7 +414,7 @@ export default function WarRoom() {
                                         hostId={room?.hostId}
                                         isHost={isHost}
                                         onKick={kickPlayer}
-                                        progress={progress}
+                                        progress={{}}
                                     />
                                 </div>
 
@@ -542,9 +440,8 @@ export default function WarRoom() {
 
                                     {isHost && (
                                         <button
-                                            onClick={startQuiz}
-                                            disabled={onlineCount < 2}
-                                            className='flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed'
+                                            onClick={() => setShowStartModal(true)}
+                                            className='flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all cursor-pointer'
                                             style={{
                                                 background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
                                                 boxShadow: '0 4px 15px rgba(139,92,246,0.4)',
@@ -573,31 +470,6 @@ export default function WarRoom() {
                                 </div>
                             </div>
                         )}
-
-                        {/* IN-PROGRESS STATE */}
-                        {roomStatus === 'in-progress' && quizData && (
-                            <WarRoomQuizView
-                                questions={quizData.questions}
-                                duration={quizData.duration}
-                                quizId={quizData.quizId}
-                                startedAt={quizData.startedAt}
-                                onSubmitAnswer={submitAnswer}
-                                onFinish={finishQuiz}
-                            />
-                        )}
-
-                        {/* RESULTS STATE */}
-                        {roomStatus === 'finished' && results && (
-                            <WarRoomResults
-                                results={results.results}
-                                roundNumber={results.roundNumber}
-                                currentUserId={currentUserId}
-                                isHost={isHost}
-                                questions={results.questions}
-                                onPlayAgain={handlePlayAgain}
-                                onBackToLobby={() => navigate('/war-rooms')}
-                            />
-                        )}
                     </div>
 
                     {/* Right: Chat Panel */}
@@ -613,6 +485,15 @@ export default function WarRoom() {
                     </div>
                 </div>
             </div>
+
+            {/* Start Quiz Modal */}
+            {showStartModal && (
+                <StartQuizModal
+                    onClose={() => setShowStartModal(false)}
+                    onStart={handleStartQuiz}
+                    loading={startingQuiz}
+                />
+            )}
 
             {/* Pulse animation */}
             <style>{`

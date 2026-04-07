@@ -1,8 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Instagram, Linkedin, Youtube, MessageCircle } from 'lucide-react';
 
 function Footer() {
+    const location = useLocation();
+
+    if (location.pathname !== '/') {
+        return null;
+    }
+
     return (
         <footer className='relative bg-blue-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 w-full overflow-hidden'>
             {/* Glassmorphism Container */}

@@ -20,6 +20,7 @@ import Leaderboard from './Pages/Leaderboard';
 import WarRooms from './Pages/WarRooms';
 import WarRoom from './Pages/WarRoom';
 import WarRoomHistory from './Pages/WarRoomHistory';
+import WarRoomQuizPage from './Pages/WarRoomQuizPage';
 import ProtectedRoute from './Components/ProtectedRoute';
 
 export default function RoutesComponent() {
@@ -113,6 +114,14 @@ export default function RoutesComponent() {
                 element={
                     <ProtectedRoute>
                         <WarRoom />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path='/war-rooms/:roomCode/quiz'
+                element={
+                    <ProtectedRoute>
+                        <WarRoomQuizPage />
                     </ProtectedRoute>
                 }
             />

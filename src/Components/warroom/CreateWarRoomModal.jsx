@@ -1,31 +1,11 @@
 import { useState } from 'react';
-import { X, Swords, Globe, Lock, Users, Zap } from 'lucide-react';
-
-const CATEGORIES = [
-    'general-knowledge',
-    'programming',
-    'technology',
-    'mathematics',
-    'science',
-    'history',
-    'geography',
-    'sports',
-    'entertainment',
-    'literature',
-    'business',
-    'language',
-];
+import { X, Swords, Globe, Lock, Users } from 'lucide-react';
 
 export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
     const [form, setForm] = useState({
         name: '',
         visibility: 'public',
         maxPlayers: 10,
-        topic: '',
-        difficulty: 'medium',
-        totalQuestions: 10,
-        timePerQuestion: 30,
-        category: 'general-knowledge',
     });
 
     const handleSubmit = (e) => {
@@ -34,13 +14,6 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
             name: form.name,
             visibility: form.visibility,
             maxPlayers: form.maxPlayers,
-            settings: {
-                topic: form.topic || 'General Knowledge',
-                difficulty: form.difficulty,
-                totalQuestions: form.totalQuestions,
-                timePerQuestion: form.timePerQuestion,
-                category: form.category,
-            },
         });
     };
 
@@ -50,7 +23,7 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
             style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
         >
             <div
-                className='relative w-full max-w-lg mx-4 rounded-2xl p-6 overflow-y-auto max-h-[90vh]'
+                className='relative w-full max-w-md mx-4 rounded-2xl p-6'
                 style={{
                     background: 'linear-gradient(145deg, #1e1e2e, #2a2a3e)',
                     border: '1px solid rgba(139, 92, 246, 0.3)',
@@ -185,7 +158,7 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
                         </label>
                         <input
                             type='range'
-                            min={2}
+                            min={1}
                             max={10}
                             value={form.maxPlayers}
                             onChange={(e) =>
@@ -200,160 +173,15 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
                             className='flex justify-between text-xs mt-1'
                             style={{ color: '#64748b' }}
                         >
-                            <span>2</span>
+                            <span>1 (Solo)</span>
                             <span>10</span>
                         </div>
                     </div>
 
-                    {/* Topic */}
-                    <div>
-                        <label
-                            className='block text-sm font-medium mb-1.5'
-                            style={{ color: '#cbd5e1' }}
-                        >
-                            Quiz Topic
-                        </label>
-                        <input
-                            type='text'
-                            value={form.topic}
-                            onChange={(e) =>
-                                setForm({ ...form, topic: e.target.value })
-                            }
-                            placeholder='e.g., JavaScript, World History...'
-                            className='w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all'
-                            style={{
-                                background: 'rgba(30, 30, 50, 0.8)',
-                                border: '1px solid rgba(139, 92, 246, 0.2)',
-                                color: '#f1f5f9',
-                            }}
-                            onFocus={(e) =>
-                                (e.target.style.borderColor =
-                                    'rgba(139, 92, 246, 0.6)')
-                            }
-                            onBlur={(e) =>
-                                (e.target.style.borderColor =
-                                    'rgba(139, 92, 246, 0.2)')
-                            }
-                        />
-                    </div>
-
-                    {/* Category & Difficulty row */}
-                    <div className='grid grid-cols-2 gap-3'>
-                        <div>
-                            <label
-                                className='block text-sm font-medium mb-1.5'
-                                style={{ color: '#cbd5e1' }}
-                            >
-                                Category
-                            </label>
-                            <select
-                                value={form.category}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        category: e.target.value,
-                                    })
-                                }
-                                className='w-full px-3 py-2.5 rounded-xl text-sm outline-none cursor-pointer'
-                                style={{
-                                    background: 'rgba(30, 30, 50, 0.8)',
-                                    border: '1px solid rgba(139, 92, 246, 0.2)',
-                                    color: '#f1f5f9',
-                                }}
-                            >
-                                {CATEGORIES.map((c) => (
-                                    <option key={c} value={c}>
-                                        {c
-                                            .split('-')
-                                            .map(
-                                                (w) =>
-                                                    w.charAt(0).toUpperCase() +
-                                                    w.slice(1)
-                                            )
-                                            .join(' ')}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label
-                                className='block text-sm font-medium mb-1.5'
-                                style={{ color: '#cbd5e1' }}
-                            >
-                                Difficulty
-                            </label>
-                            <select
-                                value={form.difficulty}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        difficulty: e.target.value,
-                                    })
-                                }
-                                className='w-full px-3 py-2.5 rounded-xl text-sm outline-none cursor-pointer'
-                                style={{
-                                    background: 'rgba(30, 30, 50, 0.8)',
-                                    border: '1px solid rgba(139, 92, 246, 0.2)',
-                                    color: '#f1f5f9',
-                                }}
-                            >
-                                <option value='easy'>Easy</option>
-                                <option value='medium'>Medium</option>
-                                <option value='hard'>Hard</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Questions & Time row */}
-                    <div className='grid grid-cols-2 gap-3'>
-                        <div>
-                            <label
-                                className='block text-sm font-medium mb-1.5'
-                                style={{ color: '#cbd5e1' }}
-                            >
-                                Questions: {form.totalQuestions}
-                            </label>
-                            <input
-                                type='range'
-                                min={5}
-                                max={30}
-                                step={5}
-                                value={form.totalQuestions}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        totalQuestions: parseInt(e.target.value),
-                                    })
-                                }
-                                className='w-full accent-purple-500'
-                            />
-                        </div>
-                        <div>
-                            <label
-                                className='block text-sm font-medium mb-1.5'
-                                style={{ color: '#cbd5e1' }}
-                            >
-                                <Zap size={14} className='inline mr-1' />
-                                {form.timePerQuestion}s / question
-                            </label>
-                            <input
-                                type='range'
-                                min={10}
-                                max={120}
-                                step={5}
-                                value={form.timePerQuestion}
-                                onChange={(e) =>
-                                    setForm({
-                                        ...form,
-                                        timePerQuestion: parseInt(
-                                            e.target.value
-                                        ),
-                                    })
-                                }
-                                className='w-full accent-purple-500'
-                            />
-                        </div>
-                    </div>
+                    {/* Info note */}
+                    <p className='text-xs' style={{ color: '#64748b' }}>
+                        💡 Quiz topic, difficulty, and time settings can be configured when starting each round.
+                    </p>
 
                     {/* Submit */}
                     <button
@@ -366,15 +194,6 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
                             boxShadow:
                                 '0 4px 15px rgba(139, 92, 246, 0.4)',
                         }}
-                        onMouseEnter={(e) =>
-                            !loading &&
-                            (e.target.style.boxShadow =
-                                '0 6px 25px rgba(139, 92, 246, 0.6)')
-                        }
-                        onMouseLeave={(e) =>
-                            (e.target.style.boxShadow =
-                                '0 4px 15px rgba(139, 92, 246, 0.4)')
-                        }
                     >
                         {loading ? (
                             <span className='flex items-center justify-center gap-2'>
