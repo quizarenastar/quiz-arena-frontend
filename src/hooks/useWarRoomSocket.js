@@ -159,8 +159,8 @@ export default function useWarRoomSocket(roomCode, handlers = {}) {
         });
     }, []);
 
-    const startQuiz = useCallback(() => {
-        socketRef.current?.emit('war-room:start-quiz', {}, (res) => {
+    const startQuiz = useCallback((quizSettings) => {
+        socketRef.current?.emit('war-room:start-quiz', quizSettings, (res) => {
             if (res?.error) handlersRef.current.onError?.(res.error);
         });
     }, []);
