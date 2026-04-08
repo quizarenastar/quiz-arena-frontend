@@ -75,6 +75,8 @@ const ApiUrl = {
         JOIN: (roomCode) => `${BASE_URL}/war-rooms/code/${roomCode}/join`,
         LEAVE: (roomId) => `${BASE_URL}/war-rooms/${roomId}/leave`,
         DELETE: (roomId) => `${BASE_URL}/war-rooms/${roomId}`,
+        SUGGESTED_QUESTIONS: (roomId) =>
+            `${BASE_URL}/war-rooms/${roomId}/suggested-questions`,
         HISTORY: (roomId) => `${BASE_URL}/war-rooms/${roomId}/history`,
         ROUND_DETAILS: (roomId, quizId) =>
             `${BASE_URL}/war-rooms/${roomId}/history/${quizId}`,

@@ -50,6 +50,11 @@ class WarRoomService {
         });
     }
 
+    // Get AI-suggested starter questions for a room
+    async getSuggestedQuestions(roomId) {
+        return makeRequest(ApiUrl.WAR_ROOMS.SUGGESTED_QUESTIONS(roomId));
+    }
+
     // Get room quiz history
     async getRoomHistory(roomId) {
         return makeRequest(ApiUrl.WAR_ROOMS.HISTORY(roomId));

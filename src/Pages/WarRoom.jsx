@@ -201,6 +201,11 @@ export default function WarRoom() {
                                 <Swords size={20} className='text-violet-500' />
                                 {room?.name || 'War Room'}
                             </h1>
+                            {room?.description && (
+                                <p className='text-xs mt-0.5 text-gray-500 dark:text-gray-400 max-w-md truncate'>
+                                    {room.description}
+                                </p>
+                            )}
                             <div className='flex items-center gap-3 mt-0.5'>
                                 <span className='text-xs flex items-center gap-1 text-gray-500 dark:text-gray-400'>
                                     <Users size={12} />
@@ -433,6 +438,9 @@ export default function WarRoom() {
                     onClose={() => setShowStartModal(false)}
                     onStart={handleStartQuiz}
                     loading={startingQuiz}
+                    roomId={room?._id}
+                    roomName={room?.name}
+                    roomDescription={room?.description}
                 />
             )}
         </div>
