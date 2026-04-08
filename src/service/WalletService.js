@@ -34,7 +34,16 @@ class WalletService {
         }).format(amount);
     }
 
-    getTransactionTypeLabel(type) {
+    getTransactionTypeLabel(transaction) {
+        const type =
+            typeof transaction === 'string' ? transaction : transaction.type;
+        const isEntryFee =
+            typeof transaction === 'object' &&
+            type === 'payment' &&
+            (transaction.relatedQuizId || transaction.metadata?.isEscrow);
+
+        if (isEntryFee) return 'Entry Fee Paid';
+
         const labels = {
             payment: 'Fund Addition',
             earning: 'Quiz Earning',
@@ -44,6 +53,16 @@ class WalletService {
             penalty: 'Penalty',
         };
         return labels[type] || type;
+    }
+
+    isDebitTransaction(transaction) {
+        const type =
+            typeof transaction === 'string' ? transaction : transaction.type;
+        const isEntryFee =
+            typeof transaction === 'object' &&
+            type === 'payment' &&
+            (transaction.relatedQuizId || transaction.metadata?.isEscrow);
+        return isEntryFee || ['withdrawal', 'penalty'].includes(type);
     }
 
     getTransactionStatusColor(status) {
