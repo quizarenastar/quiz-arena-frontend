@@ -3,7 +3,7 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginThunk, googleThunk } from '../store/slices/authSlice';
 import toast from 'react-hot-toast';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -16,9 +16,12 @@ export default function Login() {
     const navigate = useNavigate();
     const location = useLocation();
     const { isAuthenticated } = useSelector((s) => s.auth);
-    console.log(isAuthenticated);
     const [googleLoading, setGoogleLoading] = useState(false);
     const from = location.state?.from?.pathname || '/';
+
+    useEffect(() => {
+        if (isAuthenticated) navigate(from, { replace: true });
+    }, [isAuthenticated, navigate, from]);
 
     // Decode JWT without external deps
     const parseJwt = (token) => {
@@ -34,7 +37,7 @@ export default function Login() {
                             ('00' + c.charCodeAt(0).toString(16)).slice(-2)
                         );
                     })
-                    .join('')
+                    .join(''),
             );
             return JSON.parse(jsonPayload);
         } catch (e) {
@@ -191,7 +194,7 @@ export default function Login() {
                         <button
                             type='submit'
                             onClick={handleSubmit}
-                            className='w-full bg-gradient-to-r from-gray-400 to-blue-600 hover:from-gray-700 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200'
+                            className='w-full bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200'
                         >
                             Sign in
                         </button>
@@ -252,12 +255,12 @@ export default function Login() {
                     <div className='mt-6 text-center'>
                         <p className='text-sm text-gray-600 dark:text-gray-400'>
                             Don't have an account?{' '}
-                            <a
-                                href='#'
+                            <Link
+                                to='/signup'
                                 className='font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors duration-200'
                             >
                                 Sign up
-                            </a>
+                            </Link>
                         </p>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     Trophy,
     Clock,
@@ -10,6 +10,10 @@ import {
     ArrowLeft,
     BarChart3,
     Shield,
+    Brain,
+    TrendingUp,
+    BookOpen,
+    Lightbulb,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QuizService from '../service/QuizService';
@@ -17,9 +21,39 @@ import QuizService from '../service/QuizService';
 const QuizResult = () => {
     const { quizId, attemptId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Normalize submit-response shape (from navigation state) into the same
+    // shape used by the API fetch path.
+    const normalizeSubmitResult = useCallback((data) => {
+        const totalQuestions = data.totalQuestions || 0;
+        const correctAnswers = data.correctAnswers || 0;
+        const accuracy =
+            data.percentage ??
+            (totalQuestions > 0
+                ? Math.round((correctAnswers / totalQuestions) * 100)
+                : 0);
+        return {
+            correctAnswers,
+            totalQuestions,
+            accuracy,
+            timeTaken: Math.floor((data.duration || 0) / 1000),
+            timeLimit: 0,
+            quiz: null,
+            answers: (data.answers || []).map((a) => ({
+                ...a,
+                selectedAnswer: a.selectedOption, // normalize field name
+                isCorrect: a.isCorrect,
+            })),
+            status: data.isValid?.isValid === false ? 'invalid' : 'completed',
+            isValid: data.isValid,
+            violations: [],
+            analysis: data.analysis || null,
+        };
+    }, []);
 
     const fetchAttemptDetails = useCallback(async () => {
         try {
@@ -59,8 +93,14 @@ const QuizResult = () => {
     }, [attemptId, navigate]);
 
     useEffect(() => {
+        // If navigate() passed the submit response via state, use it directly
+        if (location.state?.result) {
+            setResult(normalizeSubmitResult(location.state.result));
+            setLoading(false);
+            return;
+        }
         if (!result) fetchAttemptDetails();
-    }, [result, fetchAttemptDetails]);
+    }, [result, fetchAttemptDetails, location.state, normalizeSubmitResult]);
 
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60);
@@ -269,6 +309,27 @@ const QuizResult = () => {
                     </div>
                 </div>
 
+                {/* isValid warning */}
+                {result.isValid && !result.isValid.isValid && (
+                    <div className='bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 rounded-2xl p-4 mb-6'>
+                        <div className='flex items-start gap-3'>
+                            <AlertTriangle
+                                size={16}
+                                className='text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5'
+                            />
+                            <div>
+                                <p className='text-sm font-semibold text-red-700 dark:text-red-400'>
+                                    Attempt Flagged
+                                </p>
+                                <p className='text-xs text-red-600 dark:text-red-400/80 mt-0.5'>
+                                    {result.isValid.reason ||
+                                        'This attempt failed validation checks.'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Violations */}
                 {result.violations.length > 0 && (
                     <div className='bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-4 mb-6'>
@@ -286,8 +347,8 @@ const QuizResult = () => {
                                 {result.violations.length}
                             </span>{' '}
                             violation
-                            {result.violations.length !== 1 ? 's' : ''}{' '}
-                            detected during this attempt.
+                            {result.violations.length !== 1 ? 's' : ''} detected
+                            during this attempt.
                         </p>
                     </div>
                 )}
@@ -347,14 +408,16 @@ const QuizResult = () => {
                                                             answer.selectedAnswer !==
                                                                 undefined
                                                                 ? options[
-                                                                      answer.selectedAnswer
+                                                                      answer
+                                                                          .selectedAnswer
                                                                   ] || 'N/A'
                                                                 : 'Skipped'}
                                                         </span>
                                                         <span className='text-emerald-600 dark:text-emerald-400'>
                                                             Correct:{' '}
                                                             {options[
-                                                                answer.correctAnswer
+                                                                answer
+                                                                    .correctAnswer
                                                             ] || 'N/A'}
                                                         </span>
                                                     </div>
@@ -389,12 +452,144 @@ const QuizResult = () => {
                     </div>
                 )}
 
+                {/* AI Analysis */}
+                {result.analysis && (
+                    <div className='mb-6 space-y-3'>
+                        <h3 className='text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-2'>
+                            <Brain size={14} />
+                            AI Analysis
+                        </h3>
+
+                        {/* Overall */}
+                        {result.analysis.overallAssessment && (
+                            <div className='bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.06] rounded-2xl p-4'>
+                                <p className='text-sm text-gray-700 dark:text-gray-300 leading-relaxed'>
+                                    {result.analysis.overallAssessment}
+                                </p>
+                            </div>
+                        )}
+
+                        <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
+                            {/* Strengths */}
+                            {result.analysis.strengths?.length > 0 && (
+                                <div className='bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl p-4'>
+                                    <p className='text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mb-3'>
+                                        <CheckCircle size={13} /> Strengths
+                                    </p>
+                                    <ul className='space-y-1.5'>
+                                        {result.analysis.strengths.map(
+                                            (s, i) => (
+                                                <li
+                                                    key={i}
+                                                    className='text-xs text-emerald-700 dark:text-emerald-300 flex gap-2'
+                                                >
+                                                    <span>•</span>
+                                                    {s}
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Weaknesses */}
+                            {result.analysis.weaknesses?.length > 0 && (
+                                <div className='bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 rounded-2xl p-4'>
+                                    <p className='text-xs font-semibold text-red-700 dark:text-red-400 uppercase tracking-wider flex items-center gap-1.5 mb-3'>
+                                        <XCircle size={13} /> Weaknesses
+                                    </p>
+                                    <ul className='space-y-1.5'>
+                                        {result.analysis.weaknesses.map(
+                                            (w, i) => (
+                                                <li
+                                                    key={i}
+                                                    className='text-xs text-red-700 dark:text-red-300 flex gap-2'
+                                                >
+                                                    <span>•</span>
+                                                    {w}
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Improvements */}
+                            {result.analysis.improvements?.length > 0 && (
+                                <div className='bg-blue-50 dark:bg-blue-500/5 border border-blue-200 dark:border-blue-500/20 rounded-2xl p-4'>
+                                    <p className='text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1.5 mb-3'>
+                                        <TrendingUp size={13} /> Improvements
+                                    </p>
+                                    <ul className='space-y-1.5'>
+                                        {result.analysis.improvements.map(
+                                            (item, i) => (
+                                                <li
+                                                    key={i}
+                                                    className='text-xs text-blue-700 dark:text-blue-300 flex gap-2'
+                                                >
+                                                    <span>•</span>
+                                                    {item}
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Study Recommendations */}
+                            {result.analysis.studyRecommendations?.length >
+                                0 && (
+                                <div className='bg-violet-50 dark:bg-violet-500/5 border border-violet-200 dark:border-violet-500/20 rounded-2xl p-4'>
+                                    <p className='text-xs font-semibold text-violet-700 dark:text-violet-400 uppercase tracking-wider flex items-center gap-1.5 mb-3'>
+                                        <BookOpen size={13} /> Study Tips
+                                    </p>
+                                    <ul className='space-y-1.5'>
+                                        {result.analysis.studyRecommendations.map(
+                                            (r, i) => (
+                                                <li
+                                                    key={i}
+                                                    className='text-xs text-violet-700 dark:text-violet-300 flex gap-2'
+                                                >
+                                                    <span>•</span>
+                                                    {r}
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Time Management */}
+                        {result.analysis.timeManagement && (
+                            <div className='bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/20 rounded-2xl p-4'>
+                                <p className='text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5 mb-2'>
+                                    <Clock size={13} /> Time Management
+                                </p>
+                                <p className='text-xs text-amber-700 dark:text-amber-300 leading-relaxed'>
+                                    {result.analysis.timeManagement}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Encouragement */}
+                        {result.analysis.encouragement && (
+                            <div className='bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-500/5 dark:to-violet-500/5 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl p-4'>
+                                <p className='text-xs font-semibold text-indigo-700 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5 mb-2'>
+                                    <Lightbulb size={13} /> Encouragement
+                                </p>
+                                <p className='text-xs text-indigo-700 dark:text-indigo-300 leading-relaxed'>
+                                    {result.analysis.encouragement}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Action Buttons */}
                 <div className='flex gap-3'>
                     <button
-                        onClick={() =>
-                            navigate(`/quiz/${quizId}/leaderboard`)
-                        }
+                        onClick={() => navigate(`/quiz/${quizId}/leaderboard`)}
                         className='flex-1 px-6 py-3.5 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-violet-500/20'
                     >
                         <BarChart3 size={18} />
