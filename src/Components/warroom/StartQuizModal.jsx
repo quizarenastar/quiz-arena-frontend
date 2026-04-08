@@ -12,13 +12,13 @@ export default function StartQuizModal({
     roomDescription,
 }) {
     const [form, setForm] = useState({
-        topic: roomName || '',
+        topic: '',
         difficulty: 'medium',
         totalQuestions: 10,
         timePerQuestion: 30,
     });
     const [suggestionsLoading, setSuggestionsLoading] = useState(false);
-    const [suggestedQuestions, setSuggestedQuestions] = useState([]);
+    const [suggestedTopics, setSuggestedTopics] = useState([]);
 
     useEffect(() => {
         const loadSuggestions = async () => {
@@ -26,18 +26,15 @@ export default function StartQuizModal({
             try {
                 setSuggestionsLoading(true);
                 const res = await WarRoomService.getSuggestedQuestions(roomId);
-                setSuggestedQuestions(res.data?.questions || []);
-                setForm((prev) =>
-                    prev.topic?.trim()
-                        ? prev
-                        : {
-                              ...prev,
-                              topic: res.data?.topicSuggestion || roomName || '',
-                          }
-                );
+                const topics = res.data?.topics || [];
+                setSuggestedTopics(topics);
+                setForm((prev) => ({
+                    ...prev,
+                    topic: topics[0] || res.data?.topicSuggestion || roomName || '',
+                }));
             } catch (error) {
                 toast.error(
-                    error.message || 'Failed to load AI question suggestions'
+                    error.message || 'Failed to load AI topic suggestions'
                 );
             } finally {
                 setSuggestionsLoading(false);
@@ -49,7 +46,7 @@ export default function StartQuizModal({
     const handleSubmit = (e) => {
         e.preventDefault();
         onStart({
-            topic: form.topic || 'General Knowledge',
+            topic: form.topic.trim(),
             difficulty: form.difficulty,
             totalQuestions: form.totalQuestions,
             timePerQuestion: form.timePerQuestion,
@@ -116,7 +113,7 @@ export default function StartQuizModal({
                             className='w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all border border-violet-200 dark:border-violet-700/40 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 focus:border-transparent'
                         />
                         <p className='text-xs mt-1 text-gray-500 dark:text-gray-400'>
-                            Leave empty for General Knowledge
+                            AI suggests a topic first; you can edit or replace it.
                         </p>
                     </div>
 
@@ -142,33 +139,40 @@ export default function StartQuizModal({
                         </select>
                     </div>
 
-                    {/* AI Suggested Questions */}
+                    {/* AI Suggested Topics */}
                     <div className='rounded-xl border border-violet-200 dark:border-violet-700/40 bg-violet-50 dark:bg-violet-900/20 p-4'>
                         <div className='flex items-center gap-2 mb-2'>
                             <Sparkles size={14} className='text-violet-500' />
                             <p className='text-sm font-semibold text-violet-700 dark:text-violet-300'>
-                                AI Suggested Questions
+                                AI Suggested Topics
                             </p>
                         </div>
                         {suggestionsLoading ? (
                             <p className='text-xs text-gray-600 dark:text-gray-400'>
-                                Generating suggestions from room name and description...
+                                Generating topic suggestions from room name and description...
                             </p>
-                        ) : suggestedQuestions.length === 0 ? (
+                        ) : suggestedTopics.length === 0 ? (
                             <p className='text-xs text-gray-600 dark:text-gray-400'>
-                                No suggestions yet. You can still start with your own topic.
+                                No suggestions yet. Enter your own topic above.
                             </p>
                         ) : (
-                            <ul className='space-y-1'>
-                                {suggestedQuestions.slice(0, 3).map((q, idx) => (
-                                    <li
-                                        key={`${q.question}-${idx}`}
-                                        className='text-xs text-gray-700 dark:text-gray-300'
+                            <div className='flex flex-wrap gap-2'>
+                                {suggestedTopics.map((topic) => (
+                                    <button
+                                        key={topic}
+                                        type='button'
+                                        onClick={() =>
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                topic,
+                                            }))
+                                        }
+                                        className='px-2.5 py-1 rounded-lg text-xs border border-violet-300 dark:border-violet-700/50 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/40'
                                     >
-                                        {idx + 1}. {q.question}
-                                    </li>
+                                        {topic}
+                                    </button>
                                 ))}
-                            </ul>
+                            </div>
                         )}
                     </div>
 
