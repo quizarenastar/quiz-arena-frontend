@@ -338,7 +338,7 @@ const QuizAttempt = () => {
         setQuizEnded(true); // Block all further interaction immediately
 
         try {
-            await QuizService.submitAttempt(attemptId, {
+            const response = await QuizService.submitAttempt(attemptId, {
                 answers: [], // Server already has all answers
                 timeSpent: 0,
                 tabSwitches: violationCount,
@@ -350,7 +350,10 @@ const QuizAttempt = () => {
             }
 
             toast.success('Quiz submitted successfully!');
-            navigate(`/quiz/${quizId}/result/${attemptId}`);
+            navigate(`/quiz/${quizId}/result/${attemptId}`, {
+                state: { result: response?.data || null },
+                replace: true,
+            });
         } catch (error) {
             // Even on error, exit fullscreen and redirect
             if (document.fullscreenElement) {
@@ -359,7 +362,7 @@ const QuizAttempt = () => {
             toast.error(error.message || 'Failed to submit quiz');
             console.error('Final submit error:', error);
             // Still redirect to results page
-            navigate(`/quiz/${quizId}/result/${attemptId}`);
+            navigate(`/quiz/${quizId}/result/${attemptId}`, { replace: true });
         } finally {
             setSubmittingQuiz(false);
         }
