@@ -261,7 +261,7 @@ export default function WarRoomQuizPage() {
                         isHost={isHost}
                         questions={results.questions}
                         onPlayAgain={handleBackToRoom}
-                        onBackToLobby={() => navigate('/war-rooms')}
+                        onBackToLobby={() => navigate(`/war-rooms/${roomCode}`)}
                     />
                 </div>
             </div>
