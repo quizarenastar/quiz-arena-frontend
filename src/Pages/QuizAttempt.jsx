@@ -284,7 +284,7 @@ const QuizAttempt = () => {
     };
 
     // ========== SUBMIT SINGLE ANSWER ==========
-    const handleSubmitAnswer = async (isAutoAdvance = false) => {
+    const handleSubmitAnswer = async () => {
         if (submittingAnswer || submittingQuiz || !currentQuestion) return;
 
         setSubmittingAnswer(true);
@@ -478,9 +478,6 @@ const QuizAttempt = () => {
                 <div className='max-w-4xl mx-auto px-4 py-4'>
                     <div className='flex justify-between items-center'>
                         <div>
-                            <h1 className='text-xl font-bold text-gray-900 dark:text-white'>
-                                {quiz.title}
-                            </h1>
                             <p className='text-sm text-gray-600 dark:text-gray-400'>
                                 Question {currentQuestionIndex + 1} of{' '}
                                 {totalQuestions}
