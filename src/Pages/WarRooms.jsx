@@ -252,6 +252,11 @@ export default function WarRooms() {
                                             <h3 className='font-semibold text-lg truncate mb-1 text-gray-900 dark:text-white'>
                                                 {room.name}
                                             </h3>
+                                            {room.description && (
+                                                <p className='text-xs mb-2 line-clamp-2 text-gray-500 dark:text-gray-400'>
+                                                    {room.description}
+                                                </p>
+                                            )}
                                             <div className='flex items-center gap-2'>
                                                 <span
                                                     className={`text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${statusStyle.badge}`}
