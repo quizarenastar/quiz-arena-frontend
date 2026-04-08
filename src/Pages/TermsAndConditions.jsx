@@ -82,7 +82,7 @@ const TermsAndConditions = () => {
             <div className='container mx-auto px-4 py-12 max-w-5xl relative z-10'>
                 {/* Hero Header */}
                 <div className='text-center mb-8 '>
-                    <h1 className='text-4xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 bg-clip-text text-transparent bg-clip-text  leading-tight'>
+                    <h1 className='text-4xl font-bold bg-gradient-to-r from-blue-800 to-gray-600 text-transparent bg-clip-text  leading-tight'>
                         Terms & Conditions
                     </h1>
                 </div>
@@ -167,7 +167,7 @@ const TermsAndConditions = () => {
                                                         {section.list.map(
                                                             (
                                                                 item,
-                                                                itemIndex
+                                                                itemIndex,
                                                             ) => (
                                                                 <li
                                                                     key={
@@ -182,7 +182,7 @@ const TermsAndConditions = () => {
                                                                         {item}
                                                                     </span>
                                                                 </li>
-                                                            )
+                                                            ),
                                                         )}
                                                     </ul>
                                                 </div>
