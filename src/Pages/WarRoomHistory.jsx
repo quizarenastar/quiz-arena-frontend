@@ -37,42 +37,28 @@ export default function WarRoomHistory() {
 
     if (loading) {
         return (
-            <div
-                className='min-h-screen flex items-center justify-center'
-                style={{ background: '#0f0f1a' }}
-            >
-                <Loader
-                    size={32}
-                    className='animate-spin'
-                    style={{ color: '#8b5cf6' }}
-                />
+            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
+                <Loader size={32} className='animate-spin text-violet-500' />
             </div>
         );
     }
 
     return (
-        <div className='min-h-screen' style={{ background: '#0f0f1a' }}>
+        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
             <div className='max-w-4xl mx-auto px-4 py-8'>
                 {/* Header */}
                 <div className='flex items-center gap-3 mb-8'>
                     <button
                         onClick={() => navigate(-1)}
-                        className='p-2 rounded-lg cursor-pointer'
-                        style={{
-                            background: 'rgba(30,30,50,0.6)',
-                            color: '#94a3b8',
-                        }}
+                        className='p-2 rounded-lg cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                     >
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1
-                            className='text-2xl font-bold'
-                            style={{ color: '#f1f5f9' }}
-                        >
+                        <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
                             Room History
                         </h1>
-                        <p className='text-sm' style={{ color: '#94a3b8' }}>
+                        <p className='text-sm text-gray-600 dark:text-gray-400'>
                             {history.length} rounds played
                         </p>
                     </div>
@@ -80,14 +66,8 @@ export default function WarRoomHistory() {
 
                 {history.length === 0 ? (
                     <div className='text-center py-20'>
-                        <Trophy
-                            size={48}
-                            style={{
-                                color: '#334155',
-                                margin: '0 auto 16px',
-                            }}
-                        />
-                        <p style={{ color: '#64748b' }}>
+                        <Trophy size={48} className='text-gray-300 dark:text-gray-600 mx-auto mb-4' />
+                        <p className='text-gray-500 dark:text-gray-400'>
                             No quizzes played yet
                         </p>
                     </div>
@@ -96,11 +76,7 @@ export default function WarRoomHistory() {
                         {history.map((quiz) => (
                             <div
                                 key={quiz._id}
-                                className='rounded-2xl overflow-hidden'
-                                style={{
-                                    background: 'rgba(30,30,50,0.4)',
-                                    border: '1px solid rgba(139,92,246,0.1)',
-                                }}
+                                className='rounded-2xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
                             >
                                 {/* Round header */}
                                 <button
@@ -115,26 +91,15 @@ export default function WarRoomHistory() {
                                 >
                                     <div className='flex items-center gap-4'>
                                         <div
-                                            className='w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm'
-                                            style={{
-                                                background:
-                                                    'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-                                                color: '#fff',
-                                            }}
+                                            className='w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm bg-gradient-to-r from-violet-500 to-purple-600 text-white'
                                         >
                                             #{quiz.roundNumber}
                                         </div>
                                         <div className='text-left'>
-                                            <p
-                                                className='font-semibold'
-                                                style={{ color: '#f1f5f9' }}
-                                            >
+                                            <p className='font-semibold text-gray-900 dark:text-white'>
                                                 {quiz.topic}
                                             </p>
-                                            <div
-                                                className='flex items-center gap-3 text-xs mt-0.5'
-                                                style={{ color: '#64748b' }}
-                                            >
+                                            <div className='flex items-center gap-3 text-xs mt-0.5 text-gray-500 dark:text-gray-400'>
                                                 <span className='flex items-center gap-1'>
                                                     <Calendar size={12} />
                                                     {new Date(
@@ -159,16 +124,9 @@ export default function WarRoomHistory() {
                                             <div className='flex items-center gap-2'>
                                                 <Trophy
                                                     size={14}
-                                                    style={{
-                                                        color: '#f59e0b',
-                                                    }}
+                                                    className='text-amber-500'
                                                 />
-                                                <span
-                                                    className='text-sm font-medium'
-                                                    style={{
-                                                        color: '#e2e8f0',
-                                                    }}
-                                                >
+                                                <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
                                                     {quiz.results[0]
                                                         .username}
                                                 </span>
@@ -177,12 +135,12 @@ export default function WarRoomHistory() {
                                         {expanded === quiz._id ? (
                                             <ChevronUp
                                                 size={18}
-                                                style={{ color: '#64748b' }}
+                                                className='text-gray-500 dark:text-gray-400'
                                             />
                                         ) : (
                                             <ChevronDown
                                                 size={18}
-                                                style={{ color: '#64748b' }}
+                                                className='text-gray-500 dark:text-gray-400'
                                             />
                                         )}
                                     </div>
@@ -190,70 +148,35 @@ export default function WarRoomHistory() {
 
                                 {/* Expanded results */}
                                 {expanded === quiz._id && quiz.results && (
-                                    <div
-                                        className='px-5 pb-5'
-                                        style={{
-                                            borderTop:
-                                                '1px solid rgba(139,92,246,0.08)',
-                                        }}
-                                    >
+                                    <div className='px-5 pb-5 border-t border-gray-200 dark:border-gray-700'>
                                         <div className='pt-3 space-y-2'>
                                             {quiz.results.map((player) => (
                                                 <div
                                                     key={player.userId}
-                                                    className='flex items-center gap-3 px-3 py-2 rounded-lg'
-                                                    style={{
-                                                        background:
-                                                            'rgba(15,15,25,0.4)',
-                                                    }}
+                                                    className='flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700/40'
                                                 >
                                                     <span
-                                                        className='w-7 text-center font-bold text-sm'
-                                                        style={{
-                                                            color:
-                                                                player.rank <=
-                                                                3
-                                                                    ? '#f59e0b'
-                                                                    : '#64748b',
-                                                        }}
+                                                        className={`w-7 text-center font-bold text-sm ${
+                                                            player.rank <= 3
+                                                                ? 'text-amber-500'
+                                                                : 'text-gray-500 dark:text-gray-400'
+                                                        }`}
                                                     >
                                                         #{player.rank}
                                                     </span>
-                                                    <div
-                                                        className='w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold'
-                                                        style={{
-                                                            background:
-                                                                'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                                                            color: '#fff',
-                                                        }}
-                                                    >
+                                                    <div className='w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold bg-gradient-to-r from-blue-500 to-blue-700 text-white'>
                                                         {player.username
                                                             ?.charAt(0)
                                                             ?.toUpperCase()}
                                                     </div>
-                                                    <span
-                                                        className='flex-1 text-sm'
-                                                        style={{
-                                                            color: '#e2e8f0',
-                                                        }}
-                                                    >
+                                                    <span className='flex-1 text-sm text-gray-700 dark:text-gray-200'>
                                                         {player.username}
                                                     </span>
-                                                    <span
-                                                        className='text-sm'
-                                                        style={{
-                                                            color: '#4ade80',
-                                                        }}
-                                                    >
+                                                    <span className='text-sm text-green-600 dark:text-green-400'>
                                                         {player.correctAnswers}{' '}
                                                         correct
                                                     </span>
-                                                    <span
-                                                        className='text-sm font-bold'
-                                                        style={{
-                                                            color: '#a78bfa',
-                                                        }}
-                                                    >
+                                                    <span className='text-sm font-bold text-violet-600 dark:text-violet-300'>
                                                         {player.score} pts
                                                     </span>
                                                 </div>

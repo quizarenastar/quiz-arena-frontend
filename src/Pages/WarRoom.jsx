@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -41,7 +41,7 @@ export default function WarRoom() {
 
     const isHost = useMemo(
         () => room?.hostId?.toString() === currentUserId,
-        [room?.hostId, currentUserId]
+        [room?.hostId, currentUserId],
     );
 
     // Socket handlers
@@ -55,7 +55,7 @@ export default function WarRoom() {
 
                 // Restore ready state
                 const me = r.members?.find(
-                    (m) => m.userId?.toString() === currentUserId
+                    (m) => m.userId?.toString() === currentUserId,
                 );
                 if (me) setIsReady(me.isReady);
             },
@@ -68,18 +68,18 @@ export default function WarRoom() {
             },
             onMemberLeft: ({ userId, newHostId }) => {
                 setMembers((prev) =>
-                    prev.filter((m) => m.userId?.toString() !== userId)
+                    prev.filter((m) => m.userId?.toString() !== userId),
                 );
                 if (newHostId) {
                     setRoom((prev) =>
-                        prev ? { ...prev, hostId: newHostId } : prev
+                        prev ? { ...prev, hostId: newHostId } : prev,
                     );
                     setMembers((prev) =>
                         prev.map((m) =>
                             m.userId?.toString() === newHostId
                                 ? { ...m, role: 'host' }
-                                : m
-                        )
+                                : m,
+                        ),
                     );
                 }
             },
@@ -88,8 +88,8 @@ export default function WarRoom() {
                     prev.map((m) =>
                         m.userId?.toString() === userId
                             ? { ...m, isReady: ready }
-                            : m
-                    )
+                            : m,
+                    ),
                 );
             },
             onMemberKicked: (data) => {
@@ -99,9 +99,7 @@ export default function WarRoom() {
                     return;
                 }
                 setMembers((prev) =>
-                    prev.filter(
-                        (m) => m.userId?.toString() !== data.userId
-                    )
+                    prev.filter((m) => m.userId?.toString() !== data.userId),
                 );
                 toast(`${data.username} was removed`);
             },
@@ -139,16 +137,11 @@ export default function WarRoom() {
             },
             onDisconnected: () => {},
         }),
-        [currentUserId, navigate, roomCode]
+        [currentUserId, navigate, roomCode],
     );
 
-    const {
-        isConnected,
-        sendChat,
-        toggleReady,
-        startQuiz,
-        kickPlayer,
-    } = useWarRoomSocket(roomCode, handlers);
+    const { isConnected, sendChat, toggleReady, startQuiz, kickPlayer } =
+        useWarRoomSocket(roomCode, handlers);
 
     const handleCopyCode = () => {
         navigator.clipboard.writeText(roomCode);
@@ -175,17 +168,13 @@ export default function WarRoom() {
 
     if (!room) {
         return (
-            <div
-                className='min-h-screen flex items-center justify-center'
-                style={{ background: '#0f0f1a' }}
-            >
+            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
                 <div className='text-center'>
                     <Loader
                         size={40}
-                        className='animate-spin mx-auto mb-4'
-                        style={{ color: '#8b5cf6' }}
+                        className='animate-spin mx-auto mb-4 text-violet-500'
                     />
-                    <p style={{ color: '#94a3b8' }}>
+                    <p className='text-gray-600 dark:text-gray-400'>
                         {isConnected
                             ? 'Joining War Room...'
                             : 'Connecting to War Room...'}
@@ -196,47 +185,28 @@ export default function WarRoom() {
     }
 
     return (
-        <div
-            className='min-h-screen'
-            style={{ background: '#0f0f1a' }}
-        >
+        <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
             <div className='max-w-7xl mx-auto px-4 py-4'>
                 {/* Top Bar */}
                 <div className='flex items-center justify-between mb-4'>
                     <div className='flex items-center gap-3'>
                         <button
                             onClick={() => navigate('/war-rooms')}
-                            className='p-2 rounded-lg transition-colors cursor-pointer'
-                            style={{
-                                background: 'rgba(30,30,50,0.6)',
-                                color: '#94a3b8',
-                            }}
+                            className='p-2 rounded-lg transition-colors cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                         >
                             <ArrowLeft size={20} />
                         </button>
                         <div>
-                            <h1
-                                className='text-xl font-bold flex items-center gap-2'
-                                style={{ color: '#f1f5f9' }}
-                            >
-                                <Swords
-                                    size={20}
-                                    style={{ color: '#8b5cf6' }}
-                                />
+                            <h1 className='text-xl font-bold flex items-center gap-2 text-gray-900 dark:text-white'>
+                                <Swords size={20} className='text-violet-500' />
                                 {room?.name || 'War Room'}
                             </h1>
                             <div className='flex items-center gap-3 mt-0.5'>
-                                <span
-                                    className='text-xs flex items-center gap-1'
-                                    style={{ color: '#64748b' }}
-                                >
+                                <span className='text-xs flex items-center gap-1 text-gray-500 dark:text-gray-400'>
                                     <Users size={12} />
                                     {onlineCount}/{members.length} online
                                 </span>
-                                <span
-                                    className='text-xs'
-                                    style={{ color: '#64748b' }}
-                                >
+                                <span className='text-xs text-gray-500 dark:text-gray-400'>
                                     Round {room?.roundNumber || 0}
                                 </span>
                             </div>
@@ -249,56 +219,36 @@ export default function WarRoom() {
                             onClick={() =>
                                 navigate(`/war-rooms/${room._id}/history`)
                             }
-                            className='flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs cursor-pointer'
-                            style={{
-                                background: 'rgba(30,30,50,0.6)',
-                                border: '1px solid rgba(139,92,246,0.15)',
-                                color: '#94a3b8',
-                            }}
+                            className='flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                         >
                             <History size={14} />
                             History
                         </button>
                         <div
-                            className='flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer'
-                            style={{
-                                background: 'rgba(139,92,246,0.1)',
-                                border: '1px solid rgba(139,92,246,0.2)',
-                            }}
+                            className='flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer bg-violet-100 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700/40'
                             onClick={handleCopyCode}
                         >
-                            <span
-                                className='font-mono font-bold tracking-widest text-sm'
-                                style={{ color: '#c4b5fd' }}
-                            >
+                            <span className='font-mono font-bold tracking-widest text-sm text-violet-700 dark:text-violet-300'>
                                 {roomCode}
                             </span>
                             {copied ? (
-                                <Check
-                                    size={14}
-                                    style={{ color: '#22c55e' }}
-                                />
+                                <Check size={14} className='text-green-500' />
                             ) : (
-                                <Copy size={14} style={{ color: '#a78bfa' }} />
+                                <Copy size={14} className='text-violet-500' />
                             )}
                         </div>
                         <div
-                            className='w-3 h-3 rounded-full'
-                            style={{
-                                background: isConnected
-                                    ? '#22c55e'
-                                    : '#ef4444',
-                                boxShadow: `0 0 8px ${isConnected ? '#22c55e' : '#ef4444'}`,
-                            }}
-                            title={
-                                isConnected ? 'Connected' : 'Disconnected'
-                            }
+                            className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`}
+                            title={isConnected ? 'Connected' : 'Disconnected'}
                         />
                     </div>
                 </div>
 
                 {/* Main Layout */}
-                <div className='flex gap-4' style={{ minHeight: 'calc(100vh - 120px)' }}>
+                <div
+                    className='flex gap-4'
+                    style={{ minHeight: 'calc(100vh - 120px)' }}
+                >
                     {/* Left: Main Content */}
                     <div className='flex-1 min-w-0'>
                         {/* COUNTDOWN OVERLAY */}
@@ -308,40 +258,21 @@ export default function WarRoom() {
                                     <>
                                         <Loader
                                             size={48}
-                                            className='animate-spin mb-4'
-                                            style={{ color: '#8b5cf6' }}
+                                            className='animate-spin mb-4 text-violet-500'
                                         />
-                                        <p
-                                            className='text-xl font-semibold'
-                                            style={{ color: '#f1f5f9' }}
-                                        >
+                                        <p className='text-xl font-semibold text-gray-900 dark:text-white'>
                                             Generating Questions...
                                         </p>
-                                        <p
-                                            className='text-sm mt-2'
-                                            style={{ color: '#94a3b8' }}
-                                        >
+                                        <p className='text-sm mt-2 text-gray-600 dark:text-gray-400'>
                                             AI is creating your quiz
                                         </p>
                                     </>
                                 ) : (
                                     <>
-                                        <div
-                                            className='text-8xl font-bold mb-4'
-                                            style={{
-                                                color: '#f1f5f9',
-                                                animation:
-                                                    'pulse 1s ease-in-out infinite',
-                                                textShadow:
-                                                    '0 0 40px rgba(139,92,246,0.6)',
-                                            }}
-                                        >
+                                        <div className='text-8xl font-bold mb-4 text-gray-900 dark:text-white animate-pulse'>
                                             {countdown}
                                         </div>
-                                        <p
-                                            className='text-xl font-semibold'
-                                            style={{ color: '#a78bfa' }}
-                                        >
+                                        <p className='text-xl font-semibold text-violet-600 dark:text-violet-300'>
                                             Get Ready!
                                         </p>
                                     </>
@@ -353,36 +284,55 @@ export default function WarRoom() {
                         {!countdown && !generating && (
                             <div className='space-y-5'>
                                 {/* Room Info Card */}
-                                <div
-                                    className='p-6 rounded-2xl'
-                                    style={{
-                                        background: 'rgba(30, 30, 50, 0.4)',
-                                        border: '1px solid rgba(139,92,246,0.1)',
-                                    }}
-                                >
+                                <div className='p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'>
                                     <div className='flex items-center justify-between mb-4'>
-                                        <h3
-                                            className='font-semibold flex items-center gap-2'
-                                            style={{ color: '#e2e8f0' }}
-                                        >
-                                            <Zap size={16} style={{ color: '#a78bfa' }} />
+                                        <h3 className='font-semibold flex items-center gap-2 text-gray-800 dark:text-gray-200'>
+                                            <Zap
+                                                size={16}
+                                                className='text-violet-500'
+                                            />
                                             Room Info
                                         </h3>
                                     </div>
                                     <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
                                         {[
-                                            { label: 'Status', value: room?.status === 'waiting' ? '🟢 Waiting' : room?.status === 'finished' ? '🏁 Finished' : '⏳ In Progress' },
-                                            { label: 'Visibility', value: room?.visibility === 'public' ? '🌐 Public' : '🔒 Private' },
-                                            { label: 'Players', value: `${members.length}/${room?.maxPlayers || 10}`, icon: <Users size={14} /> },
-                                            { label: 'Rounds Played', value: room?.roundNumber || 0, icon: <Clock size={14} /> },
+                                            {
+                                                label: 'Status',
+                                                value:
+                                                    room?.status === 'waiting'
+                                                        ? '🟢 Waiting'
+                                                        : room?.status ===
+                                                            'finished'
+                                                          ? '🏁 Finished'
+                                                          : '⏳ In Progress',
+                                            },
+                                            {
+                                                label: 'Visibility',
+                                                value:
+                                                    room?.visibility ===
+                                                    'public'
+                                                        ? '🌐 Public'
+                                                        : '🔒 Private',
+                                            },
+                                            {
+                                                label: 'Players',
+                                                value: `${members.length}/${room?.maxPlayers || 10}`,
+                                                icon: <Users size={14} />,
+                                            },
+                                            {
+                                                label: 'Rounds Played',
+                                                value: room?.roundNumber || 0,
+                                                icon: <Clock size={14} />,
+                                            },
                                         ].map((item) => (
                                             <div
                                                 key={item.label}
-                                                className='p-3 rounded-xl'
-                                                style={{ background: 'rgba(15,15,25,0.6)' }}
+                                                className='p-3 rounded-xl bg-gray-100 dark:bg-gray-700/40'
                                             >
-                                                <p className='text-xs mb-1' style={{ color: '#64748b' }}>{item.label}</p>
-                                                <p className='text-sm font-semibold flex items-center gap-1' style={{ color: '#e2e8f0' }}>
+                                                <p className='text-xs mb-1 text-gray-500 dark:text-gray-400'>
+                                                    {item.label}
+                                                </p>
+                                                <p className='text-sm font-semibold flex items-center gap-1 text-gray-800 dark:text-gray-200'>
                                                     {item.icon}
                                                     {item.value}
                                                 </p>
@@ -392,19 +342,17 @@ export default function WarRoom() {
                                 </div>
 
                                 {/* Members */}
-                                <div
-                                    className='p-5 rounded-2xl'
-                                    style={{
-                                        background: 'rgba(30,30,50,0.4)',
-                                        border: '1px solid rgba(139,92,246,0.1)',
-                                    }}
-                                >
+                                <div className='p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'>
                                     <div className='flex items-center justify-between mb-3'>
-                                        <h3 className='font-semibold flex items-center gap-2' style={{ color: '#e2e8f0' }}>
-                                            <Users size={16} style={{ color: '#a78bfa' }} />
-                                            Players ({members.length}/{room?.maxPlayers || 10})
+                                        <h3 className='font-semibold flex items-center gap-2 text-gray-800 dark:text-gray-200'>
+                                            <Users
+                                                size={16}
+                                                className='text-violet-500'
+                                            />
+                                            Players ({members.length}/
+                                            {room?.maxPlayers || 10})
                                         </h3>
-                                        <span className='text-xs' style={{ color: '#64748b' }}>
+                                        <span className='text-xs text-gray-500 dark:text-gray-400'>
                                             {readyCount} ready
                                         </span>
                                     </div>
@@ -422,17 +370,16 @@ export default function WarRoom() {
                                 <div className='flex gap-3'>
                                     <button
                                         onClick={handleToggleReady}
-                                        className='flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all cursor-pointer'
-                                        style={{
-                                            background: isReady
-                                                ? 'rgba(34,197,94,0.15)'
-                                                : 'rgba(30,30,50,0.6)',
-                                            border: `1px solid ${isReady ? 'rgba(34,197,94,0.4)' : 'rgba(139,92,246,0.2)'}`,
-                                            color: isReady ? '#4ade80' : '#e2e8f0',
-                                        }}
+                                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold transition-all cursor-pointer border ${
+                                            isReady
+                                                ? 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700/50 text-green-700 dark:text-green-300'
+                                                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200'
+                                        }`}
                                     >
                                         {isReady ? (
-                                            <><Check size={18} /> Ready!</>
+                                            <>
+                                                <Check size={18} /> Ready!
+                                            </>
                                         ) : (
                                             <>Click to Ready Up</>
                                         )}
@@ -440,15 +387,14 @@ export default function WarRoom() {
 
                                     {isHost && (
                                         <button
-                                            onClick={() => setShowStartModal(true)}
-                                            className='flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all cursor-pointer'
-                                            style={{
-                                                background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-                                                boxShadow: '0 4px 15px rgba(139,92,246,0.4)',
-                                            }}
+                                            onClick={() =>
+                                                setShowStartModal(true)
+                                            }
+                                            className='flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all cursor-pointer bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-sm'
                                         >
                                             <Play size={18} />
-                                            Start Quiz ({readyCount}/{onlineCount})
+                                            Start Quiz ({readyCount}/
+                                            {onlineCount})
                                         </button>
                                     )}
                                 </div>
@@ -457,12 +403,7 @@ export default function WarRoom() {
                                 <div className='flex items-center gap-3'>
                                     <button
                                         onClick={handleCopyCode}
-                                        className='flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm cursor-pointer'
-                                        style={{
-                                            background: 'rgba(30,30,50,0.6)',
-                                            border: '1px solid rgba(139,92,246,0.15)',
-                                            color: '#a78bfa',
-                                        }}
+                                        className='flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-violet-700 dark:text-violet-300'
                                     >
                                         <Share2 size={14} />
                                         Share Code: {roomCode}
@@ -494,14 +435,6 @@ export default function WarRoom() {
                     loading={startingQuiz}
                 />
             )}
-
-            {/* Pulse animation */}
-            <style>{`
-                @keyframes pulse {
-                    0%, 100% { opacity: 1; transform: scale(1); }
-                    50% { opacity: 0.7; transform: scale(1.05); }
-                }
-            `}</style>
         </div>
     );
 }

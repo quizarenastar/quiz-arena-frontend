@@ -18,51 +18,26 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
     };
 
     return (
-        <div
-            className='fixed inset-0 z-50 flex items-center justify-center'
-            style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}
-        >
-            <div
-                className='relative w-full max-w-md mx-4 rounded-2xl p-6'
-                style={{
-                    background: 'linear-gradient(145deg, #1e1e2e, #2a2a3e)',
-                    border: '1px solid rgba(139, 92, 246, 0.3)',
-                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
-                }}
-            >
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm'>
+            <div className='relative w-full max-w-md mx-4 rounded-2xl p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-2xl'>
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className='absolute top-4 right-4 p-1.5 rounded-lg transition-colors cursor-pointer'
-                    style={{ color: '#94a3b8' }}
-                    onMouseEnter={(e) => (e.target.style.color = '#f87171')}
-                    onMouseLeave={(e) => (e.target.style.color = '#94a3b8')}
+                    className='absolute top-4 right-4 p-1.5 rounded-lg transition-colors cursor-pointer text-gray-500 dark:text-gray-400 hover:text-red-500'
                 >
                     <X size={20} />
                 </button>
 
                 {/* Header */}
                 <div className='flex items-center gap-3 mb-6'>
-                    <div
-                        className='p-2.5 rounded-xl'
-                        style={{
-                            background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-                            boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
-                        }}
-                    >
+                    <div className='p-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 shadow-sm'>
                         <Swords size={24} color='#fff' />
                     </div>
                     <div>
-                        <h2
-                            className='text-xl font-bold'
-                            style={{ color: '#f1f5f9' }}
-                        >
+                        <h2 className='text-xl font-bold text-gray-900 dark:text-white'>
                             Create War Room
                         </h2>
-                        <p
-                            className='text-sm'
-                            style={{ color: '#94a3b8' }}
-                        >
+                        <p className='text-sm text-gray-600 dark:text-gray-400'>
                             Set up your arena and invite friends
                         </p>
                     </div>
@@ -71,10 +46,7 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
                 <form onSubmit={handleSubmit} className='space-y-5'>
                     {/* Room Name */}
                     <div>
-                        <label
-                            className='block text-sm font-medium mb-1.5'
-                            style={{ color: '#cbd5e1' }}
-                        >
+                        <label className='block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300'>
                             Room Name *
                         </label>
                         <input
@@ -87,29 +59,13 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
                                 setForm({ ...form, name: e.target.value })
                             }
                             placeholder='e.g., Battle of Brains'
-                            className='w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all'
-                            style={{
-                                background: 'rgba(30, 30, 50, 0.8)',
-                                border: '1px solid rgba(139, 92, 246, 0.2)',
-                                color: '#f1f5f9',
-                            }}
-                            onFocus={(e) =>
-                                (e.target.style.borderColor =
-                                    'rgba(139, 92, 246, 0.6)')
-                            }
-                            onBlur={(e) =>
-                                (e.target.style.borderColor =
-                                    'rgba(139, 92, 246, 0.2)')
-                            }
+                            className='w-full px-4 py-2.5 rounded-xl text-sm outline-none transition-all border border-violet-200 dark:border-violet-700/40 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 focus:border-transparent'
                         />
                     </div>
 
                     {/* Visibility */}
                     <div>
-                        <label
-                            className='block text-sm font-medium mb-1.5'
-                            style={{ color: '#cbd5e1' }}
-                        >
+                        <label className='block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300'>
                             Visibility
                         </label>
                         <div className='flex gap-3'>
@@ -120,18 +76,11 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
                                     onClick={() =>
                                         setForm({ ...form, visibility: v })
                                     }
-                                    className='flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium flex-1 transition-all cursor-pointer'
-                                    style={{
-                                        background:
-                                            form.visibility === v
-                                                ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)'
-                                                : 'rgba(30, 30, 50, 0.8)',
-                                        border: `1px solid ${form.visibility === v ? 'rgba(139,92,246,0.6)' : 'rgba(139,92,246,0.15)'}`,
-                                        color:
-                                            form.visibility === v
-                                                ? '#fff'
-                                                : '#94a3b8',
-                                    }}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium flex-1 transition-all cursor-pointer border ${
+                                        form.visibility === v
+                                            ? 'bg-gradient-to-r from-violet-500 to-purple-600 border-violet-500 text-white'
+                                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'
+                                    }`}
                                 >
                                     {v === 'public' ? (
                                         <Globe size={16} />
@@ -146,10 +95,7 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
 
                     {/* Max Players */}
                     <div>
-                        <label
-                            className='block text-sm font-medium mb-1.5'
-                            style={{ color: '#cbd5e1' }}
-                        >
+                        <label className='block text-sm font-medium mb-1.5 text-gray-700 dark:text-gray-300'>
                             <Users
                                 size={14}
                                 className='inline mr-1'
@@ -169,17 +115,14 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
                             }
                             className='w-full accent-purple-500'
                         />
-                        <div
-                            className='flex justify-between text-xs mt-1'
-                            style={{ color: '#64748b' }}
-                        >
+                        <div className='flex justify-between text-xs mt-1 text-gray-500 dark:text-gray-400'>
                             <span>1 (Solo)</span>
                             <span>10</span>
                         </div>
                     </div>
 
                     {/* Info note */}
-                    <p className='text-xs' style={{ color: '#64748b' }}>
+                    <p className='text-xs text-gray-500 dark:text-gray-400'>
                         💡 Quiz topic, difficulty, and time settings can be configured when starting each round.
                     </p>
 
@@ -187,13 +130,7 @@ export default function CreateWarRoomModal({ onClose, onSubmit, loading }) {
                     <button
                         type='submit'
                         disabled={loading || !form.name.trim()}
-                        className='w-full py-3 rounded-xl font-semibold text-white transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
-                        style={{
-                            background:
-                                'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-                            boxShadow:
-                                '0 4px 15px rgba(139, 92, 246, 0.4)',
-                        }}
+                        className='w-full py-3 rounded-xl font-semibold text-white transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-sm'
                     >
                         {loading ? (
                             <span className='flex items-center justify-center gap-2'>

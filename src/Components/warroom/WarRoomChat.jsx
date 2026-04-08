@@ -19,32 +19,14 @@ export default function WarRoomChat({ messages, onSend, currentUserId }) {
     };
 
     return (
-        <div
-            className='flex flex-col h-full rounded-xl overflow-hidden'
-            style={{
-                background: 'rgba(15, 15, 25, 0.6)',
-                border: '1px solid rgba(139, 92, 246, 0.15)',
-            }}
-        >
+        <div className='flex flex-col h-full rounded-xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'>
             {/* Header */}
-            <div
-                className='flex items-center gap-2 px-4 py-3'
-                style={{
-                    borderBottom: '1px solid rgba(139, 92, 246, 0.1)',
-                    background: 'rgba(20, 20, 35, 0.8)',
-                }}
-            >
-                <MessageSquare size={16} style={{ color: '#8b5cf6' }} />
-                <span
-                    className='text-sm font-semibold'
-                    style={{ color: '#e2e8f0' }}
-                >
+            <div className='flex items-center gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40'>
+                <MessageSquare size={16} className='text-violet-500' />
+                <span className='text-sm font-semibold text-gray-800 dark:text-gray-200'>
                     Chat
                 </span>
-                <span
-                    className='text-xs ml-auto'
-                    style={{ color: '#64748b' }}
-                >
+                <span className='text-xs ml-auto text-gray-500 dark:text-gray-400'>
                     {messages.length} messages
                 </span>
             </div>
@@ -56,10 +38,7 @@ export default function WarRoomChat({ messages, onSend, currentUserId }) {
                 style={{ minHeight: 0 }}
             >
                 {messages.length === 0 && (
-                    <p
-                        className='text-center text-xs py-8'
-                        style={{ color: '#475569' }}
-                    >
+                    <p className='text-center text-xs py-8 text-gray-500 dark:text-gray-400'>
                         No messages yet. Say hello! 👋
                     </p>
                 )}
@@ -70,22 +49,14 @@ export default function WarRoomChat({ messages, onSend, currentUserId }) {
                                 key={msg._id || idx}
                                 className='text-center py-1'
                             >
-                                <span
-                                    className='text-xs px-3 py-1 rounded-full inline-block'
-                                    style={{
-                                        background:
-                                            'rgba(139, 92, 246, 0.1)',
-                                        color: '#a78bfa',
-                                    }}
-                                >
+                                <span className='text-xs px-3 py-1 rounded-full inline-block bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'>
                                     {msg.message}
                                 </span>
                             </div>
                         );
                     }
 
-                    const isMe =
-                        msg.userId === currentUserId;
+                    const isMe = msg.userId === currentUserId;
 
                     return (
                         <div
@@ -94,13 +65,11 @@ export default function WarRoomChat({ messages, onSend, currentUserId }) {
                         >
                             {/* Avatar */}
                             <div
-                                className='w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold'
-                                style={{
-                                    background: isMe
-                                        ? 'linear-gradient(135deg, #8b5cf6, #6d28d9)'
-                                        : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                                    color: '#fff',
-                                }}
+                                className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white ${
+                                    isMe
+                                        ? 'bg-gradient-to-r from-violet-500 to-purple-600'
+                                        : 'bg-gradient-to-r from-blue-500 to-blue-700'
+                                }`}
                             >
                                 {msg.profilePicture ? (
                                     <img
@@ -109,7 +78,8 @@ export default function WarRoomChat({ messages, onSend, currentUserId }) {
                                         className='w-full h-full rounded-full object-cover'
                                     />
                                 ) : (
-                                    msg.username?.charAt(0)?.toUpperCase() || '?'
+                                    msg.username?.charAt(0)?.toUpperCase() ||
+                                    '?'
                                 )}
                             </div>
 
@@ -118,37 +88,23 @@ export default function WarRoomChat({ messages, onSend, currentUserId }) {
                                 className={`max-w-[75%] ${isMe ? 'text-right' : ''}`}
                             >
                                 {!isMe && (
-                                    <span
-                                        className='text-xs font-medium block mb-0.5'
-                                        style={{ color: '#8b5cf6' }}
-                                    >
+                                    <span className='text-xs font-medium block mb-0.5 text-violet-600 dark:text-violet-300'>
                                         {msg.username}
                                     </span>
                                 )}
                                 <div
-                                    className='px-3 py-2 rounded-xl text-sm break-words'
-                                    style={{
-                                        background: isMe
-                                            ? 'linear-gradient(135deg, rgba(139,92,246,0.3), rgba(109,40,217,0.3))'
-                                            : 'rgba(30, 30, 50, 0.8)',
-                                        color: '#e2e8f0',
-                                        borderBottomRightRadius: isMe
-                                            ? '4px'
-                                            : '12px',
-                                        borderBottomLeftRadius: isMe
-                                            ? '12px'
-                                            : '4px',
-                                    }}
+                                    className={`px-3 py-2 rounded-xl text-sm break-words ${
+                                        isMe
+                                            ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-200'
+                                            : 'bg-gray-100 dark:bg-gray-700/60 text-gray-800 dark:text-gray-200'
+                                    }`}
                                 >
                                     {msg.message}
                                 </div>
-                                <span
-                                    className='text-xs mt-0.5 block'
-                                    style={{ color: '#475569' }}
-                                >
+                                <span className='text-xs mt-0.5 block text-gray-500 dark:text-gray-400'>
                                     {msg.createdAt
                                         ? new Date(
-                                              msg.createdAt
+                                              msg.createdAt,
                                           ).toLocaleTimeString([], {
                                               hour: '2-digit',
                                               minute: '2-digit',
@@ -165,11 +121,7 @@ export default function WarRoomChat({ messages, onSend, currentUserId }) {
             {/* Input */}
             <form
                 onSubmit={handleSend}
-                className='flex items-center gap-2 px-3 py-2'
-                style={{
-                    borderTop: '1px solid rgba(139, 92, 246, 0.1)',
-                    background: 'rgba(20, 20, 35, 0.8)',
-                }}
+                className='flex items-center gap-2 px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40'
             >
                 <input
                     type='text'
@@ -177,28 +129,12 @@ export default function WarRoomChat({ messages, onSend, currentUserId }) {
                     onChange={(e) => setInput(e.target.value)}
                     placeholder='Type a message...'
                     maxLength={500}
-                    className='flex-1 px-3 py-2 rounded-lg text-sm outline-none'
-                    style={{
-                        background: 'rgba(30, 30, 50, 0.8)',
-                        border: '1px solid rgba(139, 92, 246, 0.15)',
-                        color: '#e2e8f0',
-                    }}
-                    onFocus={(e) =>
-                        (e.target.style.borderColor =
-                            'rgba(139, 92, 246, 0.5)')
-                    }
-                    onBlur={(e) =>
-                        (e.target.style.borderColor =
-                            'rgba(139, 92, 246, 0.15)')
-                    }
+                    className='flex-1 px-3 py-2 rounded-lg text-sm outline-none border border-violet-200 dark:border-violet-700/40 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-violet-500 focus:border-transparent'
                 />
                 <button
                     type='submit'
                     disabled={!input.trim()}
-                    className='p-2 rounded-lg transition-all disabled:opacity-30 cursor-pointer'
-                    style={{
-                        background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-                    }}
+                    className='p-2 rounded-lg transition-all disabled:opacity-30 cursor-pointer bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700'
                 >
                     <Send size={16} color='#fff' />
                 </button>

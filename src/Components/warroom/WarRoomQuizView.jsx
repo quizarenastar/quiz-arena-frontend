@@ -30,7 +30,7 @@ export default function WarRoomQuizView({
         const timer = setInterval(() => {
             const remaining = Math.max(
                 0,
-                Math.ceil((endTime - Date.now()) / 1000)
+                Math.ceil((endTime - Date.now()) / 1000),
             );
             setTimeLeft(remaining);
             if (remaining <= 0) {
@@ -60,7 +60,7 @@ export default function WarRoomQuizView({
             quizId,
             currentIndex,
             optionIndex,
-            timeSpent
+            timeSpent,
         );
 
         if (result) {
@@ -97,27 +97,14 @@ export default function WarRoomQuizView({
     if (isFinished) {
         return (
             <div className='flex flex-col items-center justify-center py-16'>
-                <div
-                    className='text-6xl mb-4'
-                    style={{
-                        animation: 'pulse 2s ease-in-out infinite',
-                    }}
-                >
-                    ⏳
-                </div>
-                <h2
-                    className='text-2xl font-bold mb-2'
-                    style={{ color: '#f1f5f9' }}
-                >
+                <div className='text-6xl mb-4 animate-pulse'>⏳</div>
+                <h2 className='text-2xl font-bold mb-2 text-gray-900 dark:text-white'>
                     Quiz Completed!
                 </h2>
-                <p style={{ color: '#94a3b8' }}>
+                <p className='text-gray-600 dark:text-gray-400'>
                     Your score: {score} points
                 </p>
-                <p
-                    className='text-sm mt-2'
-                    style={{ color: '#64748b' }}
-                >
+                <p className='text-sm mt-2 text-gray-500 dark:text-gray-400'>
                     Waiting for other players to finish...
                 </p>
             </div>
@@ -132,26 +119,20 @@ export default function WarRoomQuizView({
             <div className='flex items-center justify-between mb-6'>
                 {/* Timer */}
                 <div
-                    className='flex items-center gap-2 px-4 py-2 rounded-xl'
-                    style={{
-                        background:
-                            timeLeft <= 30
-                                ? 'rgba(239, 68, 68, 0.15)'
-                                : 'rgba(139, 92, 246, 0.1)',
-                        border: `1px solid ${timeLeft <= 30 ? 'rgba(239,68,68,0.3)' : 'rgba(139,92,246,0.2)'}`,
-                    }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${
+                        timeLeft <= 30
+                            ? 'bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-700/40'
+                            : 'bg-violet-100 dark:bg-violet-900/30 border-violet-200 dark:border-violet-700/40'
+                    }`}
                 >
                     <Clock
                         size={16}
-                        style={{
-                            color: timeLeft <= 30 ? '#f87171' : '#a78bfa',
-                        }}
+                        className={
+                            timeLeft <= 30 ? 'text-red-500' : 'text-violet-500'
+                        }
                     />
                     <span
-                        className='font-mono font-bold text-lg'
-                        style={{
-                            color: timeLeft <= 30 ? '#f87171' : '#e2e8f0',
-                        }}
+                        className={`font-mono font-bold text-lg ${timeLeft <= 30 ? 'text-red-500' : 'text-gray-800 dark:text-gray-200'}`}
                     >
                         {formatTime(timeLeft)}
                     </span>
@@ -160,37 +141,15 @@ export default function WarRoomQuizView({
                 {/* Score & Streak */}
                 <div className='flex items-center gap-4'>
                     {streak >= 2 && (
-                        <div
-                            className='flex items-center gap-1 px-3 py-1.5 rounded-lg'
-                            style={{
-                                background:
-                                    'linear-gradient(135deg, rgba(249,115,22,0.2), rgba(234,88,12,0.2))',
-                                border: '1px solid rgba(249,115,22,0.3)',
-                            }}
-                        >
-                            <Zap
-                                size={14}
-                                style={{ color: '#fb923c' }}
-                            />
-                            <span
-                                className='text-sm font-bold'
-                                style={{ color: '#fb923c' }}
-                            >
+                        <div className='flex items-center gap-1 px-3 py-1.5 rounded-lg bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700/40'>
+                            <Zap size={14} className='text-orange-500' />
+                            <span className='text-sm font-bold text-orange-600 dark:text-orange-300'>
                                 {streak}× Streak!
                             </span>
                         </div>
                     )}
-                    <div
-                        className='px-4 py-2 rounded-xl'
-                        style={{
-                            background: 'rgba(34, 197, 94, 0.1)',
-                            border: '1px solid rgba(34,197,94,0.2)',
-                        }}
-                    >
-                        <span
-                            className='font-bold'
-                            style={{ color: '#4ade80' }}
-                        >
+                    <div className='px-4 py-2 rounded-xl bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-700/40'>
+                        <span className='font-bold text-green-700 dark:text-green-300'>
                             {score} pts
                         </span>
                     </div>
@@ -198,45 +157,28 @@ export default function WarRoomQuizView({
             </div>
 
             {/* Progress bar */}
-            <div
-                className='w-full h-2 rounded-full mb-6 overflow-hidden'
-                style={{ background: 'rgba(30, 30, 50, 0.8)' }}
-            >
+            <div className='w-full h-2 rounded-full mb-6 overflow-hidden bg-gray-200 dark:bg-gray-700'>
                 <div
-                    className='h-full rounded-full transition-all duration-500'
+                    className='h-full rounded-full transition-all duration-500 bg-gradient-to-r from-violet-500 to-purple-600'
                     style={{
                         width: `${((currentIndex + 1) / totalQuestions) * 100}%`,
-                        background:
-                            'linear-gradient(90deg, #8b5cf6, #6d28d9)',
                     }}
                 />
             </div>
 
             {/* Question counter */}
             <div className='flex items-center justify-between mb-4'>
-                <span
-                    className='text-sm font-medium'
-                    style={{ color: '#8b5cf6' }}
-                >
+                <span className='text-sm font-medium text-violet-600 dark:text-violet-300'>
                     Question {currentIndex + 1} of {totalQuestions}
                 </span>
-                <span className='text-xs' style={{ color: '#64748b' }}>
+                <span className='text-xs text-gray-500 dark:text-gray-400'>
                     {question.points} point{question.points > 1 ? 's' : ''}
                 </span>
             </div>
 
             {/* Question */}
-            <div
-                className='p-6 rounded-2xl mb-6'
-                style={{
-                    background: 'rgba(30, 30, 50, 0.6)',
-                    border: '1px solid rgba(139, 92, 246, 0.15)',
-                }}
-            >
-                <h3
-                    className='text-lg font-semibold leading-relaxed'
-                    style={{ color: '#f1f5f9' }}
-                >
+            <div className='p-6 rounded-2xl mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'>
+                <h3 className='text-lg font-semibold leading-relaxed text-gray-900 dark:text-white'>
                     {question.question}
                 </h3>
             </div>
@@ -244,39 +186,27 @@ export default function WarRoomQuizView({
             {/* Options */}
             <div className='space-y-3 mb-6'>
                 {question.options.map((option, idx) => {
-                    let optionStyle = {
-                        background: 'rgba(30, 30, 50, 0.4)',
-                        border: '1px solid rgba(139, 92, 246, 0.1)',
-                        color: '#e2e8f0',
-                    };
+                    let optionClasses =
+                        'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200';
 
                     if (answered) {
                         if (
                             answerResult &&
                             idx === answerResult.correctAnswer
                         ) {
-                            optionStyle = {
-                                background: 'rgba(34, 197, 94, 0.15)',
-                                border: '1px solid rgba(34, 197, 94, 0.5)',
-                                color: '#4ade80',
-                            };
+                            optionClasses =
+                                'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700/50 text-green-700 dark:text-green-300';
                         } else if (
                             idx === selectedAnswer &&
                             answerResult &&
                             !answerResult.isCorrect
                         ) {
-                            optionStyle = {
-                                background: 'rgba(239, 68, 68, 0.15)',
-                                border: '1px solid rgba(239, 68, 68, 0.5)',
-                                color: '#f87171',
-                            };
+                            optionClasses =
+                                'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700/50 text-red-700 dark:text-red-300';
                         }
                     } else if (idx === selectedAnswer) {
-                        optionStyle = {
-                            background: 'rgba(139, 92, 246, 0.2)',
-                            border: '1px solid rgba(139, 92, 246, 0.5)',
-                            color: '#c4b5fd',
-                        };
+                        optionClasses =
+                            'bg-violet-100 dark:bg-violet-900/30 border-violet-300 dark:border-violet-700/50 text-violet-700 dark:text-violet-300';
                     }
 
                     return (
@@ -284,28 +214,18 @@ export default function WarRoomQuizView({
                             key={idx}
                             onClick={() => handleAnswer(idx)}
                             disabled={answered}
-                            className='w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all cursor-pointer disabled:cursor-default'
-                            style={optionStyle}
+                            className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl text-left transition-all cursor-pointer disabled:cursor-default border ${optionClasses}`}
                         >
-                            <span
-                                className='w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0'
-                                style={{
-                                    background:
-                                        'rgba(139, 92, 246, 0.15)',
-                                    color: '#a78bfa',
-                                }}
-                            >
+                            <span className='w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'>
                                 {String.fromCharCode(65 + idx)}
                             </span>
-                            <span className='flex-1 text-sm'>
-                                {option}
-                            </span>
+                            <span className='flex-1 text-sm'>{option}</span>
                             {answered &&
                                 answerResult &&
                                 idx === answerResult.correctAnswer && (
                                     <CheckCircle
                                         size={20}
-                                        style={{ color: '#22c55e' }}
+                                        className='text-green-500'
                                     />
                                 )}
                             {answered &&
@@ -314,7 +234,7 @@ export default function WarRoomQuizView({
                                 !answerResult.isCorrect && (
                                     <XCircle
                                         size={20}
-                                        style={{ color: '#ef4444' }}
+                                        className='text-red-500'
                                     />
                                 )}
                         </button>
@@ -326,27 +246,14 @@ export default function WarRoomQuizView({
             {answered && answerResult && (
                 <div className='space-y-4'>
                     {answerResult.explanation && (
-                        <div
-                            className='p-4 rounded-xl text-sm'
-                            style={{
-                                background: 'rgba(59, 130, 246, 0.1)',
-                                border: '1px solid rgba(59, 130, 246, 0.2)',
-                                color: '#93c5fd',
-                            }}
-                        >
+                        <div className='p-4 rounded-xl text-sm bg-blue-100 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 text-blue-700 dark:text-blue-300'>
                             <strong>Explanation:</strong>{' '}
                             {answerResult.explanation}
                         </div>
                     )}
                     <button
                         onClick={handleNext}
-                        className='w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all cursor-pointer'
-                        style={{
-                            background:
-                                'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-                            boxShadow:
-                                '0 4px 15px rgba(139, 92, 246, 0.4)',
-                        }}
+                        className='w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition-all cursor-pointer bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-sm'
                     >
                         {currentIndex < totalQuestions - 1 ? (
                             <>
