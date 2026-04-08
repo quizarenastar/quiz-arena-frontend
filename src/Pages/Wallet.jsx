@@ -67,7 +67,7 @@ const Wallet = () => {
                 transactionId: wallet?.transactionId || '',
             });
             toast.success(
-                'Fund addition request submitted! Admin will review it shortly.'
+                'Fund addition request submitted! Admin will review it shortly.',
             );
             setAddFundsAmount('');
             setWallet({ ...wallet, transactionId: '' });
@@ -129,16 +129,15 @@ const Wallet = () => {
         }
     };
 
-    const getTransactionIcon = (type) => {
-        switch (type) {
+    const getTransactionIcon = (transaction) => {
+        if (WalletService.isDebitTransaction(transaction)) {
+            return <TrendingDown className='text-red-500' size={16} />;
+        }
+        switch (transaction.type) {
             case 'payment':
+            case 'earning':
+            case 'bonus':
                 return <TrendingUp className='text-green-500' size={16} />;
-            case 'quiz_earning':
-                return <TrendingUp className='text-green-500' size={16} />;
-            case 'quiz_fee':
-                return <TrendingDown className='text-red-500' size={16} />;
-            case 'withdrawal':
-                return <TrendingDown className='text-red-500' size={16} />;
             case 'refund':
                 return <TrendingUp className='text-blue-500' size={16} />;
             default:
@@ -178,7 +177,7 @@ const Wallet = () => {
                             </p>
                             <p className='text-3xl font-bold'>
                                 {WalletService.formatAmount(
-                                    wallet?.balance || 0
+                                    wallet?.balance || 0,
                                 )}
                             </p>
                         </div>
@@ -188,7 +187,7 @@ const Wallet = () => {
                             </p>
                             <p className='text-xl font-semibold'>
                                 {WalletService.formatAmount(
-                                    wallet?.totalEarnings || 0
+                                    wallet?.totalEarnings || 0,
                                 )}
                             </p>
                         </div>
@@ -232,18 +231,16 @@ const Wallet = () => {
                                 <div key={transaction._id}>
                                     <div className='p-6 flex items-center justify-between'>
                                         <div className='flex items-center space-x-4'>
-                                            {getTransactionIcon(
-                                                transaction.type
-                                            )}
+                                            {getTransactionIcon(transaction)}
                                             <div>
                                                 <p className='font-medium text-gray-900 dark:text-white'>
                                                     {WalletService.getTransactionTypeLabel(
-                                                        transaction.type
+                                                        transaction,
                                                     )}
                                                 </p>
                                                 <p className='text-sm text-gray-500 dark:text-gray-400'>
                                                     {new Date(
-                                                        transaction.createdAt
+                                                        transaction.createdAt,
                                                     ).toLocaleDateString(
                                                         'en-IN',
                                                         {
@@ -252,7 +249,7 @@ const Wallet = () => {
                                                             day: 'numeric',
                                                             hour: '2-digit',
                                                             minute: '2-digit',
-                                                        }
+                                                        },
                                                     )}
                                                 </p>
                                             </div>
@@ -261,26 +258,20 @@ const Wallet = () => {
                                         <div className='text-right'>
                                             <p
                                                 className={`font-semibold ${
-                                                    [
-                                                        'payment',
-                                                        'earning',
-                                                        'refund',
-                                                        'bonus',
-                                                    ].includes(transaction.type)
-                                                        ? 'text-green-600'
-                                                        : 'text-red-600'
+                                                    WalletService.isDebitTransaction(
+                                                        transaction,
+                                                    )
+                                                        ? 'text-red-600'
+                                                        : 'text-green-600'
                                                 }`}
                                             >
-                                                {[
-                                                    'payment',
-                                                    'earning',
-                                                    'refund',
-                                                    'bonus',
-                                                ].includes(transaction.type)
-                                                    ? '+'
-                                                    : '-'}
+                                                {WalletService.isDebitTransaction(
+                                                    transaction,
+                                                )
+                                                    ? '-'
+                                                    : '+'}
                                                 {WalletService.formatAmount(
-                                                    transaction.amount
+                                                    transaction.amount,
                                                 )}
                                             </p>
                                             <p
@@ -289,9 +280,9 @@ const Wallet = () => {
                                                     'completed'
                                                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                         : transaction.status ===
-                                                          'pending'
-                                                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                            'pending'
+                                                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                                                 }`}
                                             >
                                                 {transaction.status}
