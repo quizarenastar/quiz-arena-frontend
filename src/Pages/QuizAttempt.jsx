@@ -475,47 +475,50 @@ const QuizAttempt = () => {
 
             {/* ===== HEADER ===== */}
             <div className='bg-white dark:bg-gray-800 shadow-sm border-b'>
-                <div className='max-w-4xl mx-auto px-4 py-4'>
-                    <div className='flex justify-between items-center'>
-                        <div>
-                            <p className='text-sm text-gray-600 dark:text-gray-400'>
+                <div className='max-w-4xl mx-auto px-4 py-3'>
+                    <div className='flex flex-wrap items-center justify-between gap-y-2 gap-x-3'>
+                        <div className='min-w-0'>
+                            <h1 className='text-base sm:text-xl font-bold text-gray-900 dark:text-white truncate'>
+                                {quiz.title}
+                            </h1>
+                            <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
                                 Question {currentQuestionIndex + 1} of{' '}
                                 {totalQuestions}
                             </p>
                         </div>
 
-                        <div className='flex items-center space-x-4'>
+                        <div className='flex items-center flex-wrap gap-2'>
                             {/* Anti-cheat status */}
                             <button
                                 onClick={() =>
                                     setShowViolations(!showViolations)
                                 }
-                                className={`flex items-center px-3 py-1 rounded-full text-sm ${
+                                className={`flex items-center px-2.5 py-1 rounded-full text-xs ${
                                     violations.length > 0
                                         ? 'bg-red-100 text-red-800'
                                         : 'bg-green-100 text-green-800'
                                 }`}
                             >
-                                <Shield size={14} className='mr-1' />
+                                <Shield size={13} className='mr-1 shrink-0' />
                                 {violations.length} violations
                             </button>
 
                             {/* Total Quiz Timer */}
                             <div
-                                className={`flex items-center px-3 py-1 rounded-full font-semibold ${
+                                className={`flex items-center px-2.5 py-1 rounded-full font-semibold text-xs ${
                                     timeRemaining < 300
                                         ? 'bg-red-100 text-red-800 animate-pulse'
                                         : 'bg-blue-100 text-blue-800'
                                 }`}
                             >
-                                <Clock size={14} className='mr-1' />
+                                <Clock size={13} className='mr-1 shrink-0' />
                                 {formatTime(timeRemaining)}
                             </div>
 
                             {/* Question Timer */}
                             {currentQuestion?.timeLimit && (
                                 <div
-                                    className={`flex items-center px-3 py-1 rounded-full ${
+                                    className={`flex items-center px-2.5 py-1 rounded-full text-xs ${
                                         currentQuestionTime < 10
                                             ? 'bg-red-100 text-red-800 animate-pulse'
                                             : currentQuestionTime < 20
@@ -523,7 +526,10 @@ const QuizAttempt = () => {
                                               : 'bg-green-100 text-green-800'
                                     }`}
                                 >
-                                    <Clock size={14} className='mr-1' />
+                                    <Clock
+                                        size={13}
+                                        className='mr-1 shrink-0'
+                                    />
                                     <span className='font-semibold'>
                                         {currentQuestionTime}s
                                     </span>
@@ -531,7 +537,7 @@ const QuizAttempt = () => {
                             )}
 
                             {/* Progress */}
-                            <div className='text-sm text-gray-600 dark:text-gray-400'>
+                            <div className='text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap'>
                                 {answeredCount}/{totalQuestions} done
                             </div>
                         </div>
@@ -594,20 +600,18 @@ const QuizAttempt = () => {
                 ) : currentQuestion ? (
                     <div className='bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6'>
                         {/* Question Progress */}
-                        <div className='mb-4 flex items-center justify-between'>
-                            <div className='text-sm font-medium text-gray-600 dark:text-gray-400'>
+                        <div className='mb-4 flex items-center gap-3'>
+                            <div className='text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap'>
                                 Question {currentQuestionIndex + 1} of{' '}
                                 {totalQuestions}
                             </div>
-                            <div className='flex items-center space-x-2'>
-                                <div className='w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2'>
-                                    <div
-                                        className='bg-yellow-500 h-2 rounded-full transition-all duration-300'
-                                        style={{
-                                            width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%`,
-                                        }}
-                                    ></div>
-                                </div>
+                            <div className='flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2'>
+                                <div
+                                    className='bg-yellow-500 h-2 rounded-full transition-all duration-300'
+                                    style={{
+                                        width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%`,
+                                    }}
+                                ></div>
                             </div>
                         </div>
 
