@@ -200,18 +200,10 @@ export default function WarRoom() {
                             <ArrowLeft size={20} />
                         </button>
                         <div>
-                            <h1 className='text-xl font-bold flex items-center gap-2 text-gray-900 dark:text-white'>
-                                <Swords size={20} className='text-violet-500' />
-                                {room?.name || 'War Room'}
-                            </h1>
-
                             <div className='flex items-center gap-3 mt-0.5'>
                                 <span className='text-xs flex items-center gap-1 text-gray-500 dark:text-gray-400'>
                                     <Users size={12} />
                                     {onlineCount}/{members.length} online
-                                </span>
-                                <span className='text-xs text-gray-500 dark:text-gray-400'>
-                                    Round {room?.roundNumber || 0}
                                 </span>
                             </div>
                         </div>
@@ -304,13 +296,13 @@ export default function WarRoom() {
                                 {/* Room Info Card */}
                                 <div className='p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'>
                                     <div className='flex items-center justify-between mb-4'>
-                                        <h3 className='font-semibold flex items-center gap-2 text-gray-800 dark:text-gray-200'>
-                                            <Zap
-                                                size={16}
+                                        <h1 className='text-xl font-bold flex items-center gap-2 text-gray-900 dark:text-white'>
+                                            <Swords
+                                                size={20}
                                                 className='text-violet-500'
                                             />
-                                            Room Info
-                                        </h3>
+                                            {room?.name || 'War Room'}
+                                        </h1>
                                     </div>
                                     <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
                                         {[
