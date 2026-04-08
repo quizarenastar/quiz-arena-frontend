@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     Clock,
     Users,
@@ -9,10 +9,7 @@ import {
     Calendar,
     Play,
     Lock,
-    X,
-    Medal,
     Timer,
-    ChevronRight,
     CheckCircle2,
 } from 'lucide-react';
 import QuizService from '../service/QuizService';
@@ -46,15 +43,6 @@ function formatCountdown(targetDate) {
     return [h, m, s].map((v) => String(v).padStart(2, '0')).join(':');
 }
 
-function formatTime(seconds) {
-    if (!seconds) return '—';
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    if (m === 0) return `${s}s`;
-    if (s === 0) return `${m}m`;
-    return `${m}m ${s}s`;
-}
-
 function formatDuration(seconds) {
     if (!seconds) return '–';
     const min = Math.floor(seconds / 60);
@@ -74,124 +62,6 @@ function useCountdown(targetDate) {
         return () => clearInterval(id);
     }, [targetDate]);
     return display;
-}
-
-/* ──────────────────────────────────────────────
-   Leaderboard Modal
-────────────────────────────────────────────── */
-function LeaderboardModal({ quiz, onClose }) {
-    const [loading, setLoading] = useState(true);
-    const [board, setBoard] = useState([]);
-    const [quizTitle, setQuizTitle] = useState(quiz.title);
-
-    useEffect(() => {
-        const load = async () => {
-            try {
-                const res = await QuizService.getLeaderboard(quiz._id);
-                const data = res.data;
-                setBoard(data.leaderboard || []);
-                setQuizTitle(data.quizTitle || quiz.title);
-            } catch {
-                toast.error('Failed to load leaderboard');
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, [quiz._id, quiz.title]);
-
-    const rankColor = (rank) => {
-        if (rank === 1) return 'text-yellow-500';
-        if (rank === 2) return 'text-gray-400';
-        if (rank === 3) return 'text-amber-600';
-        return 'text-gray-500';
-    };
-
-    const rankBg = (rank) => {
-        if (rank === 1) return 'bg-yellow-500/10 border-yellow-400/30';
-        if (rank === 2) return 'bg-gray-400/10 border-gray-400/30';
-        if (rank === 3) return 'bg-amber-600/10 border-amber-600/30';
-        return 'bg-gray-50 dark:bg-gray-700/30 border-gray-200 dark:border-gray-700';
-    };
-
-    return (
-        <div
-            className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm'
-            onClick={(e) => e.target === e.currentTarget && onClose()}
-        >
-            <div className='bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden'>
-                {/* Header */}
-                <div className='bg-gradient-to-r from-indigo-600 to-purple-600 p-5 flex items-start justify-between'>
-                    <div>
-                        <div className='flex items-center gap-2 mb-1'>
-                            <Trophy className='w-5 h-5 text-yellow-300' />
-                            <span className='text-xs font-semibold text-indigo-200 uppercase tracking-wide'>Leaderboard</span>
-                        </div>
-                        <h2 className='text-lg font-bold text-white line-clamp-2'>{quizTitle}</h2>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className='text-white/70 hover:text-white hover:bg-white/20 rounded-full p-1 transition-colors ml-3 flex-shrink-0'
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
-
-                {/* Body */}
-                <div className='flex-1 overflow-y-auto p-4'>
-                    {loading ? (
-                        <div className='flex items-center justify-center py-16'>
-                            <div className='animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500' />
-                        </div>
-                    ) : board.length === 0 ? (
-                        <div className='text-center py-16 text-gray-500 dark:text-gray-400'>
-                            <Trophy className='w-12 h-12 mx-auto mb-3 opacity-30' />
-                            <p className='font-medium'>No attempts yet</p>
-                            <p className='text-sm mt-1'>Be the first to attempt this quiz!</p>
-                        </div>
-                    ) : (
-                        <div className='space-y-2'>
-                            {board.map((entry) => (
-                                <div
-                                    key={entry.userId || entry.rank}
-                                    className={`flex items-center gap-3 p-3 rounded-xl border ${rankBg(entry.rank)}`}
-                                >
-                                    {/* Rank */}
-                                    <div className={`w-8 h-8 flex items-center justify-center font-bold text-sm rounded-full flex-shrink-0 ${rankColor(entry.rank)}`}>
-                                        {entry.rank <= 3 ? <Medal size={18} /> : `#${entry.rank}`}
-                                    </div>
-
-                                    {/* Info */}
-                                    <div className='flex-1 min-w-0'>
-                                        <p className='font-semibold text-gray-900 dark:text-white truncate'>
-                                            {entry.username}
-                                        </p>
-                                        <p className='text-xs text-gray-500 dark:text-gray-400'>
-                                            {entry.correctAnswers}/{entry.totalQuestions} correct · {entry.percentage}%
-                                        </p>
-                                    </div>
-
-                                    {/* Score + time */}
-                                    <div className='text-right flex-shrink-0'>
-                                        <p className='font-bold text-gray-900 dark:text-white text-sm'>{entry.score} pts</p>
-                                        <p className='text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 justify-end'>
-                                            <Timer size={11} />{formatTime(entry.timeTaken)}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                <div className='border-t border-gray-200 dark:border-gray-700 p-3 text-center'>
-                    <p className='text-xs text-gray-500 dark:text-gray-400'>
-                        Ranked by score · ties broken by completion time
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
 }
 
 /* ──────────────────────────────────────────────
@@ -357,10 +227,10 @@ function TabBtn({ label, count, active, onClick, color }) {
    Main Component
 ────────────────────────────────────────────── */
 function Quizzes() {
+    const navigate = useNavigate();
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('ongoing');
-    const [leaderboardQuiz, setLeaderboardQuiz] = useState(null);
     const [filters, setFilters] = useState({ category: '', difficulty: '', search: '' });
 
     const fetchQuizzes = useCallback(async () => {
@@ -504,21 +374,15 @@ function Quizzes() {
                                 quiz={quiz}
                                 status={activeTab}
                                 getDifficultyColor={getDifficultyColor}
-                                onLeaderboard={setLeaderboardQuiz}
+                                onLeaderboard={(quiz) =>
+                                    navigate(`/quiz/${quiz._id}/leaderboard`)
+                                }
                                 isRegistered={quiz.isRegistered || false}
                             />
                         ))}
                     </div>
                 )}
             </div>
-
-            {/* Leaderboard Modal */}
-            {leaderboardQuiz && (
-                <LeaderboardModal
-                    quiz={leaderboardQuiz}
-                    onClose={() => setLeaderboardQuiz(null)}
-                />
-            )}
         </div>
     );
 }
