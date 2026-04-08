@@ -67,19 +67,30 @@ function useCountdown(targetDate) {
 /* ──────────────────────────────────────────────
    QuizCard
 ────────────────────────────────────────────── */
-function QuizCard({ quiz, status, getDifficultyColor, onLeaderboard, isRegistered }) {
-    const startCountdown = useCountdown(status === 'upcoming' ? quiz.startTime : null);
-    const endCountdown = useCountdown(status === 'ongoing' ? quiz.endTime : null);
+function QuizCard({
+    quiz,
+    status,
+    getDifficultyColor,
+    onLeaderboard,
+    isRegistered,
+}) {
+    const startCountdown = useCountdown(
+        status === 'upcoming' ? quiz.startTime : null,
+    );
+    const endCountdown = useCountdown(
+        status === 'ongoing' ? quiz.endTime : null,
+    );
 
-    const difficultyLabel =
-        (quiz.difficulty || quiz.difficultyLevel || 'medium');
+    const difficultyLabel = quiz.difficulty || quiz.difficultyLevel || 'medium';
 
     const durationSec = quiz.duration || quiz.timeLimit || 30;
 
     return (
         <div className='bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden flex flex-col h-full transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 border border-gray-100 dark:border-gray-700'>
             {/* Top accent bar */}
-            <div className={`h-1 w-full ${status === 'ongoing' ? 'bg-gradient-to-r from-green-400 to-emerald-500' : status === 'upcoming' ? 'bg-gradient-to-r from-blue-400 to-indigo-500' : 'bg-gradient-to-r from-gray-400 to-gray-500'}`} />
+            <div
+                className={`h-1 w-full ${status === 'ongoing' ? 'bg-gradient-to-r from-green-400 to-emerald-500' : status === 'upcoming' ? 'bg-gradient-to-r from-blue-400 to-indigo-500' : 'bg-gradient-to-r from-gray-400 to-gray-500'}`}
+            />
 
             <div className='p-5 flex flex-col flex-grow gap-3'>
                 {/* Badges row */}
@@ -96,8 +107,11 @@ function QuizCard({ quiz, status, getDifficultyColor, onLeaderboard, isRegistere
                             Free
                         </span>
                     )}
-                    <span className={`text-xs font-medium ml-auto ${getDifficultyColor(difficultyLabel)}`}>
-                        {difficultyLabel.charAt(0).toUpperCase() + difficultyLabel.slice(1)}
+                    <span
+                        className={`text-xs font-medium ml-auto ${getDifficultyColor(difficultyLabel)}`}
+                    >
+                        {difficultyLabel.charAt(0).toUpperCase() +
+                            difficultyLabel.slice(1)}
                     </span>
                 </div>
 
@@ -133,19 +147,31 @@ function QuizCard({ quiz, status, getDifficultyColor, onLeaderboard, isRegistere
                 {status === 'ongoing' && quiz.endTime && (
                     <div className='flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg px-3 py-1.5'>
                         <Timer size={13} />
-                        <span>Ends in <span className='font-mono font-semibold'>{endCountdown}</span></span>
+                        <span>
+                            Ends in{' '}
+                            <span className='font-mono font-semibold'>
+                                {endCountdown}
+                            </span>
+                        </span>
                     </div>
                 )}
                 {status === 'upcoming' && quiz.startTime && (
                     <div className='flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg px-3 py-1.5'>
                         <Calendar size={13} />
-                        <span>Starts in <span className='font-mono font-semibold'>{startCountdown}</span></span>
+                        <span>
+                            Starts in{' '}
+                            <span className='font-mono font-semibold'>
+                                {startCountdown}
+                            </span>
+                        </span>
                     </div>
                 )}
                 {status === 'ended' && quiz.endTime && (
                     <div className='flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-1.5'>
                         <Clock size={13} />
-                        <span>Ended {new Date(quiz.endTime).toLocaleDateString()}</span>
+                        <span>
+                            Ended {new Date(quiz.endTime).toLocaleDateString()}
+                        </span>
                     </div>
                 )}
 
@@ -160,8 +186,8 @@ function QuizCard({ quiz, status, getDifficultyColor, onLeaderboard, isRegistere
                             Start Quiz
                         </Link>
                     )}
-                    {status === 'upcoming' && (
-                        quiz.isPaid ? (
+                    {status === 'upcoming' &&
+                        (quiz.isPaid ? (
                             isRegistered ? (
                                 <div className='flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold text-sm'>
                                     <CheckCircle2 size={15} />
@@ -184,8 +210,7 @@ function QuizCard({ quiz, status, getDifficultyColor, onLeaderboard, isRegistere
                                 <Calendar size={15} />
                                 Coming Soon
                             </button>
-                        )
-                    )}
+                        ))}
                     {status === 'ended' && (
                         <button
                             onClick={() => onLeaderboard(quiz)}
@@ -206,17 +231,25 @@ function QuizCard({ quiz, status, getDifficultyColor, onLeaderboard, isRegistere
 ────────────────────────────────────────────── */
 function TabBtn({ label, count, active, onClick, color }) {
     const colors = {
-        green: active ? 'bg-green-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20',
-        blue: active ? 'bg-blue-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20',
-        gray: active ? 'bg-gray-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700',
+        green: active
+            ? 'bg-green-500 text-white shadow-md'
+            : 'text-gray-600 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20',
+        blue: active
+            ? 'bg-blue-500 text-white shadow-md'
+            : 'text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20',
+        gray: active
+            ? 'bg-gray-500 text-white shadow-md'
+            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700',
     };
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${colors[color]}`}
+            className={`flex items-center gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg font-semibold text-sm transition-all ${colors[color]}`}
         >
             {label}
-            <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${active ? 'bg-white/25 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+            <span
+                className={`text-xs px-1 sm:px-1.5 py-0.5 rounded-full font-bold ${active ? 'bg-white/25 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}
+            >
                 {count}
             </span>
         </button>
@@ -231,7 +264,11 @@ function Quizzes() {
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('ongoing');
-    const [filters, setFilters] = useState({ category: '', difficulty: '', search: '' });
+    const [filters, setFilters] = useState({
+        category: '',
+        difficulty: '',
+        search: '',
+    });
 
     const fetchQuizzes = useCallback(async () => {
         try {
@@ -250,16 +287,23 @@ function Quizzes() {
         }
     }, [filters]);
 
-    useEffect(() => { fetchQuizzes(); }, [fetchQuizzes]);
+    useEffect(() => {
+        fetchQuizzes();
+    }, [fetchQuizzes]);
 
-    const handleFilterChange = (name, value) => setFilters((p) => ({ ...p, [name]: value }));
+    const handleFilterChange = (name, value) =>
+        setFilters((p) => ({ ...p, [name]: value }));
 
     const getDifficultyColor = (d) => {
         switch (d?.toLowerCase()) {
-            case 'easy': return 'text-green-600 dark:text-green-400';
-            case 'medium': return 'text-yellow-600 dark:text-yellow-400';
-            case 'hard': return 'text-red-600 dark:text-red-400';
-            default: return 'text-gray-600 dark:text-gray-400';
+            case 'easy':
+                return 'text-green-600 dark:text-green-400';
+            case 'medium':
+                return 'text-yellow-600 dark:text-yellow-400';
+            case 'hard':
+                return 'text-red-600 dark:text-red-400';
+            default:
+                return 'text-gray-600 dark:text-gray-400';
         }
     };
 
@@ -276,7 +320,9 @@ function Quizzes() {
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
                 <div className='text-center'>
                     <div className='animate-spin rounded-full h-14 w-14 border-b-2 border-blue-500 mx-auto' />
-                    <p className='mt-4 text-gray-500 dark:text-gray-400 text-sm'>Loading quizzes…</p>
+                    <p className='mt-4 text-gray-500 dark:text-gray-400 text-sm'>
+                        Loading quizzes…
+                    </p>
                 </div>
             </div>
         );
@@ -304,15 +350,21 @@ function Quizzes() {
                             type='text'
                             placeholder='Search quizzes…'
                             value={filters.search}
-                            onChange={(e) => handleFilterChange('search', e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && fetchQuizzes()}
+                            onChange={(e) =>
+                                handleFilterChange('search', e.target.value)
+                            }
+                            onKeyPress={(e) =>
+                                e.key === 'Enter' && fetchQuizzes()
+                            }
                             className='w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none'
                         />
                     </div>
 
                     <select
                         value={filters.category}
-                        onChange={(e) => handleFilterChange('category', e.target.value)}
+                        onChange={(e) =>
+                            handleFilterChange('category', e.target.value)
+                        }
                         className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm focus:ring-2 focus:ring-blue-500 outline-none'
                     >
                         <option value=''>All Categories</option>
@@ -324,12 +376,16 @@ function Quizzes() {
                         <option value='entertainment'>Entertainment</option>
                         <option value='literature'>Literature</option>
                         <option value='mathematics'>Mathematics</option>
-                        <option value='general-knowledge'>General Knowledge</option>
+                        <option value='general-knowledge'>
+                            General Knowledge
+                        </option>
                     </select>
 
                     <select
                         value={filters.difficulty}
-                        onChange={(e) => handleFilterChange('difficulty', e.target.value)}
+                        onChange={(e) =>
+                            handleFilterChange('difficulty', e.target.value)
+                        }
                         className='px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm focus:ring-2 focus:ring-blue-500 outline-none'
                     >
                         <option value=''>All Difficulties</option>
@@ -348,9 +404,27 @@ function Quizzes() {
 
                 {/* Tabs */}
                 <div className='flex items-center gap-2 mb-6 bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-sm border border-gray-100 dark:border-gray-700 w-fit'>
-                    <TabBtn label='🟢 Ongoing' count={ongoing.length} active={activeTab === 'ongoing'} onClick={() => setActiveTab('ongoing')} color='green' />
-                    <TabBtn label='🔵 Upcoming' count={upcoming.length} active={activeTab === 'upcoming'} onClick={() => setActiveTab('upcoming')} color='blue' />
-                    <TabBtn label='⚫ Ended' count={ended.length} active={activeTab === 'ended'} onClick={() => setActiveTab('ended')} color='gray' />
+                    <TabBtn
+                        label='🟢 Ongoing'
+                        count={ongoing.length}
+                        active={activeTab === 'ongoing'}
+                        onClick={() => setActiveTab('ongoing')}
+                        color='green'
+                    />
+                    <TabBtn
+                        label='🔵 Upcoming'
+                        count={upcoming.length}
+                        active={activeTab === 'upcoming'}
+                        onClick={() => setActiveTab('upcoming')}
+                        color='blue'
+                    />
+                    <TabBtn
+                        label='⚫ Ended'
+                        count={ended.length}
+                        active={activeTab === 'ended'}
+                        onClick={() => setActiveTab('ended')}
+                        color='gray'
+                    />
                 </div>
 
                 {/* Grid */}
@@ -361,9 +435,12 @@ function Quizzes() {
                             No {activeTab} quizzes
                         </h3>
                         <p className='text-gray-500 dark:text-gray-400 text-sm mt-1'>
-                            {activeTab === 'ongoing' && 'Check back soon or explore upcoming quizzes.'}
-                            {activeTab === 'upcoming' && 'No quizzes scheduled yet. Register for notifications!'}
-                            {activeTab === 'ended' && 'No quizzes have ended yet.'}
+                            {activeTab === 'ongoing' &&
+                                'Check back soon or explore upcoming quizzes.'}
+                            {activeTab === 'upcoming' &&
+                                'No quizzes scheduled yet. Register for notifications!'}
+                            {activeTab === 'ended' &&
+                                'No quizzes have ended yet.'}
                         </p>
                     </div>
                 ) : (

@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, MessageSquare } from 'lucide-react';
 
-export default function WarRoomChat({ messages, onSend, currentUserId }) {
+export default function WarRoomChat({
+    messages,
+    onSend,
+    currentUserId,
+    hideChatHeader,
+}) {
     const [input, setInput] = useState('');
     const bottomRef = useRef(null);
     const containerRef = useRef(null);
@@ -21,15 +26,17 @@ export default function WarRoomChat({ messages, onSend, currentUserId }) {
     return (
         <div className='flex flex-col h-full rounded-xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'>
             {/* Header */}
-            <div className='flex items-center gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40'>
-                <MessageSquare size={16} className='text-violet-500' />
-                <span className='text-sm font-semibold text-gray-800 dark:text-gray-200'>
-                    Chat
-                </span>
-                <span className='text-xs ml-auto text-gray-500 dark:text-gray-400'>
-                    {messages.length} messages
-                </span>
-            </div>
+            {!hideChatHeader && (
+                <div className='flex items-center gap-2 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40'>
+                    <MessageSquare size={16} className='text-violet-500' />
+                    <span className='text-sm font-semibold text-gray-800 dark:text-gray-200'>
+                        Chat
+                    </span>
+                    <span className='text-xs ml-auto text-gray-500 dark:text-gray-400'>
+                        {messages.length} messages
+                    </span>
+                </div>
+            )}
 
             {/* Messages */}
             <div

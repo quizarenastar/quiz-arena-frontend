@@ -13,6 +13,8 @@ import {
     Zap,
     Share2,
     History,
+    MessageSquare,
+    X,
 } from 'lucide-react';
 import useWarRoomSocket from '../hooks/useWarRoomSocket';
 import WarRoomChat from '../Components/warroom/WarRoomChat';
@@ -38,6 +40,7 @@ export default function WarRoom() {
     const [startingQuiz, setStartingQuiz] = useState(false);
     const [countdown, setCountdown] = useState(null);
     const [generating, setGenerating] = useState(false);
+    const [showMobileChat, setShowMobileChat] = useState(false);
 
     const isHost = useMemo(
         () => room?.hostId?.toString() === currentUserId,
@@ -201,11 +204,7 @@ export default function WarRoom() {
                                 <Swords size={20} className='text-violet-500' />
                                 {room?.name || 'War Room'}
                             </h1>
-                            {room?.description && (
-                                <p className='text-xs mt-0.5 text-gray-500 dark:text-gray-400 max-w-md truncate'>
-                                    {room.description}
-                                </p>
-                            )}
+
                             <div className='flex items-center gap-3 mt-0.5'>
                                 <span className='text-xs flex items-center gap-1 text-gray-500 dark:text-gray-400'>
                                     <Users size={12} />
@@ -227,7 +226,21 @@ export default function WarRoom() {
                             className='flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                         >
                             <History size={14} />
-                            History
+                            <span className='hidden sm:inline'>History</span>
+                        </button>
+                        {/* Chat toggle — mobile only */}
+                        <button
+                            onClick={() => setShowMobileChat(true)}
+                            className='relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs cursor-pointer bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden'
+                        >
+                            <MessageSquare size={14} />
+                            {messages.length > 0 && (
+                                <span className='absolute -top-1 -right-1 w-4 h-4 rounded-full bg-violet-500 text-white text-[10px] flex items-center justify-center font-bold'>
+                                    {messages.length > 9
+                                        ? '9+'
+                                        : messages.length}
+                                </span>
+                            )}
                         </button>
                         <div
                             className='flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer bg-violet-100 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700/40'
@@ -414,11 +427,17 @@ export default function WarRoom() {
                                         Share Code: {roomCode}
                                     </button>
                                 </div>
+
+                                {room?.description && (
+                                    <p className='text-xs mt-0.5 text-gray-500 dark:text-gray-400 max-w-md truncate'>
+                                        {room.description}
+                                    </p>
+                                )}
                             </div>
                         )}
                     </div>
 
-                    {/* Right: Chat Panel */}
+                    {/* Right: Chat Panel — desktop sidebar */}
                     <div
                         className='w-80 flex-shrink-0 hidden lg:block'
                         style={{ height: 'calc(100vh - 120px)' }}
@@ -431,6 +450,47 @@ export default function WarRoom() {
                     </div>
                 </div>
             </div>
+
+            {/* Mobile Chat Drawer */}
+            {showMobileChat && (
+                <div className='fixed inset-0 z-50 lg:hidden flex flex-col'>
+                    {/* Backdrop */}
+                    <div
+                        className='flex-1 bg-black/40'
+                        onClick={() => setShowMobileChat(false)}
+                    />
+                    {/* Drawer */}
+                    <div className='h-[70vh] bg-white dark:bg-gray-900 rounded-t-2xl flex flex-col overflow-hidden shadow-2xl'>
+                        {/* Drawer header */}
+                        <div className='flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0'>
+                            <div className='flex items-center gap-2'>
+                                <MessageSquare
+                                    size={16}
+                                    className='text-violet-500'
+                                />
+                                <span className='text-sm font-semibold text-gray-800 dark:text-gray-200'>
+                                    Chat
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setShowMobileChat(false)}
+                                className='p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+                        {/* Chat fills remaining drawer height */}
+                        <div className='flex-1 min-h-0'>
+                            <WarRoomChat
+                                messages={messages}
+                                onSend={sendChat}
+                                currentUserId={currentUserId}
+                                hideChatHeader
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Start Quiz Modal */}
             {showStartModal && (
