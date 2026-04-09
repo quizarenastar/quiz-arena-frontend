@@ -891,7 +891,7 @@ const CreateQuiz = () => {
                                                 }
                                                 className={`${inp} pl-8 ${isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 placeholder='0'
-                                                min='0'
+                                                min={quiz.isPaid ? '5' : '0'}
                                                 step='1'
                                                 disabled={isEditMode}
                                             />
