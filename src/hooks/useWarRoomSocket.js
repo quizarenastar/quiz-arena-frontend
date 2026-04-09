@@ -40,26 +40,27 @@ export default function useWarRoomSocket(roomCode, handlers = {}) {
         socketRef.current = socket;
 
         socket.on('connect', () => {
-            console.log('[WarRoomSocket] Connected! Socket ID:', socket.id, 'isMounted:', isMounted);
+            console.log(
+                '[WarRoomSocket] Connected! Socket ID:',
+                socket.id,
+                'isMounted:',
+                isMounted,
+            );
             if (!isMounted) {
                 socket.disconnect();
                 return;
             }
             setIsConnected(true);
             // Auto-join room on connect
-            socket.emit(
-                'war-room:join',
-                { roomCode },
-                (response) => {
-                    console.log('[WarRoomSocket] Join callback:', response);
-                    if (!isMounted) return;
-                    if (response?.error) {
-                        handlersRef.current.onError?.(response.error);
-                    } else if (response?.success) {
-                        handlersRef.current.onJoined?.(response);
-                    }
+            socket.emit('war-room:join', { roomCode }, (response) => {
+                console.log('[WarRoomSocket] Join callback:', response);
+                if (!isMounted) return;
+                if (response?.error) {
+                    handlersRef.current.onError?.(response.error);
+                } else if (response?.success) {
+                    handlersRef.current.onJoined?.(response);
                 }
-            );
+            });
         });
 
         socket.on('disconnect', (reason) => {
@@ -133,7 +134,8 @@ export default function useWarRoomSocket(roomCode, handlers = {}) {
 
         // Error
         socket.on('war-room:error', (data) => {
-            if (isMounted) handlersRef.current.onError?.(data.message || 'Socket error');
+            if (isMounted)
+                handlersRef.current.onError?.(data.message || 'Socket error');
         });
 
         return () => {
@@ -173,16 +175,23 @@ export default function useWarRoomSocket(roomCode, handlers = {}) {
                     { quizId, questionIndex, selectedAnswer, timeSpent },
                     (res) => {
                         resolve(res);
-                    }
+                    },
                 );
             });
         },
-        []
+        [],
     );
 
     const finishQuiz = useCallback((quizId) => {
-        socketRef.current?.emit('war-room:finish-quiz', { quizId }, (res) => {
-            if (res?.error) handlersRef.current.onError?.(res.error);
+        return new Promise((resolve) => {
+            socketRef.current?.emit(
+                'war-room:finish-quiz',
+                { quizId },
+                (res) => {
+                    if (res?.error) handlersRef.current.onError?.(res.error);
+                    resolve(res);
+                },
+            );
         });
     }, []);
 
@@ -192,18 +201,14 @@ export default function useWarRoomSocket(roomCode, handlers = {}) {
             { settings },
             (res) => {
                 if (res?.error) handlersRef.current.onError?.(res.error);
-            }
+            },
         );
     }, []);
 
     const kickPlayer = useCallback((targetUserId) => {
-        socketRef.current?.emit(
-            'war-room:kick',
-            { targetUserId },
-            (res) => {
-                if (res?.error) handlersRef.current.onError?.(res.error);
-            }
-        );
+        socketRef.current?.emit('war-room:kick', { targetUserId }, (res) => {
+            if (res?.error) handlersRef.current.onError?.(res.error);
+        });
     }, []);
 
     return {
