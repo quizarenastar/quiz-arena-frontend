@@ -5,12 +5,11 @@ import {
     Clock,
     CheckCircle,
     XCircle,
-    ChevronRight,
-    Trophy,
     ArrowLeft,
     Loader,
     Users,
-    Flame,
+    BarChart3,
+    X,
 } from 'lucide-react';
 import useWarRoomSocket from '../hooks/useWarRoomSocket';
 import WarRoomResults from '../Components/warroom/WarRoomResults';
@@ -31,14 +30,22 @@ export default function WarRoomQuizPage() {
     // Quiz interaction state
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
-    const [answerResult, setAnswerResult] = useState(null);
-    const [score, setScore] = useState(0);
-    const [streak, setStreak] = useState(0);
     const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [timeLeft, setTimeLeft] = useState(0);
     const [isFinished, setIsFinished] = useState(false);
     const timerRef = useRef(null);
+    const isFinishedRef = useRef(false);
+
+    // Results review state
+    const [reviewData, setReviewData] = useState(null);
+    const [finishedInfo, setFinishedInfo] = useState({
+        finishedCount: 0,
+        totalPlayers: 0,
+    });
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
+    const [autoRedirectCountdown, setAutoRedirectCountdown] = useState(null);
+    const [autoRedirectCancelled, setAutoRedirectCancelled] = useState(false);
 
     const isHost = useMemo(
         () => room?.hostId?.toString() === currentUserId,
@@ -55,17 +62,19 @@ export default function WarRoomQuizPage() {
             onQuizStart: (data) => {
                 setQuizData(data);
                 setResults(null);
+                setReviewData(null);
+                setShowLeaderboard(false);
+                setAutoRedirectCountdown(null);
+                setAutoRedirectCancelled(false);
                 setProgress({});
+                isFinishedRef.current = false;
 
                 const answeredSet = new Set(data.answeredQuestionIndices || []);
                 setCurrentIndex(answeredSet.size > 0 ? answeredSet.size : 0);
                 setSelectedAnswer(null);
-                setAnswerResult(null);
-                setScore(data.currentScore || 0);
-                setStreak(0); // Optional: if we want to track streak, we'd need more data, resolving it to 0 is fine on reconnect
                 setAnsweredQuestions(answeredSet);
                 setIsFinished(false);
-                // Set total time left
+                setFinishedInfo({ finishedCount: 0, totalPlayers: 0 });
                 setTimeLeft(data.duration);
             },
             onProgressUpdate: (data) => {
@@ -73,10 +82,15 @@ export default function WarRoomQuizPage() {
             },
             onPlayerFinished: (data) => {
                 toast(`${data.username} finished!`, { icon: '🏁' });
+                if (data.finishedCount !== undefined) {
+                    setFinishedInfo({
+                        finishedCount: data.finishedCount,
+                        totalPlayers: data.totalPlayers,
+                    });
+                }
             },
             onQuizResults: (data) => {
                 setResults(data);
-                setQuizData(null);
                 clearInterval(timerRef.current);
             },
             onChatMessage: () => {},
@@ -112,7 +126,7 @@ export default function WarRoomQuizPage() {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
                     clearInterval(timerRef.current);
-                    handleFinishQuiz();
+                    setIsFinished(true);
                     return 0;
                 }
                 return prev - 1;
@@ -121,6 +135,48 @@ export default function WarRoomQuizPage() {
 
         return () => clearInterval(timerRef.current);
     }, [quizData, isFinished]);
+
+    // Finish quiz effect — triggers when isFinished becomes true
+    useEffect(() => {
+        if (!isFinished || isFinishedRef.current || !quizData) return;
+        isFinishedRef.current = true;
+        clearInterval(timerRef.current);
+
+        (async () => {
+            const res = await finishQuiz(quizData.quizId);
+            if (res?.success && res.questions) {
+                setReviewData({
+                    questions: res.questions,
+                    userAnswers: res.userAnswers || [],
+                });
+                if (res.finishedCount !== undefined) {
+                    setFinishedInfo({
+                        finishedCount: res.finishedCount,
+                        totalPlayers: res.totalPlayers,
+                    });
+                }
+            }
+        })();
+    }, [isFinished, quizData, finishQuiz]);
+
+    // Auto-redirect countdown when all players finished
+    useEffect(() => {
+        if (!results || showLeaderboard || autoRedirectCancelled) return;
+
+        setAutoRedirectCountdown(5);
+        const timer = setInterval(() => {
+            setAutoRedirectCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    setShowLeaderboard(true);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [results, showLeaderboard, autoRedirectCancelled]);
 
     // Handle answer submission
     const handleAnswer = useCallback(
@@ -145,20 +201,19 @@ export default function WarRoomQuizPage() {
             );
 
             if (res?.success) {
-                setAnswerResult({
-                    isCorrect: res.isCorrect,
-                    correctAnswer: res.correctAnswer,
-                    explanation: res.explanation,
-                });
-                if (res.isCorrect) {
-                    setScore(res.score);
-                    setStreak((s) => s + 1);
-                } else {
-                    setStreak(0);
-                }
                 setAnsweredQuestions(
                     (prev) => new Set([...prev, currentIndex]),
                 );
+
+                // Auto-advance to next question or finish
+                if (currentIndex < quizData.questions.length - 1) {
+                    setTimeout(() => {
+                        setCurrentIndex((i) => i + 1);
+                        setSelectedAnswer(null);
+                    }, 300);
+                } else {
+                    setIsFinished(true);
+                }
             }
 
             setIsSubmitting(false);
@@ -174,25 +229,6 @@ export default function WarRoomQuizPage() {
         ],
     );
 
-    // Move to next question
-    const handleNext = () => {
-        if (currentIndex < quizData.questions.length - 1) {
-            setCurrentIndex((i) => i + 1);
-            setSelectedAnswer(null);
-            setAnswerResult(null);
-        } else {
-            handleFinishQuiz();
-        }
-    };
-
-    // Finish quiz
-    const handleFinishQuiz = useCallback(() => {
-        if (isFinished) return;
-        setIsFinished(true);
-        clearInterval(timerRef.current);
-        finishQuiz(quizData?.quizId);
-    }, [isFinished, quizData, finishQuiz]);
-
     const handleBackToRoom = () => {
         navigate(`/war-rooms/${roomCode}`);
     };
@@ -205,7 +241,7 @@ export default function WarRoomQuizPage() {
     };
 
     // Loading / waiting for quiz
-    if (!quizData && !results) {
+    if (!quizData && !reviewData && !results) {
         return (
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center'>
                 <Loader size={40} className='animate-spin mb-4 text-violet-500' />
@@ -225,8 +261,8 @@ export default function WarRoomQuizPage() {
         );
     }
 
-    // Results view
-    if (results) {
+    // Leaderboard view
+    if (showLeaderboard && results) {
         return (
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
                 <div className='max-w-4xl mx-auto px-4 py-6'>
@@ -240,6 +276,213 @@ export default function WarRoomQuizPage() {
                         onBackToLobby={() => navigate(`/war-rooms/${roomCode}`)}
                     />
                 </div>
+            </div>
+        );
+    }
+
+    // Results review page
+    if (reviewData) {
+        const {
+            questions: reviewQuestions,
+            userAnswers: attemptAnswers,
+        } = reviewData;
+
+        const userAnswerMap = {};
+        attemptAnswers.forEach((a) => {
+            userAnswerMap[a.questionIndex] = a;
+        });
+
+        const correctCount = attemptAnswers.filter((a) => a.isCorrect).length;
+        const allPlayersFinished = !!results;
+
+        return (
+            <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
+                <div className='max-w-3xl mx-auto px-4 py-6'>
+                    {/* Header */}
+                    <div className='text-center mb-8'>
+                        <h2 className='text-2xl font-bold mb-2 text-gray-900 dark:text-white'>
+                            Quiz Review
+                        </h2>
+                        <p className='text-sm text-gray-600 dark:text-gray-400'>
+                            Round {quizData?.roundNumber || ''} •{' '}
+                            {correctCount}/{reviewQuestions.length} correct
+                        </p>
+                    </div>
+
+                    {/* Questions Review */}
+                    <div className='space-y-6 mb-8'>
+                        {reviewQuestions.map((q, idx) => {
+                            const userAnswer = userAnswerMap[idx];
+                            const userSelected = userAnswer?.selectedAnswer;
+                            const isCorrectAnswer = userAnswer?.isCorrect;
+
+                            return (
+                                <div
+                                    key={idx}
+                                    className='p-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+                                >
+                                    <div className='flex items-start gap-3 mb-4'>
+                                        <span
+                                            className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
+                                                isCorrectAnswer
+                                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                                    : userSelected !== undefined
+                                                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                                            }`}
+                                        >
+                                            {isCorrectAnswer ? (
+                                                <CheckCircle size={14} />
+                                            ) : userSelected !== undefined ? (
+                                                <XCircle size={14} />
+                                            ) : (
+                                                idx + 1
+                                            )}
+                                        </span>
+                                        <h4 className='text-sm font-semibold text-gray-900 dark:text-white leading-relaxed'>
+                                            {q.question}
+                                        </h4>
+                                    </div>
+
+                                    <div className='grid gap-2 mb-3'>
+                                        {q.options.map((opt, optIdx) => {
+                                            const isCorrectOpt =
+                                                optIdx === q.correctAnswer;
+                                            const isUserSelected =
+                                                optIdx === userSelected;
+                                            const isWrongSelection =
+                                                isUserSelected && !isCorrectOpt;
+
+                                            let classes =
+                                                'bg-gray-50 dark:bg-gray-900/40 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400';
+                                            if (isCorrectOpt) {
+                                                classes =
+                                                    'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700/50 text-green-700 dark:text-green-300';
+                                            } else if (isWrongSelection) {
+                                                classes =
+                                                    'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700/50 text-red-700 dark:text-red-300';
+                                            }
+
+                                            return (
+                                                <div
+                                                    key={optIdx}
+                                                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border text-sm ${classes}`}
+                                                >
+                                                    <span className='flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold'>
+                                                        {isCorrectOpt ? (
+                                                            <CheckCircle
+                                                                size={14}
+                                                                className='text-green-600 dark:text-green-400'
+                                                            />
+                                                        ) : isWrongSelection ? (
+                                                            <XCircle
+                                                                size={14}
+                                                                className='text-red-600 dark:text-red-400'
+                                                            />
+                                                        ) : (
+                                                            String.fromCharCode(
+                                                                65 + optIdx,
+                                                            )
+                                                        )}
+                                                    </span>
+                                                    <span className='flex-1'>
+                                                        {opt}
+                                                    </span>
+                                                    {isUserSelected && (
+                                                        <span className='text-xs font-medium opacity-70'>
+                                                            Your answer
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {q.explanation && (
+                                        <div className='px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40'>
+                                            <p className='text-xs text-blue-700 dark:text-blue-300'>
+                                                {q.explanation}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Leaderboard button + auto-redirect */}
+                    <div className='sticky bottom-4'>
+                        <div className='p-4 rounded-2xl bg-white/95 dark:bg-gray-800/95 border border-gray-200 dark:border-gray-700 backdrop-blur-xl shadow-lg'>
+                            {!allPlayersFinished ? (
+                                <div className='text-center'>
+                                    <p className='text-sm text-gray-600 dark:text-gray-400 mb-3'>
+                                        <Loader
+                                            size={14}
+                                            className='inline animate-spin mr-2'
+                                        />
+                                        Waiting for other players (
+                                        {finishedInfo.finishedCount}/
+                                        {finishedInfo.totalPlayers} finished)
+                                    </p>
+                                    <button
+                                        disabled
+                                        className='w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                                    >
+                                        <BarChart3 size={18} />
+                                        View Leaderboard
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className='text-center'>
+                                    {autoRedirectCountdown !== null &&
+                                    autoRedirectCountdown > 0 &&
+                                    !autoRedirectCancelled ? (
+                                        <div className='flex items-center justify-center gap-2 mb-3'>
+                                            <p className='text-sm text-gray-600 dark:text-gray-400'>
+                                                Redirecting to leaderboard in{' '}
+                                                {autoRedirectCountdown}s
+                                            </p>
+                                            <button
+                                                onClick={() =>
+                                                    setAutoRedirectCancelled(
+                                                        true,
+                                                    )
+                                                }
+                                                className='p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer'
+                                            >
+                                                <X
+                                                    size={14}
+                                                    className='text-gray-500'
+                                                />
+                                            </button>
+                                        </div>
+                                    ) : null}
+                                    <button
+                                        onClick={() =>
+                                            setShowLeaderboard(true)
+                                        }
+                                        className='w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white cursor-pointer bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-sm transition-all'
+                                    >
+                                        <BarChart3 size={18} />
+                                        View Leaderboard
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Waiting for review data (just finished, haven't got server response yet)
+    if (isFinished) {
+        return (
+            <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center'>
+                <Loader size={40} className='animate-spin mb-4 text-violet-500' />
+                <p className='text-gray-600 dark:text-gray-400'>
+                    Preparing your results...
+                </p>
             </div>
         );
     }
@@ -269,24 +512,11 @@ export default function WarRoomQuizPage() {
                             </div>
                         </div>
 
-                        {/* Center: Score & Streak */}
-                        <div className='flex items-center gap-4'>
-                            <div className='text-center'>
-                                <p className='text-lg font-bold text-amber-500'>
-                                    {score}
-                                </p>
-                                <p className='text-xs text-gray-500 dark:text-gray-400'>
-                                    Score
-                                </p>
-                            </div>
-                            {streak >= 2 && (
-                                <div className='flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700/40'>
-                                    <Flame size={14} className='text-amber-500' />
-                                    <span className='text-xs font-bold text-amber-600 dark:text-amber-300'>
-                                        {streak}
-                                    </span>
-                                </div>
-                            )}
+                        {/* Center: Answered count */}
+                        <div className='text-center'>
+                            <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                                {answeredQuestions.size}/{totalQ} answered
+                            </p>
                         </div>
 
                         {/* Right: Timer */}
@@ -326,9 +556,6 @@ export default function WarRoomQuizPage() {
                     <span className='text-sm font-medium text-violet-600 dark:text-violet-300'>
                         Question {currentIndex + 1} of {totalQ}
                     </span>
-                    <span className='text-sm text-gray-500 dark:text-gray-400'>
-                        {answeredQuestions.size} answered
-                    </span>
                 </div>
 
                 {/* Question */}
@@ -342,29 +569,11 @@ export default function WarRoomQuizPage() {
                 <div className='grid gap-3 mb-6'>
                     {question.options.map((opt, idx) => {
                         const isSelected = selectedAnswer === idx;
-                        const isCorrect =
-                            answerResult && answerResult.correctAnswer === idx;
-                        const isWrong =
-                            answerResult &&
-                            isSelected &&
-                            !answerResult.isCorrect;
-                        const isAnswered = answerResult !== null;
+                        const isAnswered = answeredQuestions.has(currentIndex);
 
                         let classes =
-                            'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200';
-
-                        if (isAnswered) {
-                            if (isCorrect) {
-                                classes =
-                                    'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700/50 text-green-700 dark:text-green-300';
-                            } else if (isWrong) {
-                                classes =
-                                    'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700/50 text-red-700 dark:text-red-300';
-                            } else {
-                                classes =
-                                    'bg-gray-100 dark:bg-gray-800/70 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400';
-                            }
-                        } else if (isSelected) {
+                            'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-violet-300 dark:hover:border-violet-600';
+                        if (isSelected) {
                             classes =
                                 'bg-violet-100 dark:bg-violet-900/30 border-violet-300 dark:border-violet-700/50 text-violet-700 dark:text-violet-300';
                         }
@@ -378,22 +587,8 @@ export default function WarRoomQuizPage() {
                                 }
                                 className={`flex items-center gap-3 px-5 py-4 rounded-xl text-left transition-all cursor-pointer disabled:cursor-default border ${classes}`}
                             >
-                                <span
-                                    className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-                                        isCorrect
-                                            ? 'bg-green-200 dark:bg-green-900/40 text-green-700 dark:text-green-300'
-                                            : isWrong
-                                              ? 'bg-red-200 dark:bg-red-900/40 text-red-700 dark:text-red-300'
-                                              : 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
-                                    }`}
-                                >
-                                    {isCorrect ? (
-                                        <CheckCircle size={18} />
-                                    ) : isWrong ? (
-                                        <XCircle size={18} />
-                                    ) : (
-                                        String.fromCharCode(65 + idx)
-                                    )}
+                                <span className='flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'>
+                                    {String.fromCharCode(65 + idx)}
                                 </span>
                                 <span className='text-sm font-medium flex-1'>
                                     {opt}
@@ -402,68 +597,10 @@ export default function WarRoomQuizPage() {
                         );
                     })}
                 </div>
-
-                {/* Explanation */}
-                {answerResult && (
-                    <div className={`p-4 rounded-xl mb-6 border ${
-                        answerResult.isCorrect
-                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700/40'
-                            : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700/40'
-                    }`}>
-                        <p className={`text-sm font-semibold mb-1 ${
-                            answerResult.isCorrect
-                                ? 'text-green-700 dark:text-green-300'
-                                : 'text-red-700 dark:text-red-300'
-                        }`}>
-                            {answerResult.isCorrect
-                                ? '✅ Correct!'
-                                : '❌ Incorrect'}
-                        </p>
-                        {answerResult.explanation && (
-                            <p className='text-sm text-gray-600 dark:text-gray-400'>
-                                {answerResult.explanation}
-                            </p>
-                        )}
-                    </div>
-                )}
-
-                {/* Next / Finish button */}
-                {answerResult && !isFinished && (
-                    <button
-                        onClick={handleNext}
-                        className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-white transition-all cursor-pointer shadow-sm ${
-                            currentIndex < totalQ - 1
-                                ? 'bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700'
-                                : 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700'
-                        }`}
-                    >
-                        {currentIndex < totalQ - 1 ? (
-                            <>
-                                Next Question
-                                <ChevronRight size={18} />
-                            </>
-                        ) : (
-                            <>
-                                <Trophy size={18} />
-                                Finish Quiz
-                            </>
-                        )}
-                    </button>
-                )}
-
-                {/* Waiting for results */}
-                {isFinished && !results && (
-                    <div className='text-center py-10'>
-                        <Loader size={36} className='animate-spin mx-auto mb-3 text-violet-500' />
-                        <p className='text-sm text-gray-600 dark:text-gray-400'>
-                            Waiting for all players to finish...
-                        </p>
-                    </div>
-                )}
             </div>
 
             {/* Live Opponents Progress - floating sidebar */}
-            {Object.keys(progress).length > 0 && !isFinished && (
+            {Object.keys(progress).length > 0 && (
                 <div
                     className='fixed bottom-4 right-4 p-3 rounded-xl bg-white/95 dark:bg-gray-900/95 border border-gray-200 dark:border-gray-700 backdrop-blur-xl'
                     style={{ minWidth: '180px' }}
