@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
     Clock,
     Users,
@@ -15,6 +16,7 @@ import PrizePoolDisplay from './PrizePoolDisplay';
 
 const QuizRegistration = ({ quiz, onRegistrationComplete }) => {
     const navigate = useNavigate();
+    const currentUser = useSelector((state) => state.auth.user);
     const [isRegistered, setIsRegistered] = useState(false);
     const [participantCount, setParticipantCount] = useState(
         quiz?.participantManagement?.participantCount || 0,
@@ -25,14 +27,14 @@ const QuizRegistration = ({ quiz, onRegistrationComplete }) => {
 
     useEffect(() => {
         // Check if user is already registered
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const userId = currentUser?._id || currentUser?.id;
         const isAlreadyRegistered =
             quiz?.participantManagement?.registeredUsers?.some((reg) => {
                 const regId =
                     typeof reg.userId === 'object'
                         ? reg.userId._id || reg.userId
                         : reg.userId;
-                return String(regId) === String(currentUser._id);
+                return String(regId) === String(userId);
             });
         setIsRegistered(isAlreadyRegistered);
 

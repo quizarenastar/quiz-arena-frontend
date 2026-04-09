@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
     ArrowLeft,
     Clock,
@@ -25,6 +26,7 @@ import QuizRegistration from '../Components/QuizRegistration';
 const QuizDetails = () => {
     const { quizId } = useParams();
     const navigate = useNavigate();
+    const currentUser = useSelector((state) => state.auth.user);
     const [quiz, setQuiz] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isOwner, setIsOwner] = useState(false);
@@ -50,12 +52,11 @@ const QuizDetails = () => {
                     setUserAttempt(response.data.userAttempt);
                 }
 
-                const currentUser = JSON.parse(
-                    localStorage.getItem('user') || '{}',
-                );
+                const userId = currentUser?._id || currentUser?.id;
                 setIsOwner(
-                    String(response.data.quiz.creatorId?._id) === String(currentUser._id) ||
-                        String(response.data.quiz.creatorId) === String(currentUser._id),
+                    String(response.data.quiz.creatorId?._id) ===
+                        String(userId) ||
+                        String(response.data.quiz.creatorId) === String(userId),
                 );
             } catch (error) {
                 toast.error(error.message || 'Failed to fetch quiz details');
@@ -219,19 +220,21 @@ const QuizDetails = () => {
                             {statusConfig.label}
                         </span>
 
-                        {isOwner && !(
-                            (quiz.startTime && new Date() >= new Date(quiz.startTime)) ||
-                            (quiz.attemptCount > 0) ||
-                            (quiz.analytics?.totalAttempts > 0)
-                        ) && (
-                            <button
-                                onClick={handleEdit}
-                                className='flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all'
-                            >
-                                <Edit size={14} />
-                                Edit
-                            </button>
-                        )}
+                        {isOwner &&
+                            !(
+                                (quiz.startTime &&
+                                    new Date() >= new Date(quiz.startTime)) ||
+                                quiz.attemptCount > 0 ||
+                                quiz.analytics?.totalAttempts > 0
+                            ) && (
+                                <button
+                                    onClick={handleEdit}
+                                    className='flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all'
+                                >
+                                    <Edit size={14} />
+                                    Edit
+                                </button>
+                            )}
                     </div>
                 </div>
 
@@ -286,7 +289,9 @@ const QuizDetails = () => {
                             <span className='text-sm text-gray-500 dark:text-gray-400'>
                                 by{' '}
                                 <span className='text-gray-700 dark:text-gray-300'>
-                                    {quiz.creatorId.username || quiz.creatorId.name || quiz.creatorId.email}
+                                    {quiz.creatorId.username ||
+                                        quiz.creatorId.name ||
+                                        quiz.creatorId.email}
                                 </span>
                             </span>
                         </div>
@@ -502,12 +507,29 @@ const QuizDetails = () => {
                                     You created this quiz
                                 </h3>
                                 <p className='text-sm text-gray-500 dark:text-gray-400 mb-1'>
-                                    Creators cannot participate in their own quizzes.
+                                    Creators cannot participate in their own
+                                    quizzes.
                                 </p>
                                 <p className='text-sm text-gray-600 dark:text-gray-300'>
-                                    <span className='font-semibold'>{quiz.attemptCount || 0}</span> attempt{(quiz.attemptCount || 0) !== 1 ? 's' : ''} so far
-                                    {quiz.participantManagement?.participantCount > 0 && (
-                                        <> · <span className='font-semibold'>{quiz.participantManagement.participantCount}</span> registered</>
+                                    <span className='font-semibold'>
+                                        {quiz.attemptCount || 0}
+                                    </span>{' '}
+                                    attempt
+                                    {(quiz.attemptCount || 0) !== 1 ? 's' : ''}{' '}
+                                    so far
+                                    {quiz.participantManagement
+                                        ?.participantCount > 0 && (
+                                        <>
+                                            {' '}
+                                            ·{' '}
+                                            <span className='font-semibold'>
+                                                {
+                                                    quiz.participantManagement
+                                                        .participantCount
+                                                }
+                                            </span>{' '}
+                                            registered
+                                        </>
                                     )}
                                 </p>
                             </div>
@@ -524,10 +546,9 @@ const QuizDetails = () => {
                                         />
 
                                         {(() => {
-                                            const currentUser = JSON.parse(
-                                                localStorage.getItem('user') ||
-                                                    '{}',
-                                            );
+                                            const userId =
+                                                currentUser?._id ||
+                                                currentUser?.id;
 
                                             const isRegistered =
                                                 quiz?.participantManagement?.registeredUsers?.some(
@@ -541,9 +562,7 @@ const QuizDetails = () => {
                                                                 : reg.userId;
                                                         return (
                                                             String(regId) ===
-                                                            String(
-                                                                currentUser._id,
-                                                            )
+                                                            String(userId)
                                                         );
                                                     },
                                                 );
