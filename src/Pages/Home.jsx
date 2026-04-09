@@ -429,9 +429,9 @@ export default function Home() {
                                 <img
                                     src={pic}
                                     alt='Quiz Arena'
-                                    className='relative z-10 w-full rounded-3xl shadow-2xl shadow-indigo-900/50 animate-float-slow'
+                                    className='relative z-10 w-full rounded-3xl shadow-2xl shadow-indigo-900/50'
                                 />
-                                <div className='absolute -bottom-4 -left-4 z-20 glass rounded-2xl px-4 py-2.5 flex items-center gap-2 animate-float delay-200'>
+                                <div className='absolute -bottom-4 -left-4 z-20 glass rounded-2xl px-4 py-2.5 flex items-center gap-2'>
                                     <div className='w-2 h-2 rounded-full bg-green-400 animate-pulse' />
                                     <span className='text-gray-900 dark:text-white text-xs font-semibold'>
                                         500+ Playing Now
@@ -450,9 +450,6 @@ export default function Home() {
                         </div>
                     </div>
                 </div>
-
-                {/* Bottom fade */}
-                <div className='absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-50 dark:from-[#0a0a14] to-transparent pointer-events-none' />
             </section>
 
             {/* ════════════════════════════════

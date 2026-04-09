@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Clock,
@@ -11,14 +11,14 @@ import {
     Maximize,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import QuizService from '../service/QuizService';
+import useQuizSocket from '../hooks/useQuizSocket';
 
 const QuizAttempt = () => {
     const { quizId } = useParams();
     const navigate = useNavigate();
 
     // Core state
-    const [quiz, setQuiz] = useState(null);
+    const [quizTitle, setQuizTitle] = useState('');
     const [attemptId, setAttemptId] = useState(null);
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -26,11 +26,9 @@ const QuizAttempt = () => {
     const [answeredCount, setAnsweredCount] = useState(0);
     const [selectedOption, setSelectedOption] = useState(null);
     const [timeRemaining, setTimeRemaining] = useState(0);
-    const [currentQuestionTime, setCurrentQuestionTime] = useState(0);
     const [loading, setLoading] = useState(true);
     const [submittingAnswer, setSubmittingAnswer] = useState(false);
     const [submittingQuiz, setSubmittingQuiz] = useState(false);
-    const [isComplete, setIsComplete] = useState(false);
 
     // Anti-cheat state
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -39,15 +37,43 @@ const QuizAttempt = () => {
     const [warningMessage, setWarningMessage] = useState('');
     const [violations, setViolations] = useState([]);
     const [showViolations, setShowViolations] = useState(false);
-    const [quizEnded, setQuizEnded] = useState(false); // prevents interaction after auto-submit
+    const [quizEnded, setQuizEnded] = useState(false);
 
     // Refs
     const timerRef = useRef(null);
-    const questionTimerRef = useRef(null);
     const questionStartTimeRef = useRef(Date.now());
     const isInitializedRef = useRef(false);
-    const isFullscreenExitingRef = useRef(false); // debounce flag to prevent ESC counting as tab switch
-    const violationCountRef = useRef(0); // ref to avoid stale closures
+    const isFullscreenExitingRef = useRef(false);
+    const violationCountRef = useRef(0);
+
+    // Socket handlers
+    const handlers = useMemo(
+        () => ({
+            onAutoSubmitted: (data) => {
+                toast.error(`Quiz auto-submitted: ${data.reason}`);
+                setQuizEnded(true);
+                if (document.fullscreenElement) {
+                    document.exitFullscreen().catch(() => {});
+                }
+                navigate(`/quiz/${quizId}/result/${data.attemptId}`, {
+                    replace: true,
+                });
+            },
+            onError: (msg) => {
+                toast.error(msg);
+            },
+            onDisconnected: () => {},
+        }),
+        [quizId, navigate],
+    );
+
+    const {
+        isConnected,
+        startQuiz,
+        submitAnswer,
+        reportViolation,
+        finishQuiz,
+    } = useQuizSocket(handlers);
 
     // ========== FULLSCREEN MANAGEMENT ==========
     const enterFullscreen = useCallback(async () => {
@@ -66,13 +92,10 @@ const QuizAttempt = () => {
             setIsFullscreen(isFull);
 
             if (!isFull && attemptId && !submittingQuiz && !quizEnded) {
-                // Set flag so the upcoming visibilitychange event won't count as a tab switch
                 isFullscreenExitingRef.current = true;
                 setTimeout(() => {
                     isFullscreenExitingRef.current = false;
-                }, 500); // debounce for 500ms
-
-                // Record fullscreen exit as a violation (counts toward auto-submit)
+                }, 500);
                 handleViolation('fullscreen_exit', 'User exited fullscreen');
             }
         };
@@ -83,7 +106,6 @@ const QuizAttempt = () => {
                 'fullscreenchange',
                 handleFullscreenChange,
             );
-            // Exit fullscreen when leaving the page
             if (document.fullscreenElement) {
                 document.exitFullscreen().catch(() => {});
             }
@@ -109,7 +131,7 @@ const QuizAttempt = () => {
         };
     }, [attemptId, submittingQuiz, quizEnded]);
 
-    // ========== COPY/PASTE/RIGHT-CLICK/DEVTOOLS BLOCKING ==========
+    // ========== COPY/PASTE/DEVTOOLS BLOCKING ==========
     useEffect(() => {
         if (!attemptId) return;
 
@@ -121,9 +143,7 @@ const QuizAttempt = () => {
             e.preventDefault();
             handleViolation('copy_paste', 'Paste attempt blocked');
         };
-        const blockContextMenu = (e) => {
-            e.preventDefault();
-        };
+        const blockContextMenu = (e) => e.preventDefault();
         const blockKeys = (e) => {
             if (
                 (e.ctrlKey &&
@@ -154,34 +174,24 @@ const QuizAttempt = () => {
         };
     }, [attemptId]);
 
-    // ========== UNIFIED VIOLATION HANDLER ==========
-    // ALL violation types (tab switch, copy/paste, devtools, fullscreen exit)
-    // count toward the 2-warning auto-submit limit.
+    // ========== VIOLATION HANDLER ==========
     const handleViolation = (type, details) => {
         violationCountRef.current += 1;
         const count = violationCountRef.current;
         setViolationCount(count);
 
-        // Store violation in state
         setViolations((prev) => [
             ...prev,
-            {
-                id: Date.now(),
-                type,
-                message: details,
-                timestamp: new Date(),
-            },
+            { id: Date.now(), type, message: details, timestamp: new Date() },
         ]);
 
-        // Report to server
         if (attemptId) {
-            QuizService.reportViolation(attemptId, { type, details }).catch(
-                (err) => console.error('Failed to report violation:', err),
+            reportViolation(attemptId, type, details).catch((err) =>
+                console.error('Failed to report violation:', err),
             );
         }
 
         if (count <= 2) {
-            // 1st and 2nd violation → warning
             setWarningMessage(
                 `${details} (Violation ${count}/2). Your quiz will be auto-submitted after the next violation!`,
             );
@@ -190,14 +200,13 @@ const QuizAttempt = () => {
                 `⚠️ Warning ${count}/2: ${details}. Next violation = auto-submit!`,
             );
         } else {
-            // 3rd+ violation → auto-submit
             handleAutoSubmit(`Too many violations (${count}) — auto-submitted`);
         }
     };
 
     // ========== TIMER ==========
     useEffect(() => {
-        if (timeRemaining > 0 && !submittingQuiz && !isComplete) {
+        if (timeRemaining > 0 && !submittingQuiz && !quizEnded) {
             timerRef.current = setInterval(() => {
                 setTimeRemaining((prev) => {
                     if (prev <= 1) {
@@ -212,71 +221,44 @@ const QuizAttempt = () => {
         return () => {
             if (timerRef.current) clearInterval(timerRef.current);
         };
-    }, [timeRemaining, submittingQuiz, isComplete]);
-
-    // Per-question timer
-    useEffect(() => {
-        if (currentQuestion?.timeLimit && !submittingQuiz && !isComplete) {
-            setCurrentQuestionTime(currentQuestion.timeLimit);
-            questionTimerRef.current = setInterval(() => {
-                setCurrentQuestionTime((prev) => {
-                    if (prev <= 1) {
-                        // Auto-submit current answer (even if not selected) and move on
-                        handleSubmitAnswer(true);
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        }
-
-        return () => {
-            if (questionTimerRef.current)
-                clearInterval(questionTimerRef.current);
-        };
-    }, [currentQuestion?._id, submittingQuiz, isComplete]);
+    }, [timeRemaining, submittingQuiz, quizEnded]);
 
     // ========== START QUIZ ==========
     useEffect(() => {
-        if (isInitializedRef.current) return;
+        if (isInitializedRef.current || !isConnected) return;
         isInitializedRef.current = true;
-
         startQuizAttempt();
-    }, [quizId]);
+    }, [isConnected]);
 
     const startQuizAttempt = async () => {
         try {
             setLoading(true);
-
-            // Get quiz details first
-            const quizResponse = await QuizService.getQuiz(quizId);
-            const quizData = quizResponse.data.quiz;
-            setQuiz(quizData);
-
-            // Request fullscreen immediately
             await enterFullscreen();
 
-            // Start the attempt
-            const attemptResponse = await QuizService.startAttempt(quizId);
-            const attemptData = attemptResponse.data;
+            const res = await startQuiz(quizId);
 
-            setAttemptId(attemptData.attemptId);
-            setCurrentQuestion(attemptData.currentQuestion);
-            setCurrentQuestionIndex(attemptData.currentQuestionIndex);
-            setTotalQuestions(attemptData.totalQuestions);
-            setAnsweredCount(attemptData.answeredCount || 0);
+            if (res?.error) {
+                toast.error(res.error);
+                navigate('/quizzes');
+                return;
+            }
 
-            // Set timer
-            const timeLimitSeconds = Math.floor(
-                (attemptData.timeLimit || attemptData.timeRemaining) / 1000,
-            );
-            setTimeRemaining(timeLimitSeconds);
+            setAttemptId(res.attemptId);
+            setQuizTitle(res.quizTitle || '');
+            setCurrentQuestion(res.currentQuestion);
+            setCurrentQuestionIndex(res.currentQuestionIndex);
+            setTotalQuestions(res.totalQuestions);
+            setAnsweredCount(res.answeredCount || 0);
+            setTimeRemaining(Math.floor((res.timeRemaining || 0) / 1000));
             questionStartTimeRef.current = Date.now();
 
-            toast.success('Quiz started! Good luck!');
+            toast.success(
+                res.resumed ? 'Resuming quiz!' : 'Quiz started! Good luck!',
+            );
         } catch (error) {
-            toast.error(error.message || 'Failed to start quiz');
-            console.error('Start Quiz Error:', error);
+            console.log(error);
+
+            toast.error('Failed to start quiz');
             navigate('/quizzes');
         } finally {
             setLoading(false);
@@ -293,75 +275,78 @@ const QuizAttempt = () => {
                 (Date.now() - questionStartTimeRef.current) / 1000,
             );
 
-            const response = await QuizService.submitSingleAnswer(attemptId, {
-                questionId: currentQuestion._id,
-                selectedOption: selectedOption !== null ? selectedOption : null,
+            const res = await submitAnswer(
+                attemptId,
+                currentQuestion._id,
+                selectedOption !== null ? selectedOption : null,
                 timeSpent,
-            });
+            );
 
-            const data = response.data;
+            if (res?.error) {
+                if (res.expired) {
+                    handleAutoSubmit('Quiz time expired');
+                    return;
+                }
+                toast.error(res.error);
+                return;
+            }
 
-            if (data.isComplete) {
-                // All questions answered → submit quiz
-                setIsComplete(true);
+            if (res.isComplete) {
                 handleFinalSubmit();
                 return;
             }
 
-            // Load next question
-            setCurrentQuestion(data.currentQuestion);
-            setCurrentQuestionIndex(data.currentQuestionIndex);
-            setAnsweredCount(data.answeredCount);
+            setCurrentQuestion(res.currentQuestion);
+            setCurrentQuestionIndex(res.currentQuestionIndex);
+            setAnsweredCount(res.answeredCount);
             setSelectedOption(null);
             questionStartTimeRef.current = Date.now();
 
-            // Update remaining time from server
-            if (data.timeRemaining !== undefined) {
-                setTimeRemaining(Math.floor(data.timeRemaining / 1000));
+            if (res.timeRemaining !== undefined) {
+                setTimeRemaining(Math.floor(res.timeRemaining / 1000));
             }
         } catch (error) {
-            if (error.expired) {
-                handleAutoSubmit('Quiz time expired');
-                return;
-            }
-            toast.error(error.message || 'Failed to submit answer');
-            console.error('Submit answer error:', error);
+            console.log(error);
+
+            toast.error('Failed to submit answer');
         } finally {
             setSubmittingAnswer(false);
         }
     };
 
-    // ========== FINAL SUBMIT (after all questions or auto-submit) ==========
+    // ========== FINAL SUBMIT ==========
     const handleFinalSubmit = async () => {
         if (submittingQuiz) return;
         setSubmittingQuiz(true);
-        setQuizEnded(true); // Block all further interaction immediately
+        setQuizEnded(true);
 
         try {
-            const response = await QuizService.submitAttempt(attemptId, {
-                answers: [], // Server already has all answers
-                timeSpent: 0,
-                tabSwitches: violationCount,
-            });
+            const res = await finishQuiz(attemptId);
 
-            // Exit fullscreen
             if (document.fullscreenElement) {
                 await document.exitFullscreen().catch(() => {});
+            }
+
+            if (res?.error) {
+                toast.error(res.error);
+                navigate(`/quiz/${quizId}/result/${attemptId}`, {
+                    replace: true,
+                });
+                return;
             }
 
             toast.success('Quiz submitted successfully!');
             navigate(`/quiz/${quizId}/result/${attemptId}`, {
-                state: { result: response?.data || null },
+                state: { result: res },
                 replace: true,
             });
         } catch (error) {
-            // Even on error, exit fullscreen and redirect
+            console.log(error);
+
             if (document.fullscreenElement) {
                 await document.exitFullscreen().catch(() => {});
             }
-            toast.error(error.message || 'Failed to submit quiz');
-            console.error('Final submit error:', error);
-            // Still redirect to results page
+            toast.error('Failed to submit quiz');
             navigate(`/quiz/${quizId}/result/${attemptId}`, { replace: true });
         } finally {
             setSubmittingQuiz(false);
@@ -389,14 +374,14 @@ const QuizAttempt = () => {
                 <div className='text-center'>
                     <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-500 mx-auto'></div>
                     <p className='mt-4 text-gray-600 dark:text-gray-400'>
-                        Starting quiz...
+                        {isConnected ? 'Starting quiz...' : 'Connecting...'}
                     </p>
                 </div>
             </div>
         );
     }
 
-    if (!quiz || !attemptId) {
+    if (!attemptId) {
         return (
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
                 <div className='text-center'>
@@ -429,7 +414,7 @@ const QuizAttempt = () => {
                         </h3>
                         <p className='text-gray-600 dark:text-gray-400 mb-6'>
                             This quiz must be taken in fullscreen mode to
-                            prevent cheating. Please click below to continue.
+                            prevent cheating.
                         </p>
                         <button
                             onClick={enterFullscreen}
@@ -482,7 +467,7 @@ const QuizAttempt = () => {
                     <div className='flex flex-wrap items-center justify-between gap-y-2 gap-x-3'>
                         <div className='min-w-0'>
                             <h1 className='text-base sm:text-xl font-bold text-gray-900 dark:text-white truncate'>
-                                {quiz.title}
+                                {quizTitle}
                             </h1>
                             <p className='text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
                                 Question {currentQuestionIndex + 1} of{' '}
@@ -506,7 +491,7 @@ const QuizAttempt = () => {
                                 {violations.length} violations
                             </button>
 
-                            {/* Total Quiz Timer */}
+                            {/* Timer */}
                             <div
                                 className={`flex items-center px-2.5 py-1 rounded-full font-semibold text-xs ${
                                     timeRemaining < 300
@@ -517,27 +502,6 @@ const QuizAttempt = () => {
                                 <Clock size={13} className='mr-1 shrink-0' />
                                 {formatTime(timeRemaining)}
                             </div>
-
-                            {/* Question Timer */}
-                            {currentQuestion?.timeLimit && (
-                                <div
-                                    className={`flex items-center px-2.5 py-1 rounded-full text-xs ${
-                                        currentQuestionTime < 10
-                                            ? 'bg-red-100 text-red-800 animate-pulse'
-                                            : currentQuestionTime < 20
-                                              ? 'bg-yellow-100 text-yellow-800'
-                                              : 'bg-green-100 text-green-800'
-                                    }`}
-                                >
-                                    <Clock
-                                        size={13}
-                                        className='mr-1 shrink-0'
-                                    />
-                                    <span className='font-semibold'>
-                                        {currentQuestionTime}s
-                                    </span>
-                                </div>
-                            )}
 
                             {/* Progress */}
                             <div className='text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap'>

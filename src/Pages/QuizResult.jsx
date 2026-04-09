@@ -99,8 +99,8 @@ const QuizResult = () => {
             setLoading(false);
             return;
         }
-        if (!result) fetchAttemptDetails();
-    }, [result, fetchAttemptDetails, location.state, normalizeSubmitResult]);
+        fetchAttemptDetails();
+    }, [attemptId]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60);
