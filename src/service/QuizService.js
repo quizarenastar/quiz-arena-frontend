@@ -87,19 +87,6 @@ class QuizService {
         });
     }
 
-    async startAttempt(quizId) {
-        return makeRequest(ApiUrl.QUIZZES.START_ATTEMPT(quizId), {
-            method: 'POST',
-        });
-    }
-
-    async submitAttempt(attemptId, attemptData) {
-        return makeRequest(ApiUrl.QUIZZES.SUBMIT_ATTEMPT(attemptId), {
-            method: 'POST',
-            body: JSON.stringify(attemptData),
-        });
-    }
-
     async getMyAttempts(filters = {}) {
         const url = buildUrl(ApiUrl.QUIZZES.MY_ATTEMPTS, filters);
         return makeRequest(url);
@@ -107,25 +94,6 @@ class QuizService {
 
     async getAttemptDetails(attemptId) {
         return makeRequest(ApiUrl.QUIZZES.ATTEMPT_DETAILS(attemptId));
-    }
-
-    async reportViolation(attemptId, violationData) {
-        return makeRequest(ApiUrl.QUIZZES.REPORT_VIOLATION(attemptId), {
-            method: 'POST',
-            body: JSON.stringify(violationData),
-        });
-    }
-
-    // One-by-one question flow
-    async submitSingleAnswer(attemptId, answerData) {
-        return makeRequest(ApiUrl.QUIZZES.SUBMIT_SINGLE_ANSWER(attemptId), {
-            method: 'POST',
-            body: JSON.stringify(answerData),
-        });
-    }
-
-    async getCurrentQuestion(attemptId) {
-        return makeRequest(ApiUrl.QUIZZES.CURRENT_QUESTION(attemptId));
     }
 
     // Leaderboard
@@ -141,7 +109,6 @@ class QuizService {
     async getPublicLeaderboard(quizId) {
         return makeRequest(ApiUrl.QUIZZES.PUBLIC_LEADERBOARD(quizId));
     }
-
 }
 
 export default new QuizService();

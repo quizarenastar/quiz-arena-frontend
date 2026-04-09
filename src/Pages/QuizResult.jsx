@@ -99,8 +99,8 @@ const QuizResult = () => {
             setLoading(false);
             return;
         }
-        if (!result) fetchAttemptDetails();
-    }, [result, fetchAttemptDetails, location.state, normalizeSubmitResult]);
+        fetchAttemptDetails();
+    }, [attemptId]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60);
@@ -308,27 +308,6 @@ const QuizResult = () => {
                         </p>
                     </div>
                 </div>
-
-                {/* isValid warning */}
-                {result.isValid && !result.isValid.isValid && (
-                    <div className='bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 rounded-2xl p-4 mb-6'>
-                        <div className='flex items-start gap-3'>
-                            <AlertTriangle
-                                size={16}
-                                className='text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5'
-                            />
-                            <div>
-                                <p className='text-sm font-semibold text-red-700 dark:text-red-400'>
-                                    Attempt Flagged
-                                </p>
-                                <p className='text-xs text-red-600 dark:text-red-400/80 mt-0.5'>
-                                    {result.isValid.reason ||
-                                        'This attempt failed validation checks.'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* Violations */}
                 {result.violations.length > 0 && (
