@@ -252,6 +252,13 @@ const QuizAttempt = () => {
             setTimeRemaining(Math.floor((res.timeRemaining || 0) / 1000));
             questionStartTimeRef.current = Date.now();
 
+            // If all questions were answered but quiz wasn't finished (e.g. reload), auto-finish
+            if (res.isComplete) {
+                toast.success('Finishing your quiz...');
+                handleFinalSubmit(res.attemptId);
+                return;
+            }
+
             toast.success(
                 res.resumed ? 'Resuming quiz!' : 'Quiz started! Good luck!',
             );
@@ -302,6 +309,7 @@ const QuizAttempt = () => {
             setSelectedOption(null);
             questionStartTimeRef.current = Date.now();
 
+            // Sync timer with server-provided remaining time
             if (res.timeRemaining !== undefined) {
                 setTimeRemaining(Math.floor(res.timeRemaining / 1000));
             }
@@ -315,13 +323,14 @@ const QuizAttempt = () => {
     };
 
     // ========== FINAL SUBMIT ==========
-    const handleFinalSubmit = async () => {
-        if (submittingQuiz) return;
+    const handleFinalSubmit = async (attemptIdOverride) => {
+        const aid = attemptIdOverride || attemptId;
+        if (submittingQuiz || !aid) return;
         setSubmittingQuiz(true);
         setQuizEnded(true);
 
         try {
-            const res = await finishQuiz(attemptId);
+            const res = await finishQuiz(aid);
 
             if (document.fullscreenElement) {
                 await document.exitFullscreen().catch(() => {});
@@ -329,14 +338,14 @@ const QuizAttempt = () => {
 
             if (res?.error) {
                 toast.error(res.error);
-                navigate(`/quiz/${quizId}/result/${attemptId}`, {
+                navigate(`/quiz/${quizId}/result/${aid}`, {
                     replace: true,
                 });
                 return;
             }
 
             toast.success('Quiz submitted successfully!');
-            navigate(`/quiz/${quizId}/result/${attemptId}`, {
+            navigate(`/quiz/${quizId}/result/${aid}`, {
                 state: { result: res },
                 replace: true,
             });
@@ -347,7 +356,7 @@ const QuizAttempt = () => {
                 await document.exitFullscreen().catch(() => {});
             }
             toast.error('Failed to submit quiz');
-            navigate(`/quiz/${quizId}/result/${attemptId}`, { replace: true });
+            navigate(`/quiz/${quizId}/result/${aid}`, { replace: true });
         } finally {
             setSubmittingQuiz(false);
         }
