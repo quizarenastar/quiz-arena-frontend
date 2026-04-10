@@ -617,13 +617,26 @@ const QuizDetails = () => {
 
                                             if (hasEnded) {
                                                 return (
-                                                    <button
-                                                        disabled
-                                                        className='w-full mt-4 px-8 py-4 bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 cursor-not-allowed text-gray-400 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg'
-                                                    >
-                                                        <Ban size={20} />
-                                                        Quiz Ended
-                                                    </button>
+                                                    <div className='space-y-3 mt-4'>
+                                                        <button
+                                                            disabled
+                                                            className='w-full px-8 py-4 bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 cursor-not-allowed text-gray-400 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg'
+                                                        >
+                                                            <Ban size={20} />
+                                                            Quiz Ended
+                                                        </button>
+                                                        <button
+                                                            onClick={() =>
+                                                                navigate(
+                                                                    `/quiz/${quizId}/leaderboard`,
+                                                                )
+                                                            }
+                                                            className='w-full px-6 py-3.5 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-violet-500/20'
+                                                        >
+                                                            <Trophy size={18} />
+                                                            View Leaderboard
+                                                        </button>
+                                                    </div>
                                                 );
                                             }
 
@@ -682,13 +695,26 @@ const QuizDetails = () => {
                                 ) : quiz.endTime &&
                                   new Date() > new Date(quiz.endTime) ? (
                                     /* Quiz has ended */
-                                    <button
-                                        disabled
-                                        className='w-full px-8 py-4 bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 cursor-not-allowed text-gray-400 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg'
-                                    >
-                                        <Ban size={20} />
-                                        Quiz Ended
-                                    </button>
+                                    <div className='space-y-3'>
+                                        <button
+                                            disabled
+                                            className='w-full px-8 py-4 bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 cursor-not-allowed text-gray-400 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg'
+                                        >
+                                            <Ban size={20} />
+                                            Quiz Ended
+                                        </button>
+                                        <button
+                                            onClick={() =>
+                                                navigate(
+                                                    `/quiz/${quizId}/leaderboard`,
+                                                )
+                                            }
+                                            className='w-full px-6 py-3.5 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-violet-500/20'
+                                        >
+                                            <Trophy size={18} />
+                                            View Leaderboard
+                                        </button>
+                                    </div>
                                 ) : (
                                     /* Free quiz or paid quiz without start time — immediate start */
                                     <button
