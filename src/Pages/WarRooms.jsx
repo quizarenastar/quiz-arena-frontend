@@ -11,6 +11,12 @@ import {
     ArrowRight,
     Loader,
     LogIn,
+    Info,
+    X,
+    UserPlus,
+    Play,
+    Trophy,
+    Shield,
 } from 'lucide-react';
 import WarRoomService from '../service/WarRoomService';
 import CreateWarRoomModal from '../Components/warroom/CreateWarRoomModal';
@@ -50,6 +56,7 @@ export default function WarRooms() {
     const [creating, setCreating] = useState(false);
     const [joinCode, setJoinCode] = useState('');
     const [joining, setJoining] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
 
     useEffect(() => {
         if (isAuthenticated) loadRooms();
@@ -104,7 +111,10 @@ export default function WarRooms() {
         return (
             <div className='min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center'>
                 <div className='text-center'>
-                    <Swords size={48} className='mx-auto mb-4 text-violet-500' />
+                    <Swords
+                        size={48}
+                        className='mx-auto mb-4 text-violet-500'
+                    />
                     <h2 className='text-2xl font-bold mb-2 text-gray-900 dark:text-white'>
                         War Room
                     </h2>
@@ -130,7 +140,10 @@ export default function WarRooms() {
                 {/* Hero */}
                 <div className='text-center mb-10'>
                     <div className='inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4 bg-violet-100 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700/40'>
-                        <Swords size={16} className='text-violet-500 dark:text-violet-300' />
+                        <Swords
+                            size={16}
+                            className='text-violet-500 dark:text-violet-300'
+                        />
                         <span className='text-sm font-medium text-violet-600 dark:text-violet-300'>
                             Multiplayer Quiz Arena
                         </span>
@@ -139,9 +152,16 @@ export default function WarRooms() {
                         War Room
                     </h1>
                     <p className='text-lg max-w-xl mx-auto text-gray-600 dark:text-gray-400'>
-                        Challenge your friends in real-time quiz battles.
-                        Create a room, invite friends, and compete!
+                        Challenge your friends in real-time quiz battles. Create
+                        a room, invite friends, and compete!
                     </p>
+                    <button
+                        onClick={() => setShowInfo(true)}
+                        className='mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-colors'
+                    >
+                        <Info size={16} />
+                        How it works
+                    </button>
                 </div>
 
                 {/* Actions Bar */}
@@ -170,7 +190,9 @@ export default function WarRooms() {
                                 value={joinCode}
                                 onChange={(e) =>
                                     setJoinCode(
-                                        e.target.value.toUpperCase().slice(0, 6)
+                                        e.target.value
+                                            .toUpperCase()
+                                            .slice(0, 6),
                                     )
                                 }
                                 placeholder='Enter room code'
@@ -196,7 +218,7 @@ export default function WarRooms() {
                             key={tab}
                             onClick={() =>
                                 setActiveTab(
-                                    tab === 'my-rooms' ? 'my-rooms' : 'public'
+                                    tab === 'my-rooms' ? 'my-rooms' : 'public',
                                 )
                             }
                             className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
@@ -215,15 +237,21 @@ export default function WarRooms() {
                 {/* Room List */}
                 {loading ? (
                     <div className='flex justify-center py-20'>
-                        <Loader size={32} className='animate-spin text-violet-500' />
+                        <Loader
+                            size={32}
+                            className='animate-spin text-violet-500'
+                        />
                     </div>
                 ) : rooms.length === 0 ? (
                     <div className='text-center py-20'>
-                        <Swords size={48} className='mx-auto mb-4 text-gray-300 dark:text-gray-600' />
+                        <Swords
+                            size={48}
+                            className='mx-auto mb-4 text-gray-300 dark:text-gray-600'
+                        />
                         <p className='text-lg font-medium mb-2 text-gray-600 dark:text-gray-400'>
                             {activeTab === 'public'
                                 ? 'No public rooms available'
-                                : 'You haven\'t joined any rooms yet'}
+                                : "You haven't joined any rooms yet"}
                         </p>
                         <p className='text-gray-500 dark:text-gray-500'>
                             Create a room or join one with a code!
@@ -240,9 +268,7 @@ export default function WarRooms() {
                                 <div
                                     key={room._id}
                                     onClick={() =>
-                                        navigate(
-                                            `/war-rooms/${room.roomCode}`
-                                        )
+                                        navigate(`/war-rooms/${room.roomCode}`)
                                     }
                                     className='p-5 rounded-2xl transition-all cursor-pointer group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-600/50 shadow-sm hover:shadow-md'
                                 >
@@ -286,11 +312,13 @@ export default function WarRooms() {
                                     <div className='flex items-center justify-between'>
                                         <div className='flex items-center gap-4'>
                                             <div className='flex items-center gap-1.5'>
-                                                <Users size={14} className='text-gray-400 dark:text-gray-500' />
+                                                <Users
+                                                    size={14}
+                                                    className='text-gray-400 dark:text-gray-500'
+                                                />
                                                 <span className='text-sm text-gray-600 dark:text-gray-400'>
-                                                    {room.members?.length ||
-                                                        0}
-                                                    /{room.maxPlayers}
+                                                    {room.members?.length || 0}/
+                                                    {room.maxPlayers}
                                                 </span>
                                             </div>
                                             {room.settings?.topic && (
@@ -318,6 +346,93 @@ export default function WarRooms() {
                     onSubmit={handleCreate}
                     loading={creating}
                 />
+            )}
+
+            {/* Info Modal */}
+            {showInfo && (
+                <div className='fixed inset-0 z-50 flex items-center justify-center'>
+                    <div
+                        className='absolute inset-0 bg-black/40 backdrop-blur-sm'
+                        onClick={() => setShowInfo(false)}
+                    />
+                    <div className='relative w-full max-w-lg mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden'>
+                        {/* Header */}
+                        <div className='flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800'>
+                            <h3 className='text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2'>
+                                <Swords size={20} className='text-violet-500' />
+                                How War Rooms Work
+                            </h3>
+                            <button
+                                onClick={() => setShowInfo(false)}
+                                className='p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors'
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className='p-6 space-y-5 max-h-[70vh] overflow-y-auto'>
+                            {[
+                                {
+                                    icon: Plus,
+                                    color: 'bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400',
+                                    title: 'Create or Join a Room',
+                                    desc: 'Create a public or private War Room, or join an existing one with a 6-character room code.',
+                                },
+                                {
+                                    icon: UserPlus,
+                                    color: 'bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400',
+                                    title: 'Invite Friends',
+                                    desc: 'Share the room code with friends so they can join. Private rooms are accessible only by code.',
+                                },
+                                {
+                                    icon: Shield,
+                                    color: 'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400',
+                                    title: 'Ready Up',
+                                    desc: 'All players mark themselves as ready. The host can start the quiz once players are ready.',
+                                },
+                                {
+                                    icon: Play,
+                                    color: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+                                    title: 'Compete in Real-Time',
+                                    desc: 'Answer AI-generated quiz questions together in real-time. Questions are the same for all players.',
+                                },
+                                {
+                                    icon: Trophy,
+                                    color: 'bg-pink-100 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400',
+                                    title: 'See Results & Play Again',
+                                    desc: 'After each round, view the leaderboard and results. The host can start new rounds for endless fun!',
+                                },
+                            ].map((step, i) => (
+                                <div key={i} className='flex gap-4'>
+                                    <div
+                                        className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${step.color}`}
+                                    >
+                                        <step.icon size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 className='font-semibold text-gray-900 dark:text-white text-sm'>
+                                            {i + 1}. {step.title}
+                                        </h4>
+                                        <p className='text-sm text-gray-500 dark:text-gray-400 mt-0.5'>
+                                            {step.desc}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Footer */}
+                        <div className='px-6 py-4 border-t border-gray-100 dark:border-gray-800'>
+                            <button
+                                onClick={() => setShowInfo(false)}
+                                className='w-full py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 transition-all'
+                            >
+                                Got it!
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

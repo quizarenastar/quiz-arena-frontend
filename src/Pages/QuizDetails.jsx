@@ -18,6 +18,8 @@ import {
     Tag,
     User,
     ChevronRight,
+    Share2,
+    Ban,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QuizService from '../service/QuizService';
@@ -83,6 +85,29 @@ const QuizDetails = () => {
 
     const handleEdit = () => {
         navigate(`/create-quiz?edit=${quizId}`);
+    };
+
+    const handleShare = async () => {
+        const shareUrl = `${window.location.origin}/quiz/${quizId}`;
+        const shareData = {
+            title: quiz?.title || 'Quiz Arena',
+            text: `Check out this quiz: ${quiz?.title || 'Quiz'}`,
+            url: shareUrl,
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    navigator.clipboard.writeText(shareUrl);
+                    toast.success('Link copied to clipboard!');
+                }
+            }
+        } else {
+            navigator.clipboard.writeText(shareUrl);
+            toast.success('Link copied to clipboard!');
+        }
     };
 
     const getDifficultyConfig = (diff) => {
@@ -213,6 +238,15 @@ const QuizDetails = () => {
                     </button>
 
                     <div className='flex items-center gap-2'>
+                        {/* Share button */}
+                        <button
+                            onClick={handleShare}
+                            className='flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all'
+                        >
+                            <Share2 size={14} />
+                            Share
+                        </button>
+
                         {/* Status badge */}
                         <span
                             className={`px-3 py-1 rounded-full text-xs font-medium border ${statusConfig.bg} ${statusConfig.color} ${statusConfig.border}`}
@@ -515,7 +549,9 @@ const QuizDetails = () => {
                                         {quiz.attemptCount || 0}
                                     </span>{' '}
                                     attempt
-                                    {(quiz.attemptCount || 0) !== 1 ? 's' : ''}{' '}
+                                    {(quiz.attemptCount || 0) !== 1
+                                        ? 's'
+                                        : ''}{' '}
                                     so far
                                     {quiz.participantManagement
                                         ?.participantCount > 0 && (
@@ -575,6 +611,21 @@ const QuizDetails = () => {
                                             const isCancelled =
                                                 quiz?.autoCancel?.isCancelled ||
                                                 quiz.status === 'cancelled';
+                                            const hasEnded =
+                                                quiz.endTime &&
+                                                now > new Date(quiz.endTime);
+
+                                            if (hasEnded) {
+                                                return (
+                                                    <button
+                                                        disabled
+                                                        className='w-full mt-4 px-8 py-4 bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 cursor-not-allowed text-gray-400 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg'
+                                                    >
+                                                        <Ban size={20} />
+                                                        Quiz Ended
+                                                    </button>
+                                                );
+                                            }
 
                                             if (isRegistered && !isCancelled) {
                                                 if (hasStarted) {
@@ -607,7 +658,11 @@ const QuizDetails = () => {
                                                 return null;
                                             }
 
-                                            if (hasStarted && !isCancelled) {
+                                            if (
+                                                hasStarted &&
+                                                !isCancelled &&
+                                                !hasEnded
+                                            ) {
                                                 return (
                                                     <button
                                                         onClick={
@@ -624,6 +679,16 @@ const QuizDetails = () => {
                                             return null;
                                         })()}
                                     </>
+                                ) : quiz.endTime &&
+                                  new Date() > new Date(quiz.endTime) ? (
+                                    /* Quiz has ended */
+                                    <button
+                                        disabled
+                                        className='w-full px-8 py-4 bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 cursor-not-allowed text-gray-400 rounded-xl font-semibold flex items-center justify-center gap-2 text-lg'
+                                    >
+                                        <Ban size={20} />
+                                        Quiz Ended
+                                    </button>
                                 ) : (
                                     /* Free quiz or paid quiz without start time — immediate start */
                                     <button

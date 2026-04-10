@@ -2,6 +2,38 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ── Custom Scrollbar ── */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.5);
+}
+
+.dark *::-webkit-scrollbar-thumb {
+    background: rgba(139, 92, 246, 0.25);
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 92, 246, 0.45);
+}
+
 /* ── Custom Animations ── */
 @keyframes float {
 

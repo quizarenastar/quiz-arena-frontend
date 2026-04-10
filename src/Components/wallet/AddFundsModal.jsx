@@ -121,7 +121,7 @@ function AddFundsModal({
                             </p>
                             <div className='flex justify-center mb-3'>
                                 <img
-                                    src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=quizarena@paytm&pn=QuizArena&cu=INR'
+                                    src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=quizarena@ptyes&pn=QuizArena&cu=INR'
                                     alt='Payment QR Code'
                                     className='w-35 h-35 border-4 border-gray-300 dark:border-gray-600 rounded-lg'
                                 />
@@ -135,12 +135,12 @@ function AddFundsModal({
                             </p>
                             <div className='flex items-center gap-2'>
                                 <code className='flex-1 bg-white  dark:bg-gray-800 dark:text-white px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-sm font-mono'>
-                                    quizarena@paytm
+                                    quizarena@ptyes
                                 </code>
                                 <button
                                     onClick={() => {
                                         navigator.clipboard.writeText(
-                                            'quizarena@paytm'
+                                            'quizarena@ptyes',
                                         );
                                         toast.success('UPI ID copied!');
                                     }}
