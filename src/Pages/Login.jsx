@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginThunk, googleThunk } from '../store/slices/authSlice';
@@ -18,6 +18,7 @@ export default function Login() {
     const { isAuthenticated } = useSelector((s) => s.auth);
     const [googleLoading, setGoogleLoading] = useState(false);
     const from = location.state?.from?.pathname || '/';
+    const googleInitialized = useRef(false);
 
     useEffect(() => {
         if (isAuthenticated) navigate(from, { replace: true });
@@ -47,34 +48,93 @@ export default function Login() {
         }
     };
 
-    // Initialize Google Identity Services
+    // Google credential callback — use refs to avoid stale closures
+    const dispatchRef = useRef(dispatch);
+    const navigateRef = useRef(navigate);
+    const fromRef = useRef(from);
+    useEffect(() => {
+        dispatchRef.current = dispatch;
+    }, [dispatch]);
+    useEffect(() => {
+        navigateRef.current = navigate;
+    }, [navigate]);
+    useEffect(() => {
+        fromRef.current = from;
+    }, [from]);
+
+    const handleGoogleCredential = useCallback(async (response) => {
+        setGoogleLoading(true);
+        const payload = parseJwt(response.credential);
+        if (!payload) {
+            setGoogleLoading(false);
+            return;
+        }
+        const name = payload.name || payload.given_name || '';
+        const email = payload.email;
+        const action = await dispatchRef.current(googleThunk({ email, name }));
+        if (googleThunk.fulfilled.match(action)) {
+            toast.success('Signed in with Google');
+            navigateRef.current(fromRef.current, { replace: true });
+        } else {
+            toast.error(action.payload || 'Google sign-in failed');
+        }
+        setGoogleLoading(false);
+    }, []);
+
+    // Initialize Google Identity Services (once, with retry for async script loading)
     useEffect(() => {
         const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
         if (!clientId) {
             console.warn('VITE_GOOGLE_CLIENT_ID is not set');
             return;
         }
-        if (window.google?.accounts?.id) {
+        if (googleInitialized.current) return;
+
+        let cancelled = false;
+
+        const initGoogle = () => {
+            if (cancelled || googleInitialized.current) return false;
+            if (!window.google?.accounts?.id) return false;
+
             window.google.accounts.id.initialize({
                 client_id: clientId,
-                callback: async (response) => {
-                    setGoogleLoading(true);
-                    const payload = parseJwt(response.credential);
-                    if (!payload) return;
-                    const name = payload.name || payload.given_name || '';
-                    const email = payload.email;
-                    const action = await dispatch(googleThunk({ email, name }));
-                    if (googleThunk.fulfilled.match(action)) {
-                        toast.success('Signed in with Google');
-                        navigate(from, { replace: true });
-                    } else {
-                        toast.error(action.payload || 'Google sign-in failed');
-                    }
-                    setGoogleLoading(false);
-                },
+                callback: handleGoogleCredential,
+                use_fedcm_for_prompt: true,
             });
+            googleInitialized.current = true;
+
+            // Render a hidden Google button as fallback when One Tap is suppressed
+            const btnContainer = document.getElementById(
+                'google-signin-fallback',
+            );
+            if (btnContainer) {
+                window.google.accounts.id.renderButton(btnContainer, {
+                    type: 'standard',
+                    size: 'large',
+                    width: 400,
+                });
+            }
+            return true;
+        };
+
+        if (!initGoogle()) {
+            // Script not loaded yet — poll until available
+            const interval = setInterval(() => {
+                if (initGoogle()) clearInterval(interval);
+            }, 200);
+            // Stop polling after 10s
+            const timeout = setTimeout(() => clearInterval(interval), 10000);
+            return () => {
+                cancelled = true;
+                clearInterval(interval);
+                clearTimeout(timeout);
+            };
         }
-    }, [dispatch, navigate, from]);
+
+        return () => {
+            cancelled = true;
+        };
+    }, [handleGoogleCredential]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -98,19 +158,30 @@ export default function Login() {
     const handleGoogleLogin = () => {
         if (window.google?.accounts?.id) {
             setGoogleLoading(true);
-            // Show the One Tap or prompt immediately
+            // Try One Tap first, fall back to rendered button if suppressed
             window.google.accounts.id.prompt((notification) => {
-                // If the user dismisses the prompt or it's not displayed, stop loading
                 if (
                     notification.isNotDisplayed() ||
-                    notification.isSkippedMoment() ||
-                    notification.isDismissedMoment()
+                    notification.isSkippedMoment()
                 ) {
+                    // One Tap is suppressed (cooldown / browser settings) — click the hidden fallback button
+                    const fallbackBtn = document.querySelector(
+                        '#google-signin-fallback div[role="button"]',
+                    );
+                    if (fallbackBtn) {
+                        fallbackBtn.click();
+                    } else {
+                        setGoogleLoading(false);
+                        toast.error(
+                            'Google sign-in unavailable. Please try again later.',
+                        );
+                    }
+                } else if (notification.isDismissedMoment()) {
                     setGoogleLoading(false);
                 }
             });
         } else {
-            console.warn('Google Identity script not loaded');
+            toast.error('Google sign-in is still loading. Please try again.');
         }
     };
 
@@ -249,6 +320,13 @@ export default function Login() {
                                 ? 'Continuing…'
                                 : 'Continue with Google'}
                         </button>
+
+                        {/* Hidden fallback Google button for when One Tap is suppressed */}
+                        <div
+                            id='google-signin-fallback'
+                            className='overflow-hidden'
+                            style={{ height: 0, visibility: 'hidden' }}
+                        ></div>
                     </div>
 
                     {/* Sign up link */}
