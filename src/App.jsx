@@ -7,6 +7,7 @@ import Footer from './Components/Footer';
 import Header from './Components/Header';
 import { Toaster } from 'react-hot-toast';
 import { fetchProfileThunk } from './store/slices/authSlice';
+import FloatingFeedback from './Components/FloatingFeedback';
 
 function App() {
     const dispatch = useDispatch();
@@ -25,12 +26,10 @@ function App() {
             <Router>
                 <Header />
                 <RoutesComponent />
-                <Footer />
-                <Toaster position="top-right" />
+                <Footer /> <FloatingFeedback /> <Toaster position='top-right' />
             </Router>
         </ThemeProvider>
     );
 }
 
 export default App;
-

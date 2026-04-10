@@ -146,7 +146,22 @@ export default function WarRoom() {
     const { isConnected, sendChat, toggleReady, startQuiz, kickPlayer } =
         useWarRoomSocket(roomCode, handlers);
 
-    const handleCopyCode = () => {
+    const handleCopyCode = async () => {
+        const shareUrl = `${window.location.origin}/war-rooms/${roomCode}`;
+        const shareData = {
+            title: room?.name || 'War Room',
+            text: `Join my War Room! Code: ${roomCode}`,
+            url: shareUrl,
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+                return;
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+            }
+        }
         navigator.clipboard.writeText(roomCode);
         setCopied(true);
         toast.success('Room code copied!');
