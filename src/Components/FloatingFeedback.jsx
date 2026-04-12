@@ -116,7 +116,7 @@ export default function FloatingFeedback() {
             {!open && (
                 <button
                     onClick={handleOpen}
-                    className='fixed bottom-6 right-6 z-50 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-500/30 hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center'
+                    className='fixed bottom-6 left-6 z-50 w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-lg shadow-violet-500/30 hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center'
                     title='Report Bug / Send Feedback'
                 >
                     <MessageSquarePlus size={16} />
