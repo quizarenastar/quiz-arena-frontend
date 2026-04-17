@@ -4,6 +4,7 @@ const ApiUrl = {
     AUTH: {
         LOGIN: `${BASE_URL}/users/login`,
         SIGNUP: `${BASE_URL}/users/signup`,
+        SEND_OTP: `${BASE_URL}/users/send-otp`,
         GOOGLE: `${BASE_URL}/users/google`,
         ME: `${BASE_URL}/users/me`,
         LOGOUT: `${BASE_URL}/users/logout`,
