@@ -1,6 +1,27 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import ApiUrl from '../../configs/apiUrls';
 
+export const sendOtpThunk = createAsyncThunk(
+    'auth/sendOtp',
+    async (payload, { rejectWithValue }) => {
+        try {
+            const res = await fetch(ApiUrl.AUTH.SEND_OTP, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (!res.ok || data.success === false) {
+                return rejectWithValue(data.message || 'Failed to send OTP');
+            }
+            return data;
+        } catch (e) {
+            return rejectWithValue(e.message || 'Failed to send OTP');
+        }
+    }
+);
+
 export const signupThunk = createAsyncThunk(
     'auth/signup',
     async (payload, { rejectWithValue }) => {
